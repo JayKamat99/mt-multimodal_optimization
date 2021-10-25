@@ -6,22 +6,13 @@
 #include<vector>
 
 #include <ompl/base/spaces/RealVectorStateSpace.h>
-#include <ompl/base/SpaceInformation.h>
-#include <ompl/base/ProblemDefinition.h>
-#include <ompl/geometric/planners/rrt/RRTConnect.h>
 #include <ompl/geometric/planners/rrt/RRTstar.h>
-#include <ompl/geometric/planners/prm/PRMstar.h>
-#include <ompl/geometric/planners/prm/LazyPRMstar.h>
 #include <ompl/geometric/planners/rrt/LBTRRT.h>
-#include <ompl/geometric/planners/rrt/LazyLBTRRT.h>
-#include <ompl/geometric/planners/rrt/TRRT.h>
-#include <ompl/geometric/planners/rrt/BiTRRT.h>
 #include <ompl/multilevel/planners/multimodal/LocalMinimaSpanners.h>
 #include <ompl/geometric/SimpleSetup.h>
 #include <ompl/tools/benchmark/Benchmark.h>
 
 #include <ompl/geometric/PathOptimizerKOMO.h>
-#include <ompl/geometric/PathSimplifier.h>
 
 #include <KOMO/komo.h>
 #include <Kin/viewer.h>
@@ -32,8 +23,25 @@ namespace ob = ompl::base;
 namespace og = ompl::geometric;
 namespace om = ompl::multilevel;
 
-std::string filename;
-unsigned int CSpace_Dimension = 0;
+struct ValidityCheckWithKOMO {
+	KOMO::Conv_KOMO_SparseNonfactored &nlp;
+	ValidityCheckWithKOMO(KOMO::Conv_KOMO_SparseNonfactored &nlp) : nlp(nlp){}
+	bool check(const ob::State *state)
+	{
+		const auto *State = state->as<ob::RealVectorStateSpace::StateType>();
+
+		arr x_query;
+		for (unsigned int i = 0; i < 2 /* CSpace_Dimension */; i++){
+			x_query.append((*State)[i]);
+		}
+
+		arr phi;
+		nlp.evaluate(phi, NoArr, x_query);
+		double tol = 1e-2;
+
+		return std::abs(phi(0)) < tol;
+	}
+};
 
 class Optimizer
 {
@@ -51,21 +59,23 @@ public:
 		GaussianValidSampler
 	};
 
-	Optimizer() = default;
+	Optimizer();
 	~Optimizer() = default;
 	void plan();
 	void benchmark();
-	void setStart(ob::ScopedState<> startPosition){this->startPosition = startPosition;}
-	void setGoal(ob::ScopedState<> goalPosition){this->goalPosition = goalPosition;}
+	void setStart(std::vector<double> startPosition){this->startPosition = startPosition;}
+	void setGoal(std::vector<double> goalPosition){this->goalPosition = goalPosition;}
 	void setPlanner(Planners planner){this->planner = planner;}
 	void setSolveTime(double solveTime){this->solveTime = solveTime;}
 	void setSampler(Samplers sampler){this->sampler = sampler;}
 	void setConfigurationFilename(std::string filename);
 
 private:
+	std::string filename;
+	unsigned int CSpace_Dimension;
 	double solveTime = 10.0;
-	ob::ScopedState<> startPosition;
-	ob::ScopedState<> goalPosition;
+	std::vector<double> startPosition;
+	std::vector<double> goalPosition;
 	Planners planner = pathOptimizerKOMO;
 	Samplers sampler = RandomSampler;
 

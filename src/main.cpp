@@ -7,7 +7,7 @@
  * All commands / user variables are defined in this code.
  **************************************************/
 
-int main(int /* argc */, char* /* argv[] */)
+int main(int /* argc */, char** /* argv[] */)
 {
 	/**
 	 * @brief What do I do?
@@ -25,10 +25,9 @@ int main(int /* argc */, char* /* argv[] */)
 	optimizer.setConfigurationFilename("../Models/Configuration.txt");
 
 	//set Start and Goal configurations
-	// ob::ScopedState<> Start;
+	// std::vector<double> Start = {0,0};
 	// optimizer.setStart(Start); // would I ever need start? Does KOMO change start state?
-	// ob::ScopedState<> Goal = {1.5,0.0};
-	// optimizer.setGoal({1.5,0.0});
+	optimizer.setGoal({1.5,0.0});
 
 	//set planner
 	optimizer.setPlanner(Optimizer::Planners::pathOptimizerKOMO);
