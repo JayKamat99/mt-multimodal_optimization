@@ -22,20 +22,19 @@ int main(int /* argc */, char** /* argv[] */)
 	 */
 
 	Optimizer optimizer;
-	optimizer.setConfigurationFilename("../Models/Configuration.txt");
+	optimizer.setConfigurationFilename("/home/jay/mt-multimodal_optimization/Models/Configuration.txt");
 
-	//set Start and Goal configurations
-	// std::vector<double> Start = {0,0};
-	// optimizer.setStart(Start); // would I ever need start? Does KOMO change start state?
-	optimizer.setGoal({1.5,0.0});
+	//set the Goal configuration
+	optimizer.setGoal({3.0,0.0});
 
 	//set planner
 	optimizer.setPlanner(Optimizer::Planners::pathOptimizerKOMO);
 
 	//set maximum solution time
-	optimizer.setSolveTime(10.0);
+	optimizer.setSolveTime(5.0);
 
 	//plan
+	// optimizer.visualize_random();
 	optimizer.plan();
 
 	// //visualize solution

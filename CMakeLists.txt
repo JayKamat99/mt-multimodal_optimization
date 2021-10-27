@@ -11,12 +11,15 @@ list(APPEND INCLUDE_DIRS ${OMPL_INCLUDE_DIRS})
 list(APPEND LIBRARIES ${OMPL_LIBRARIES})
 
 include_directories(${INCLUDE_DIRS})
-include_directories(../git/optimization-course/rai/rai)
+include_directories(../git/optimization-course/rai/rai/)
 
 link_libraries(${LIBRARIES})
-link_libraries(/home/jay/git/optimization-course/rai/lib/libKOMO.so
+link_libraries(/home/jay/git/optimization-course/rai/lib/libCore.so
+/home/jay/git/optimization-course/rai/lib/libAlgo.so
 /home/jay/git/optimization-course/rai/lib/libKin.so
-/home/jay/git/optimization-course/rai/lib/libCore.so
+/home/jay/git/optimization-course/rai/lib/libGui.so
+/home/jay/git/optimization-course/rai/lib/libGeo.so
+/home/jay/git/optimization-course/rai/lib/libKOMO.so
 /home/jay/git/optimization-course/rai/lib/libOptim.so)
 
 add_executable(mt_multimodalOptimization

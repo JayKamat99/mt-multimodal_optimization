@@ -5,7 +5,6 @@
 #include"Optimizer.h"
 
 Optimizer::Optimizer(){
-	CSpace_Dimension = 2;
 }
 
 void Optimizer::VisualizePath(arrA configs){
@@ -25,8 +24,10 @@ void Optimizer::VisualizePath(arrA configs){
     komo.addObjective({}, FS_accumulatedCollisions, {}, OT_eq, {1.});
     komo.add_collision(true);
 
+	std::cout << configs << std::endl;
+
     //use configs to initialize with waypoints
-	komo.initWithWaypoints(configs, configs.N, false);
+	// komo.initWithWaypoints(configs, configs.N, false); // no clue why this isn't working
     komo.run_prepare(0);
 	komo.plotTrajectory();
 	std::string SaveToPath = std::string("../visualization/DisplayTrajectory_") + std::to_string(Trajectory) + "/";
@@ -71,25 +72,52 @@ og::SimpleSetup Optimizer::createSimpleSetup(ValidityCheckWithKOMO checker)
 	return ss;
 }
 
-void Optimizer::plan(){
-	//setup KOMO
+void Optimizer::visualize_random()
+{
 	rai::Configuration C;
 	C.addFile(filename.c_str());
-	std::cout << "KOMO";
 	KOMO komo;
 	komo.setModel(C, true);
 	komo.setTiming(1, 1, 1, 1);
 	komo.addObjective({}, FS_accumulatedCollisions, {}, OT_eq, { 1 });
 	komo.run_prepare(0);
-	std::cout << "done";
+
+	auto nlp = std::make_shared<KOMO::Conv_KOMO_SparseNonfactored>(komo,false);
+
+	// ObjectiveTypeA ot;
+	// nlp->getFeatureTypes(ot);
+	// komo.view(true);
+
+	arr phi;
+	size_t N = 20;
+	for (size_t i = 0; i < N; i++) {
+		arr pose = rand(2);
+		C.setJointState(pose);
+		nlp->evaluate(phi, NoArr, pose);
+		std::cout << pose << " " << phi << std::endl;
+		// std::cout << komo.getConfiguration_q(0) << std::endl;
+		komo.view(true);
+	}
+}
+
+void Optimizer::plan(){
+	//setup KOMO
+	rai::Configuration C;
+	C.addFile(filename.c_str());
+	KOMO komo;
+	komo.setModel(C, true);
+	komo.setTiming(1, 1, 1, 1);
+	komo.addObjective({}, FS_accumulatedCollisions, {}, OT_eq, { 1 });
+	komo.run_prepare(0);
 
 	CSpace_Dimension = C.getJointStateDimension();
 
 	auto nlp = std::make_shared<KOMO::Conv_KOMO_SparseNonfactored>(komo, false);
+
 	ValidityCheckWithKOMO checker(*nlp);
 
-	for (unsigned int i=0; i<C.getJointStateDimension(); i++){
-		this->startPosition[i] = komo.getConfiguration_q(0).elem(i);
+	for (unsigned int i=0; i<CSpace_Dimension; i++){
+		startPosition.push_back(komo.getConfiguration_q(0).elem(i));
 	}
 
 	//Construct the state space we are planning in
@@ -100,22 +128,17 @@ void Optimizer::plan(){
 	bounds.setHigh(PI);
 	space->setBounds(bounds);
 
-	std::cout << "Creating simple setup" << std::endl;
-
 	auto ss = Optimizer::createSimpleSetup(checker);
-
-	std::cout << "created simplesetup" << std::endl;
 
 	auto si = ss.getSpaceInformation();
 	std::vector<ob::SpaceInformationPtr> siVec;
 	siVec.push_back(si);
 	auto planner1 = std::make_shared<om::LocalMinimaSpanners>(siVec);
 
-	if (planner = pathOptimizerKOMO){
+	if (planner == pathOptimizerKOMO){
 		og::PathOptimizerPtr optimizer = std::make_shared<og::PathOptimizerKOMO>(si);
 		planner1->setOptimizer(optimizer);
 		ss.setPlanner(planner1);
-		std::cout << "I defined pathOptimizerKOMO" << std::endl;
 	}
 	else{
 		auto planner2(std::make_shared<og::RRTstar>(si));
@@ -125,7 +148,7 @@ void Optimizer::plan(){
 	ss.setup();
 
 	// attempt to solve the problem
-	ob::PlannerStatus solved = ss.solve(10.0);
+	ob::PlannerStatus solved = ss.solve(solveTime);
 
 	if (solved == ob::PlannerStatus::StatusType::APPROXIMATE_SOLUTION)
 		std::cout << "Found solution: APPROXIMATE_SOLUTION" << std::endl;
@@ -138,7 +161,7 @@ void Optimizer::plan(){
 		return;
 	}
 
-	if(pathOptimizerKOMO){ //This code is for visualization of the paths from PathOptimizer
+	if(planner == pathOptimizerKOMO){ //This code is for visualization of the paths from PathOptimizer
 		auto localMinimaTree = planner1->getLocalMinimaTree();
 		int NumberOfMinima =  (int)localMinimaTree->getNumberOfMinima();
 		int NumberOfLevels =  (int)localMinimaTree->getNumberOfLevel();
@@ -153,7 +176,8 @@ void Optimizer::plan(){
 				{
 					arr config;
 					std::vector<double> reals;
-					space->copyToReals(reals, state);
+					space->copyToReals(reals, state); //Error: This line does not work!
+					std::cout << reals.size() << "size" << std::endl;;
 					for (double r : reals){
 						config.append(r);
 					}
