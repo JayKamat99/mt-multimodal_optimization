@@ -1,3 +1,6 @@
 [submodule "rai"]
 	path = rai
 	url = git@github.com:JayKamat99/rai.git
+[submodule "ompl"]
+	path = ompl
+	url = git@github.com:JayKamat99/ompl.git
