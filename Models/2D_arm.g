@@ -16,6 +16,6 @@ goal (world) {X=<t(0 -1 0) d(90 0 1 0)> }
 
 #ball {shape:sphere, mass:1, size:[.05] contact, color:[0 1 0], X = <t(0 -1 0)> }
 
-#Obstacle {shape:sphere, mass:1, size:[.15] contact, color:[1 0 0], X = <t(0 -0.8 0)> }
+Obstacle {shape:sphere, mass:1, size:[.15] contact, color:[1 0 0], X = <t(0 -0.8 0)> }
 
-#Obstacle {shape:sphere, mass:1, size:[.15] contact, color:[1 0 0], X = <t(0.6 -0.4 0)> }
+Obstacle {shape:sphere, mass:1, size:[.15] contact, color:[1 0 0], X = <t(0.6 -0.6 0)> }

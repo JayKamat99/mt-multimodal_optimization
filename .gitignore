@@ -2,3 +2,5 @@ build/
 .vscode/
 z.*
 visualization/
+data/narrow8
+data/__pycache__

@@ -49,12 +49,12 @@ public:
 				x_query.append((*State)[i]);
 			}
 
-			// arr phi;
-			// nlp.evaluate(phi, NoArr, x_query);
-			// double tol = 1e-2;
+			arr phi;
+			nlp.evaluate(phi, NoArr, x_query);
+			double tol = 1e-2;
 
-			// return std::abs(phi(0)) < tol;
-			return 1;
+			return std::abs(phi(0)) < tol;
+			// return 1;
 		}
 	};
 
