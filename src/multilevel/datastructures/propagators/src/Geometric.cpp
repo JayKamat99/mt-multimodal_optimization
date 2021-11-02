@@ -1,4 +1,4 @@
-#include <ompl/multilevel/datastructures/propagators/Geometric.h>
+#include <multilevel/datastructures/propagators/Geometric.h>
 
 ompl::multilevel::BundleSpacePropagatorGeometric::BundleSpacePropagatorGeometric(BundleSpaceGraph *bundleSpaceGraph)
   : BaseT(bundleSpaceGraph)

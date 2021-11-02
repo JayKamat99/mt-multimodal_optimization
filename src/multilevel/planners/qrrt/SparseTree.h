@@ -1,6 +1,6 @@
 #ifndef OMPL_MULTILEVEL_PLANNERS_SPARSE_TREE_
 #define OMPL_MULTILEVEL_PLANNERS_SPARSE_TREE_
-#include <ompl/multilevel/datastructures/BundleSpaceGraph.h>
+#include <multilevel/datastructures/BundleSpaceGraph.h>
 #include <ompl/base/SpaceInformation.h>
 #include <queue>
 

@@ -36,13 +36,13 @@
 
 /* Author: Andreas Orthey, Sohaib Akbar */
 
-#include <ompl/multilevel/planners/qmp/QMPImpl.h>
+#include <multilevel/planners/qmp/QMPImpl.h>
 #include <ompl/tools/config/SelfConfig.h>
 #include <boost/foreach.hpp>
 #include <ompl/datastructures/NearestNeighbors.h>
 #include "ompl/datastructures/PDF.h"
 #include <ompl/geometric/PathGeometric.h>
-#include <ompl/multilevel/datastructures/graphsampler/GraphSampler.h>
+#include <multilevel/datastructures/graphsampler/GraphSampler.h>
 
 #define foreach BOOST_FOREACH
 

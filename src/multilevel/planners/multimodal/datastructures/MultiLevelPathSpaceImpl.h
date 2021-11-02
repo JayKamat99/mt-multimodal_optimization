@@ -1,9 +1,9 @@
-#include <ompl/multilevel/datastructures/PlannerDataVertexAnnotated.h>
-#include <ompl/multilevel/datastructures/BundleSpace.h>
-#include <ompl/multilevel/planners/multimodal/datastructures/PathSpace.h>
-#include <ompl/multilevel/planners/multimodal/datastructures/LocalMinimaTree.h>
-#include <ompl/multilevel/planners/multimodal/datastructures/LocalMinimaNode.h>
-#include <ompl/multilevel/planners/multimodal/PathSpaceSparse.h>
+#include <multilevel/datastructures/PlannerDataVertexAnnotated.h>
+#include <multilevel/datastructures/BundleSpace.h>
+#include <multilevel/planners/multimodal/datastructures/PathSpace.h>
+#include <multilevel/planners/multimodal/datastructures/LocalMinimaTree.h>
+#include <multilevel/planners/multimodal/datastructures/LocalMinimaNode.h>
+#include <multilevel/planners/multimodal/PathSpaceSparse.h>
 
 #include <ompl/base/goals/GoalSampleableRegion.h>
 #include <ompl/base/spaces/SO2StateSpace.h>

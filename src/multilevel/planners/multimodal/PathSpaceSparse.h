@@ -1,7 +1,7 @@
 #ifndef OMPL_MULTILEVEL_PLANNERS_BundleSpace_PathSpaceSparse_
 #define OMPL_MULTILEVEL_PLANNERS_BundleSpace_PathSpaceSparse_
-#include <ompl/multilevel/planners/sparse/SMLRImpl.h>
-#include <ompl/multilevel/planners/multimodal/datastructures/PathSpace.h>
+#include <multilevel/planners/sparse/SMLRImpl.h>
+#include <multilevel/planners/multimodal/datastructures/PathSpace.h>
 #include <ompl/geometric/PathGeometric.h>
 
 namespace ompl

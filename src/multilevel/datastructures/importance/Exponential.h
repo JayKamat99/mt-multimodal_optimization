@@ -38,7 +38,7 @@
 
 #ifndef OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_IMPORTANCE_EXPONENTIAL_
 #define OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_IMPORTANCE_EXPONENTIAL_
-#include <ompl/multilevel/datastructures/importance/BundleSpaceImportance.h>
+#include <multilevel/datastructures/importance/BundleSpaceImportance.h>
 
 namespace ompl
 {

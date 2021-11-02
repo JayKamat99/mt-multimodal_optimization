@@ -38,7 +38,7 @@
 
 #ifndef OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_BUNDLE_COMPONENT_EMPTYSETPROJECTION___
 #define OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_BUNDLE_COMPONENT_EMPTYSETPROJECTION___
-#include <ompl/multilevel/datastructures/projections/FiberedProjection.h>
+#include <multilevel/datastructures/projections/FiberedProjection.h>
 
 namespace ompl
 {

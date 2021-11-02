@@ -36,7 +36,7 @@
 
 /* Author: Andreas Orthey */
 
-#include <ompl/multilevel/datastructures/projections/SO2N_SO2M.h>
+#include <multilevel/datastructures/projections/SO2N_SO2M.h>
 #include <ompl/base/spaces/SO2StateSpace.h>
 
 using namespace ompl::multilevel;

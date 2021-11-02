@@ -37,7 +37,7 @@
 /* Author: Andreas Orthey */
 
 #pragma once
-#include <ompl/multilevel/datastructures/pathrestriction/Head.h>
+#include <multilevel/datastructures/pathrestriction/Head.h>
 
 namespace ompl
 {

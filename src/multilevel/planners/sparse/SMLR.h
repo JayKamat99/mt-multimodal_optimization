@@ -39,8 +39,8 @@
 #ifndef OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_SMLR_
 #define OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_SMLR_
 
-#include <ompl/multilevel/datastructures/BundleSpaceSequence.h>
-#include <ompl/multilevel/planners/sparse/SMLRImpl.h>
+#include <multilevel/datastructures/BundleSpaceSequence.h>
+#include <multilevel/planners/sparse/SMLRImpl.h>
 
 namespace ompl
 {

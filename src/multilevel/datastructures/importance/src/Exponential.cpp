@@ -36,7 +36,7 @@
 
 /* Author: Andreas Orthey */
 
-#include <ompl/multilevel/datastructures/importance/Exponential.h>
+#include <multilevel/datastructures/importance/Exponential.h>
 
 ompl::multilevel::BundleSpaceImportanceExponential::BundleSpaceImportanceExponential(BundleSpaceGraph *graph)
   : BaseT(graph)

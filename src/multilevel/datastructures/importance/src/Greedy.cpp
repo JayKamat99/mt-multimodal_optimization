@@ -36,7 +36,7 @@
 
 /* Author: Andreas Orthey */
 
-#include <ompl/multilevel/datastructures/importance/Greedy.h>
+#include <multilevel/datastructures/importance/Greedy.h>
 
 ompl::multilevel::BundleSpaceImportanceGreedy::BundleSpaceImportanceGreedy(BundleSpaceGraph *graph) : BaseT(graph)
 {

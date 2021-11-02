@@ -1,7 +1,7 @@
-#include <ompl/geometric/PathOptimizer.h>
-#include <ompl/geometric/PathOptimizerKOMO.h>
-#include <ompl/multilevel/planners/multimodal/PathSpaceSparse.h>
-#include <ompl/multilevel/planners/multimodal/datastructures/PathSpace.h>
+#include <multimodal_optimizers/PathOptimizer.h>
+#include <multimodal_optimizers/PathOptimizerKOMO.h>
+#include <multilevel/planners/multimodal/PathSpaceSparse.h>
+#include <multilevel/planners/multimodal/datastructures/PathSpace.h>
 
 #include <KOMO/komo.h>
 #include <Kin/viewer.h>

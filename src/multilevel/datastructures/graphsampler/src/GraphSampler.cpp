@@ -36,7 +36,7 @@
 
 /* Author: Andreas Orthey */
 
-#include <ompl/multilevel/datastructures/graphsampler/GraphSampler.h>
+#include <multilevel/datastructures/graphsampler/GraphSampler.h>
 
 ompl::multilevel::BundleSpaceGraphSampler::BundleSpaceGraphSampler(BundleSpaceGraph *bundleSpaceGraph)
   : bundleSpaceGraph_(bundleSpaceGraph)

@@ -36,7 +36,7 @@
 
 /* Author: Andreas Orthey */
 
-#include <ompl/multilevel/datastructures/PlannerMultiLevel.h>
+#include <multilevel/datastructures/PlannerMultiLevel.h>
 
 using namespace ompl::multilevel;
 

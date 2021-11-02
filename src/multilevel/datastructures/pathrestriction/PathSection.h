@@ -38,7 +38,7 @@
 
 #ifndef OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_PATH_SECTION__
 #define OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_PATH_SECTION__
-#include <ompl/multilevel/datastructures/BundleSpaceGraph.h>
+#include <multilevel/datastructures/BundleSpaceGraph.h>
 #include <ompl/util/ClassForward.h>
 
 namespace ompl

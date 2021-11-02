@@ -36,7 +36,7 @@
 
 /* Author: Andreas Orthey */
 
-#include <ompl/multilevel/datastructures/metrics/BundleSpaceMetric.h>
+#include <multilevel/datastructures/metrics/BundleSpaceMetric.h>
 
 ompl::multilevel::BundleSpaceMetric::BundleSpaceMetric(BundleSpaceGraph *bundleSpaceGraph)
   : bundleSpaceGraph_(bundleSpaceGraph)

@@ -36,7 +36,7 @@
 
 /* Author: Andreas Orthey */
 
-#include <ompl/multilevel/datastructures/graphsampler/RandomEdge.h>
+#include <multilevel/datastructures/graphsampler/RandomEdge.h>
 
 ompl::multilevel::BundleSpaceGraphSamplerRandomEdge::BundleSpaceGraphSamplerRandomEdge(
     BundleSpaceGraph *bundleSpaceGraph)

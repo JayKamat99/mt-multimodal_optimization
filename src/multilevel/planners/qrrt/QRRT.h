@@ -37,8 +37,8 @@
 
 #ifndef OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_QRRT_
 #define OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_QRRT_
-#include <ompl/multilevel/datastructures/BundleSpaceSequence.h>
-#include <ompl/multilevel/planners/qrrt/QRRTImpl.h>
+#include <multilevel/datastructures/BundleSpaceSequence.h>
+#include <multilevel/planners/qrrt/QRRTImpl.h>
 
 namespace ompl
 {

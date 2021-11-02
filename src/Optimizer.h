@@ -15,9 +15,9 @@
 #include <ompl/base/samplers/ObstacleBasedValidStateSampler.h>
 #include <ompl/base/samplers/GaussianValidStateSampler.h>
 
-#include <ompl/geometric/PathOptimizerKOMO.h>
+#include <multimodal_optimizers/PathOptimizerKOMO.h>
 
-#include <ompl/config.h>
+/* #include <ompl/config.h> */
 
 #include <KOMO/komo.h>
 #include <Kin/viewer.h>

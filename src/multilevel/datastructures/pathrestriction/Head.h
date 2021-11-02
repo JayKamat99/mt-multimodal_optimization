@@ -38,7 +38,7 @@
 
 #ifndef OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_PATH_RESTRICTION_BASEPATHHEAD__
 #define OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_PATH_RESTRICTION_BASEPATHHEAD__
-#include <ompl/multilevel/datastructures/BundleSpaceGraph.h>
+#include <multilevel/datastructures/BundleSpaceGraph.h>
 
 namespace ompl
 {

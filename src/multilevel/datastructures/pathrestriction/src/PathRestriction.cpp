@@ -36,12 +36,12 @@
 
 /* Author: Andreas Orthey */
 
-#include <ompl/multilevel/datastructures/pathrestriction/PathRestriction.h>
-#include <ompl/multilevel/datastructures/pathrestriction/Head.h>
-#include <ompl/multilevel/datastructures/pathrestriction/FindSection.h>
-#include <ompl/multilevel/datastructures/pathrestriction/FindSectionSideStep.h>
-#include <ompl/multilevel/datastructures/pathrestriction/FindSectionPatternDance.h>
-#include <ompl/multilevel/datastructures/graphsampler/GraphSampler.h>
+#include <multilevel/datastructures/pathrestriction/PathRestriction.h>
+#include <multilevel/datastructures/pathrestriction/Head.h>
+#include <multilevel/datastructures/pathrestriction/FindSection.h>
+#include <multilevel/datastructures/pathrestriction/FindSectionSideStep.h>
+#include <multilevel/datastructures/pathrestriction/FindSectionPatternDance.h>
+#include <multilevel/datastructures/graphsampler/GraphSampler.h>
 #include <ompl/base/objectives/PathLengthOptimizationObjective.h>
 
 #include <ompl/base/Path.h>

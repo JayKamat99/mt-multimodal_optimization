@@ -36,7 +36,7 @@
 
 /* Author: Andreas Orthey, Sohaib Akbar */
 
-#include <ompl/multilevel/planners/sparse/SMLRImpl.h>
+#include <multilevel/planners/sparse/SMLRImpl.h>
 #include <ompl/tools/config/SelfConfig.h>
 #include <boost/foreach.hpp>
 #include <ompl/datastructures/NearestNeighbors.h>

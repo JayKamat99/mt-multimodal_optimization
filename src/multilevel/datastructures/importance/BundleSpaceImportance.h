@@ -38,7 +38,7 @@
 
 #ifndef OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_IMPORTANCE_IMPORTANCE_
 #define OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_IMPORTANCE_IMPORTANCE_
-#include <ompl/multilevel/datastructures/BundleSpaceGraph.h>
+#include <multilevel/datastructures/BundleSpaceGraph.h>
 #include <memory>
 
 namespace ompl

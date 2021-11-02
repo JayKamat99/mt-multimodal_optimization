@@ -1,4 +1,4 @@
-#include <ompl/multilevel/planners/qrrt/SparseTree.h>
+#include <multilevel/planners/qrrt/SparseTree.h>
 #include <ompl/tools/config/SelfConfig.h>
 
 using namespace ompl::multilevel;

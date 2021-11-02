@@ -36,7 +36,7 @@
 
 /* Author: Andreas Orthey */
 
-#include <ompl/multilevel/datastructures/projections/SE3_R3.h>
+#include <multilevel/datastructures/projections/SE3_R3.h>
 #include <ompl/base/spaces/SE3StateSpace.h>
 #include <ompl/base/spaces/SO3StateSpace.h>
 #include <ompl/base/spaces/RealVectorStateSpace.h>

@@ -40,7 +40,7 @@
 #define OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_DATASTRUCTURES_EXPONENTIAL_DECAY__
 
 #include <ompl/util/Exception.h>
-#include <ompl/multilevel/datastructures/Parameter.h>
+#include <multilevel/datastructures/Parameter.h>
 
 namespace ompl
 {

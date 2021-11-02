@@ -38,7 +38,7 @@
 
 #ifndef OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_BUNDLE_COMPONENT_RELAXATION__
 #define OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_BUNDLE_COMPONENT_RELAXATION__
-#include <ompl/multilevel/datastructures/projections/Identity.h>
+#include <multilevel/datastructures/projections/Identity.h>
 
 namespace ompl
 {

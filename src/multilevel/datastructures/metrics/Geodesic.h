@@ -38,7 +38,7 @@
 
 #ifndef OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_METRICS_BUNDLEMETRIC_GEODESIC__
 #define OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_METRICS_BUNDLEMETRIC_GEODESIC__
-#include <ompl/multilevel/datastructures/metrics/BundleSpaceMetric.h>
+#include <multilevel/datastructures/metrics/BundleSpaceMetric.h>
 
 namespace ompl
 {

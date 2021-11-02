@@ -1,8 +1,8 @@
 #ifndef OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_STARIMPL_
 #define OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_STARIMPL_
-#include <ompl/multilevel/datastructures/BundleSpaceGraph.h>
-#include <ompl/multilevel/planners/qrrt/BiQRRTImpl.h>
-#include <ompl/multilevel/planners/qrrt/SparseTree.h>
+#include <multilevel/datastructures/BundleSpaceGraph.h>
+#include <multilevel/planners/qrrt/BiQRRTImpl.h>
+#include <multilevel/planners/qrrt/SparseTree.h>
 #include <ompl/datastructures/PDF.h>
 
 namespace ompl

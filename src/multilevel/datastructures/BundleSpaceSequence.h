@@ -37,9 +37,9 @@
 
 #ifndef OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_BUNDLESPACESEQUENCE_
 #define OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_BUNDLESPACESEQUENCE_
-#include <ompl/multilevel/datastructures/BundleSpace.h>
-#include <ompl/multilevel/datastructures/PlannerMultiLevel.h>
-#include <ompl/multilevel/datastructures/pathrestriction/FindSectionTypes.h>
+#include <multilevel/datastructures/BundleSpace.h>
+#include <multilevel/datastructures/PlannerMultiLevel.h>
+#include <multilevel/datastructures/pathrestriction/FindSectionTypes.h>
 #include <type_traits>
 #include <queue>
 

@@ -38,7 +38,7 @@
 
 #ifndef OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_IMPORTANCE_Uniform_
 #define OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_IMPORTANCE_Uniform_
-#include <ompl/multilevel/datastructures/importance/BundleSpaceImportance.h>
+#include <multilevel/datastructures/importance/BundleSpaceImportance.h>
 
 namespace ompl
 {

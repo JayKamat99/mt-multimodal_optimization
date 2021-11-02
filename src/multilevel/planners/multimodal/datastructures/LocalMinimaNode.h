@@ -5,7 +5,7 @@
 #include <ompl/util/ClassForward.h>
 #include <ompl/base/State.h>
 #include <ompl/base/Cost.h>
-#include <ompl/multilevel/datastructures/BundleSpaceGraph.h>
+#include <multilevel/datastructures/BundleSpaceGraph.h>
 #include <vector>
 #include <mutex>
 

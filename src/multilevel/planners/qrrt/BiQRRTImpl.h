@@ -37,7 +37,7 @@
 
 #ifndef OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_BIQRRTIMPL_
 #define OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_BIQRRTIMPL_
-#include <ompl/multilevel/datastructures/BundleSpaceGraph.h>
+#include <multilevel/datastructures/BundleSpaceGraph.h>
 #include <ompl/datastructures/PDF.h>
 
 namespace ompl

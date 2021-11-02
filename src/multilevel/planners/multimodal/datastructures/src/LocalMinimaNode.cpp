@@ -1,5 +1,5 @@
 // #include "util.h"
-#include <ompl/multilevel/planners/multimodal/datastructures/LocalMinimaNode.h>
+#include <multilevel/planners/multimodal/datastructures/LocalMinimaNode.h>
 #include <ompl/util/Console.h>
 #include <thread>
 

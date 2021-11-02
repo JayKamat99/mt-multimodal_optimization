@@ -36,9 +36,9 @@
 
 /* Author: Andreas Orthey */
 
-#include <ompl/multilevel/datastructures/pathrestriction/Head.h>
-#include <ompl/multilevel/datastructures/pathrestriction/PathRestriction.h>
-#include <ompl/multilevel/datastructures/projections/FiberedProjection.h>
+#include <multilevel/datastructures/pathrestriction/Head.h>
+#include <multilevel/datastructures/pathrestriction/PathRestriction.h>
+#include <multilevel/datastructures/projections/FiberedProjection.h>
 
 using namespace ompl::multilevel;
 

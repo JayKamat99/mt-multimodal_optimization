@@ -36,7 +36,7 @@
 
 /* Author: Andreas Orthey */
 
-#include <ompl/multilevel/datastructures/projections/XRN_X.h>
+#include <multilevel/datastructures/projections/XRN_X.h>
 #include <ompl/base/spaces/RealVectorStateSpace.h>
 #include <ompl/util/Exception.h>
 

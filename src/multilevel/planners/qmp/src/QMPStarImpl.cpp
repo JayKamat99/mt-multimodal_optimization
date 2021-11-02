@@ -36,7 +36,7 @@
 
 /* Author: Andreas Orthey, Sohaib Akbar */
 
-#include <ompl/multilevel/planners/qmp/QMPStarImpl.h>
+#include <multilevel/planners/qmp/QMPStarImpl.h>
 #include <ompl/tools/config/SelfConfig.h>
 #include <ompl/datastructures/NearestNeighbors.h>
 #include <ompl/datastructures/PDF.h>

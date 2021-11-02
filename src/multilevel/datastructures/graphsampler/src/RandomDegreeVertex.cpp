@@ -36,7 +36,7 @@
 
 /* Author: Andreas Orthey */
 
-#include <ompl/multilevel/datastructures/graphsampler/RandomDegreeVertex.h>
+#include <multilevel/datastructures/graphsampler/RandomDegreeVertex.h>
 #include <ompl/datastructures/PDF.h>
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH

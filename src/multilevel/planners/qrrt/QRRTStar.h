@@ -38,8 +38,8 @@
 
 #ifndef OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_QRRTSTAR_
 #define OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_QRRTSTAR_
-#include <ompl/multilevel/datastructures/BundleSpaceSequence.h>
-#include <ompl/multilevel/planners/qrrt/QRRTStarImpl.h>
+#include <multilevel/datastructures/BundleSpaceSequence.h>
+#include <multilevel/planners/qrrt/QRRTStarImpl.h>
 
 namespace ompl
 {

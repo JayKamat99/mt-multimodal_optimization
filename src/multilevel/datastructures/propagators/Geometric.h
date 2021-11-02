@@ -1,6 +1,6 @@
 #ifndef OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_PROPAGATORS_GEOMETRIC__
 #define OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_PROPAGATORS_GEOMETRIC__
-#include <ompl/multilevel/datastructures/propagators/BundleSpacePropagator.h>
+#include <multilevel/datastructures/propagators/BundleSpacePropagator.h>
 
 namespace ompl
 {

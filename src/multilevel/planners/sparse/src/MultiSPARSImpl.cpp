@@ -1,4 +1,4 @@
-#include <ompl/multilevel/planners/sparse/MultiSPARSImpl.h>
+#include <multilevel/planners/sparse/MultiSPARSImpl.h>
 #include <ompl/tools/config/SelfConfig.h>
 #include <boost/foreach.hpp>
 #include <ompl/datastructures/NearestNeighbors.h>
