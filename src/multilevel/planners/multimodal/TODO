@@ -1,0 +1,55 @@
+[ ] Make sure that we always are cost non-increasing
+
+MOST PRESSING ISSUES:
+
+[ ] Implement the three different modes (call them differently. Extension
+strategy maybe)
+
+[ ] Fix assignment of edges in LMT. We should make sure that they belong to the
+correct minimum.
+
+Sparse roadmap->Generate Candidates->Optimize->Add to Database
+(1) Allocate time budget to optimize database (and compare paths)
+
+---- Pipeline Tasks
+
+[ ] Implement multi-goal regions
+  [x] Allow specification in XML (first do multiple states)
+  [ ] Allow goal-space-region specification
+
+[ ] Get rid of dynamics. Would be nice, but makes it too complicated to
+understand. Better have that as a separate contribution.
+
+[ ] Pipe it all to blender 
+  [x] Export scene to dae. 
+  [ ] Export frames (world pos) to txt. 
+  [ ] Import to blender using bpy.
+  [ ] Make an automatic "render image" from current camera view by invoking
+      bpy script! Could also be used to handle partial paths.
+
+
+[ ] Interesting >3dof experiments (try to come up with examples which visualize
+different symbols)
+  [ ] Left/Right: Mobile Base
+  [ ] Up/Down: Drone
+  [ ] CW/CCW: Revolute joints/Manipulators
+  [ ] Hand scenario baxter (Combination)
+  [ ] Overtaking in time
+  [ ] Different robots to combine Left/Right, Up/Down, CW/CCW
+  [ ] Different grasping positions! Requires goal states
+  [ ] Scenario where multiple goal regions are important. Touch table? Subspace
+goal regions! 2D scenario: escape cube? Minima are direct connections from
+center to faces.
+
+---- Finished Tasks
+[x] Rename BasePathHead -> Head
+[x] Rename FindSEctionAnalyzer -> HeadAnalyzer
+[x] Add function getLocalMinimaTree() to explorer (make corresponding changes in GUI)
+[x] Anytime thread-based (plus exhaustive mode)
+[x] Every non-const function of LMT should be mutexed
+[x] Fix Mobius State Space (interpolation seems off. Do 3d interpolation+projection)
+[x] Relax assumption that optimizer always converges (idempotent).
+[x] Find better name for PathSpaceSparse. TreeBuilder. MultimodalExplorer.
+MultimodalBuilder. LocalMinimaSpanner. MultiPath.
+
+

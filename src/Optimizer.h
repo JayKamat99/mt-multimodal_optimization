@@ -8,9 +8,9 @@
 #include <ompl/base/spaces/RealVectorStateSpace.h>
 #include <ompl/geometric/planners/rrt/RRTstar.h>
 #include <ompl/geometric/planners/rrt/LBTRRT.h>
-#include <ompl/multilevel/planners/multimodal/LocalMinimaSpanners.h>
 #include <ompl/geometric/SimpleSetup.h>
 #include <ompl/tools/benchmark/Benchmark.h>
+#include "multilevel/planners/multimodal/LocalMinimaSpanners.h"
 
 #include <ompl/base/samplers/ObstacleBasedValidStateSampler.h>
 #include <ompl/base/samplers/GaussianValidStateSampler.h>
