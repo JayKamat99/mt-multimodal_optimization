@@ -1,19 +1,25 @@
-cmake_minimum_required(VERSION 3.19)
+cmake_minimum_required(VERSION 3.16)
 project(mt_multimodalOptimization)
 set(CMAKE_CXX_STANDARD 14)
 
-FIND_PACKAGE(ompl 1.5.2 REQUIRED)
-MESSAGE(${OMPL_VERSION})
-MESSAGE(${OMPL_INCLUDE_DIRS})
-MESSAGE(${OMPL_LIBRARIES})
+# FIND_PACKAGE(ompl 1.5.2 REQUIRED)
+# MESSAGE(${OMPL_VERSION})
+# MESSAGE(${OMPL_INCLUDE_DIRS})
+# MESSAGE(${OMPL_LIBRARIES})
 
-list(APPEND INCLUDE_DIRS ${OMPL_INCLUDE_DIRS})
-list(APPEND LIBRARIES ${OMPL_LIBRARIES})
+# list(APPEND INCLUDE_DIRS ${OMPL_INCLUDE_DIRS})
+# list(APPEND LIBRARIES ${OMPL_LIBRARIES})
 
 add_compile_options(-O3 -Wall -fPIC -std=c++0x -Wno-terminate)
 
-include_directories(${INCLUDE_DIRS})
-link_libraries(${LIBRARIES})
+include_directories(ompl/src)
+
+include_directories(src)
+
+add_subdirectory(ompl)
+
+# include_directories(${INCLUDE_DIRS})
+# link_libraries(${LIBRARIES})
 
 # add_definitions(
 #   -DRAI_ROOT_PATH=\"${CMAKE_SOURCE_DIR}/rai\"
@@ -112,3 +118,7 @@ target_link_libraries(rai
 add_executable(mt_multimodalOptimization
         src/main.cpp
         src/Optimizer.h src/Optimizer.cpp)
+
+
+target_link_libraries(mt_multimodalOptimization rai ompl)
+
