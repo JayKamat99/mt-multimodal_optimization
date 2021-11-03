@@ -1,6 +1,6 @@
 #ifndef OMPL_MULTILEVEL_PLANNERS_BundleSpace_MultiSPARSIMPL_
 #define OMPL_MULTILEVEL_PLANNERS_BundleSpace_MultiSPARSIMPL_
-#include <multilevel/datastructures/BundleSpaceGraphSparse.h>
+#include <ompl/multilevel/datastructures/BundleSpaceGraphSparse.h>
 #include <ompl/datastructures/PDF.h>
 
 namespace ompl

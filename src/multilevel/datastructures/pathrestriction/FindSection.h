@@ -38,9 +38,9 @@
 
 #ifndef OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_PATH_RESTRICTION_FIND_SECTION_
 #define OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_PATH_RESTRICTION_FIND_SECTION_
-#include <multilevel/datastructures/BundleSpaceGraph.h>
-#include <multilevel/datastructures/ParameterExponentialDecay.h>
-#include <multilevel/datastructures/ParameterSmoothStep.h>
+#include <ompl/multilevel/datastructures/BundleSpaceGraph.h>
+#include <ompl/multilevel/datastructures/ParameterExponentialDecay.h>
+#include <ompl/multilevel/datastructures/ParameterSmoothStep.h>
 
 namespace ompl
 {

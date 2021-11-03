@@ -1,7 +1,7 @@
 // #include "util.h"
-#include <multilevel/planners/multimodal/datastructures/LocalMinimaTree.h>
-#include <multilevel/planners/multimodal/datastructures/LocalMinimaNode.h>
-#include <multilevel/planners/multimodal/datastructures/PathSpaceMetrics.h>
+#include <ompl/multilevel/planners/multimodal/datastructures/LocalMinimaTree.h>
+#include <ompl/multilevel/planners/multimodal/datastructures/LocalMinimaNode.h>
+#include <ompl/multilevel/planners/multimodal/datastructures/PathSpaceMetrics.h>
 #include <ompl/util/Console.h>
 #include <ompl/geometric/PathSimplifier.h>
 #include <thread>

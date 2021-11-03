@@ -36,7 +36,7 @@
 
 /* Author: Andreas Orthey */
 
-#include <multilevel/datastructures/projections/Relaxation.h>
+#include <ompl/multilevel/datastructures/projections/Relaxation.h>
 
 using namespace ompl::multilevel;
 

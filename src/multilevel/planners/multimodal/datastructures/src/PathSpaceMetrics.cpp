@@ -1,4 +1,4 @@
-#include <multilevel/planners/multimodal/datastructures/PathSpaceMetrics.h>
+#include <ompl/multilevel/planners/multimodal/datastructures/PathSpaceMetrics.h>
 
 double pathMetric_Maximum(
     const std::vector<ompl::base::State*> f,

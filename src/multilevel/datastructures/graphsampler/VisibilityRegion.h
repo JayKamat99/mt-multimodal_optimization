@@ -38,11 +38,11 @@
 
 #ifndef OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_DATASTRUCTURES_GRAPHSAMPLER_VISIBILITY_REGION_
 #define OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_DATASTRUCTURES_GRAPHSAMPLER_VISIBILITY_REGION_
-#include <multilevel/datastructures/BundleSpaceGraphSparse.h>
-#include <multilevel/datastructures/graphsampler/GraphSampler.h>
-#include <multilevel/datastructures/graphsampler/RandomEdge.h>
-#include <multilevel/datastructures/graphsampler/RandomVertex.h>
-#include <multilevel/datastructures/ParameterSmoothStep.h>
+#include <ompl/multilevel/datastructures/BundleSpaceGraphSparse.h>
+#include <ompl/multilevel/datastructures/graphsampler/GraphSampler.h>
+#include <ompl/multilevel/datastructures/graphsampler/RandomEdge.h>
+#include <ompl/multilevel/datastructures/graphsampler/RandomVertex.h>
+#include <ompl/multilevel/datastructures/ParameterSmoothStep.h>
 
 namespace ompl
 {

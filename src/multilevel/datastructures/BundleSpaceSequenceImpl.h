@@ -35,14 +35,14 @@
 
 /* Author: Andreas Orthey */
 
-#include <multilevel/datastructures/PlannerDataVertexAnnotated.h>
+#include <ompl/multilevel/datastructures/PlannerDataVertexAnnotated.h>
 #include <ompl/base/goals/GoalSampleableRegion.h>
 #include <ompl/base/goals/GoalState.h>
 #include <ompl/base/goals/GoalStates.h>
 #include <ompl/util/Exception.h>
 #include <ompl/util/Time.h>
-#include <multilevel/datastructures/BundleSpaceGraph.h>
-#include <multilevel/datastructures/Projection.h>
+#include <ompl/multilevel/datastructures/BundleSpaceGraph.h>
+#include <ompl/multilevel/datastructures/Projection.h>
 
 template <class T>
 ompl::multilevel::BundleSpaceSequence<T>::BundleSpaceSequence(ompl::base::SpaceInformationPtr si, std::string type)

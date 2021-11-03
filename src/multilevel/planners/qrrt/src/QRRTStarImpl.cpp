@@ -36,8 +36,8 @@
 
 /* Author: Andreas Orthey, Sohaib Akbar */
 
-#include <multilevel/planners/qrrt/QRRTStarImpl.h>
-#include <multilevel/datastructures/PlannerDataVertexAnnotated.h>
+#include <ompl/multilevel/planners/qrrt/QRRTStarImpl.h>
+#include <ompl/multilevel/datastructures/PlannerDataVertexAnnotated.h>
 #include <ompl/tools/config/SelfConfig.h>
 #include <ompl/base/objectives/PathLengthOptimizationObjective.h>
 #include <boost/foreach.hpp>

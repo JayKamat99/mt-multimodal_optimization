@@ -38,7 +38,7 @@
 
 #ifndef OMPL_MULTILEVEL_PLANNERS_BundleSpace_SMLRIMPL_
 #define OMPL_MULTILEVEL_PLANNERS_BundleSpace_SMLRIMPL_
-#include <multilevel/datastructures/BundleSpaceGraphSparse.h>
+#include <ompl/multilevel/datastructures/BundleSpaceGraphSparse.h>
 #include <ompl/datastructures/PDF.h>
 
 namespace ompl

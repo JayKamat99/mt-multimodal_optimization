@@ -1,7 +1,7 @@
-#include <multilevel/planners/multimodal/datastructures/PathSpace.h>
-#include <multilevel/planners/multimodal/datastructures/LocalMinimaNode.h>
-#include <multilevel/planners/multimodal/datastructures/LocalMinimaTree.h>
-#include <multilevel/datastructures/PlannerDataVertexAnnotated.h>
+#include <ompl/multilevel/planners/multimodal/datastructures/PathSpace.h>
+#include <ompl/multilevel/planners/multimodal/datastructures/LocalMinimaNode.h>
+#include <ompl/multilevel/planners/multimodal/datastructures/LocalMinimaTree.h>
+#include <ompl/multilevel/datastructures/PlannerDataVertexAnnotated.h>
 #include <ompl/base/Path.h>
 #include <boost/foreach.hpp>
 

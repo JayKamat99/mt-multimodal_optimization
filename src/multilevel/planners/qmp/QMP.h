@@ -38,8 +38,8 @@
 
 #ifndef OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_QMP_
 #define OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_QMP_
-#include <multilevel/datastructures/BundleSpaceSequence.h>
-#include <multilevel/planners/qmp/QMPImpl.h>
+#include <ompl/multilevel/datastructures/BundleSpaceSequence.h>
+#include <ompl/multilevel/planners/qmp/QMPImpl.h>
 
 namespace ompl
 {

@@ -36,7 +36,7 @@
 
 /* Author: Andreas Orthey */
 
-#include <multilevel/datastructures/graphsampler/RandomVertex.h>
+#include <ompl/multilevel/datastructures/graphsampler/RandomVertex.h>
 
 ompl::multilevel::BundleSpaceGraphSamplerRandomVertex::BundleSpaceGraphSamplerRandomVertex(
     BundleSpaceGraph *bundleSpaceGraph)

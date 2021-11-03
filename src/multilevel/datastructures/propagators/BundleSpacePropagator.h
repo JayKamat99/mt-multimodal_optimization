@@ -1,6 +1,6 @@
 #ifndef OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_PROPAGATORS_
 #define OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_PROPAGATORS_
-#include <multilevel/datastructures/BundleSpaceGraph.h>
+#include <ompl/multilevel/datastructures/BundleSpaceGraph.h>
 
 namespace ompl
 {

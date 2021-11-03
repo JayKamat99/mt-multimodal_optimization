@@ -36,7 +36,7 @@
 
 /* Author: Andreas Orthey */
 
-#include <multilevel/datastructures/graphsampler/VisibilityRegion.h>
+#include <ompl/multilevel/datastructures/graphsampler/VisibilityRegion.h>
 
 using namespace ompl::multilevel;
 using namespace ompl::base;

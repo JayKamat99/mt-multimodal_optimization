@@ -36,7 +36,7 @@
 
 /* Author: Andreas Orthey */
 
-#include <multilevel/datastructures/pathrestriction/HeadAnalyzer.h>
+#include <ompl/multilevel/datastructures/pathrestriction/HeadAnalyzer.h>
 
 using namespace ompl::multilevel;
 

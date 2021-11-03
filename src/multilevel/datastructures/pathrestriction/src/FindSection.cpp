@@ -36,13 +36,13 @@
 
 /* Author: Andreas Orthey */
 
-#include <multilevel/datastructures/pathrestriction/PathRestriction.h>
-#include <multilevel/datastructures/pathrestriction/PathSection.h>
-#include <multilevel/datastructures/pathrestriction/Head.h>
-#include <multilevel/datastructures/pathrestriction/FindSection.h>
-#include <multilevel/datastructures/graphsampler/GraphSampler.h>
-#include <multilevel/datastructures/Projection.h>
-#include <multilevel/datastructures/projections/FiberedProjection.h>
+#include <ompl/multilevel/datastructures/pathrestriction/PathRestriction.h>
+#include <ompl/multilevel/datastructures/pathrestriction/PathSection.h>
+#include <ompl/multilevel/datastructures/pathrestriction/Head.h>
+#include <ompl/multilevel/datastructures/pathrestriction/FindSection.h>
+#include <ompl/multilevel/datastructures/graphsampler/GraphSampler.h>
+#include <ompl/multilevel/datastructures/Projection.h>
+#include <ompl/multilevel/datastructures/projections/FiberedProjection.h>
 
 namespace ompl
 {

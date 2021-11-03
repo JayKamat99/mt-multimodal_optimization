@@ -38,7 +38,7 @@
 
 #ifndef OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_METRICS_BUNDLEMETRIC_
 #define OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_METRICS_BUNDLEMETRIC_
-#include <multilevel/datastructures/BundleSpaceGraph.h>
+#include <ompl/multilevel/datastructures/BundleSpaceGraph.h>
 
 namespace ompl
 {

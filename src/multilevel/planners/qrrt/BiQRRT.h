@@ -37,8 +37,8 @@
 
 #ifndef OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_BIQRRT_
 #define OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_BIQRRT_
-#include <multilevel/datastructures/BundleSpaceSequence.h>
-#include <multilevel/planners/qrrt/BiQRRTImpl.h>
+#include <ompl/multilevel/datastructures/BundleSpaceSequence.h>
+#include <ompl/multilevel/planners/qrrt/BiQRRTImpl.h>
 
 namespace ompl
 {

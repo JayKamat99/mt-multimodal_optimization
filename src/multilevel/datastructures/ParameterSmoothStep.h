@@ -40,7 +40,7 @@
 #define OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_DATASTRUCTURES_PARAMETER_SMOOTH_STEP_
 
 #include <ompl/util/Exception.h>
-#include <multilevel/datastructures/Parameter.h>
+#include <ompl/multilevel/datastructures/Parameter.h>
 
 namespace ompl
 {

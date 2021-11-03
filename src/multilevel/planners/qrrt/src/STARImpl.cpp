@@ -1,7 +1,7 @@
-#include <multilevel/planners/qrrt/STARImpl.h>
-#include <multilevel/datastructures/graphsampler/GraphSampler.h>
-#include <multilevel/datastructures/propagators/Geometric.h>
-#include <multilevel/datastructures/metrics/Geodesic.h>
+#include <ompl/multilevel/planners/qrrt/STARImpl.h>
+#include <ompl/multilevel/datastructures/graphsampler/GraphSampler.h>
+#include <ompl/multilevel/datastructures/propagators/Geometric.h>
+#include <ompl/multilevel/datastructures/metrics/Geodesic.h>
 #include <ompl/tools/config/SelfConfig.h>
 #include <ompl/base/spaces/RealVectorStateSpace.h>
 #include <ompl/base/spaces/special/TorusStateSpace.h>

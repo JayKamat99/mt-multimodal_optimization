@@ -40,8 +40,8 @@
 #define OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_BUNDLE_COMPONENT_
 #include <ompl/base/State.h>
 #include <ompl/base/StateSpaceTypes.h>
-#include <multilevel/datastructures/ProjectionTypes.h>
-#include <multilevel/datastructures/Projection.h>
+#include <ompl/multilevel/datastructures/ProjectionTypes.h>
+#include <ompl/multilevel/datastructures/Projection.h>
 
 namespace ompl
 {

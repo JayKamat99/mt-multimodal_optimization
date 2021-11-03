@@ -39,7 +39,7 @@
 #ifndef OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_BUNDLEGRAPH_SPARSE_
 #define OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_BUNDLEGRAPH_SPARSE_
 
-#include <multilevel/datastructures/BundleSpaceGraph.h>
+#include <ompl/multilevel/datastructures/BundleSpaceGraph.h>
 #include <ompl/datastructures/NearestNeighbors.h>
 #include <ompl/util/RandomNumbers.h>
 #include <ompl/geometric/PathGeometric.h>

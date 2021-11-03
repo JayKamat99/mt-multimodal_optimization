@@ -38,8 +38,8 @@
 #ifndef OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_BUNDLEGRAPH_
 #define OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_BUNDLEGRAPH_
 
-#include <multilevel/datastructures/BundleSpace.h>
-#include <multilevel/datastructures/pathrestriction/FindSectionTypes.h>
+#include <ompl/multilevel/datastructures/BundleSpace.h>
+#include <ompl/multilevel/datastructures/pathrestriction/FindSectionTypes.h>
 #include <limits>
 #include <ompl/geometric/planners/PlannerIncludes.h>
 #include <ompl/datastructures/NearestNeighbors.h>

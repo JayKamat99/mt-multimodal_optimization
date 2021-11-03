@@ -38,7 +38,7 @@
 
 #ifndef OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_BUNDLE_COMPONENT_SO3RN_SO3__
 #define OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_BUNDLE_COMPONENT_SO3RN_SO3__
-#include <multilevel/datastructures/projections/XRN_X.h>
+#include <ompl/multilevel/datastructures/projections/XRN_X.h>
 
 namespace ompl
 {

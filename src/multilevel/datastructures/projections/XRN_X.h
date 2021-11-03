@@ -38,7 +38,7 @@
 
 #ifndef OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_BUNDLE_COMPONENT_XRN_X__
 #define OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_BUNDLE_COMPONENT_XRN_X__
-#include <multilevel/datastructures/projections/FiberedProjection.h>
+#include <ompl/multilevel/datastructures/projections/FiberedProjection.h>
 
 namespace ompl
 {

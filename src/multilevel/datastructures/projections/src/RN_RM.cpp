@@ -36,7 +36,7 @@
 
 /* Author: Andreas Orthey */
 
-#include <multilevel/datastructures/projections/RN_RM.h>
+#include <ompl/multilevel/datastructures/projections/RN_RM.h>
 #include <ompl/base/spaces/RealVectorStateSpace.h>
 
 using namespace ompl::multilevel;

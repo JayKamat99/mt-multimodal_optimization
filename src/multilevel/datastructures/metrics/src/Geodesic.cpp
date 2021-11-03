@@ -36,8 +36,8 @@
 
 /* Author: Andreas Orthey */
 
-#include <multilevel/datastructures/metrics/Geodesic.h>
-#include <multilevel/datastructures/Projection.h>
+#include <ompl/multilevel/datastructures/metrics/Geodesic.h>
+#include <ompl/multilevel/datastructures/Projection.h>
 using namespace ompl::multilevel;
 using Configuration = ompl::multilevel::BundleSpaceGraph::Configuration;
 

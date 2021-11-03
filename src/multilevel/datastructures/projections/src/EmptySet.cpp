@@ -36,8 +36,8 @@
 
 /* Author: Andreas Orthey */
 
-#include <multilevel/datastructures/projections/EmptySet.h>
-#include <multilevel/datastructures/ProjectionTypes.h>
+#include <ompl/multilevel/datastructures/projections/EmptySet.h>
+#include <ompl/multilevel/datastructures/ProjectionTypes.h>
 #include <ompl/base/spaces/RealVectorStateSpace.h>
 
 using namespace ompl::multilevel;

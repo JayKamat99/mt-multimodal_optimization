@@ -37,7 +37,7 @@
 
 #ifndef OMPL_MULTILEVEL_PLANNERS_BundleSpace_QMPSTARIMPL_
 #define OMPL_MULTILEVEL_PLANNERS_BundleSpace_QMPSTARIMPL_
-#include <multilevel/planners/qmp/QMPImpl.h>
+#include <ompl/multilevel/planners/qmp/QMPImpl.h>
 #include <ompl/datastructures/PDF.h>
 
 namespace ompl

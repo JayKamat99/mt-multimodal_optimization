@@ -36,35 +36,35 @@
 
 /* Author: Andreas Orthey */
 
-#include <multilevel/datastructures/ProjectionFactory.h>
+#include <ompl/multilevel/datastructures/ProjectionFactory.h>
 
 // XRN -> X
-#include <multilevel/datastructures/projections/XRN_X_SO2.h>
-#include <multilevel/datastructures/projections/XRN_X_SO3.h>
-#include <multilevel/datastructures/projections/XRN_X_SE2.h>
-#include <multilevel/datastructures/projections/XRN_X_SE3.h>
+#include <ompl/multilevel/datastructures/projections/XRN_X_SO2.h>
+#include <ompl/multilevel/datastructures/projections/XRN_X_SO3.h>
+#include <ompl/multilevel/datastructures/projections/XRN_X_SE2.h>
+#include <ompl/multilevel/datastructures/projections/XRN_X_SE3.h>
 
 // XRN -> XRM
-#include <multilevel/datastructures/projections/XRN_XRM_SO2.h>
-#include <multilevel/datastructures/projections/XRN_XRM_SO3.h>
-#include <multilevel/datastructures/projections/XRN_XRM_SE2.h>
-#include <multilevel/datastructures/projections/XRN_XRM_SE3.h>
+#include <ompl/multilevel/datastructures/projections/XRN_XRM_SO2.h>
+#include <ompl/multilevel/datastructures/projections/XRN_XRM_SO3.h>
+#include <ompl/multilevel/datastructures/projections/XRN_XRM_SE2.h>
+#include <ompl/multilevel/datastructures/projections/XRN_XRM_SE3.h>
 
-#include <multilevel/datastructures/projections/SE3_R3.h>
-#include <multilevel/datastructures/projections/SE3RN_R3.h>
-#include <multilevel/datastructures/projections/SE2_R2.h>
-#include <multilevel/datastructures/projections/SE2RN_R2.h>
+#include <ompl/multilevel/datastructures/projections/SE3_R3.h>
+#include <ompl/multilevel/datastructures/projections/SE3RN_R3.h>
+#include <ompl/multilevel/datastructures/projections/SE2_R2.h>
+#include <ompl/multilevel/datastructures/projections/SE2RN_R2.h>
 
-#include <multilevel/datastructures/projections/RN_RM.h>
-#include <multilevel/datastructures/projections/RNSO2_RN.h>
-#include <multilevel/datastructures/projections/SO2N_SO2M.h>
+#include <ompl/multilevel/datastructures/projections/RN_RM.h>
+#include <ompl/multilevel/datastructures/projections/RNSO2_RN.h>
+#include <ompl/multilevel/datastructures/projections/SO2N_SO2M.h>
 
-#include <multilevel/datastructures/projections/None.h>
-#include <multilevel/datastructures/projections/EmptySet.h>
-#include <multilevel/datastructures/projections/Identity.h>
-#include <multilevel/datastructures/projections/Relaxation.h>
+#include <ompl/multilevel/datastructures/projections/None.h>
+#include <ompl/multilevel/datastructures/projections/EmptySet.h>
+#include <ompl/multilevel/datastructures/projections/Identity.h>
+#include <ompl/multilevel/datastructures/projections/Relaxation.h>
 
-#include <multilevel/datastructures/projections/FiberedProjection.h>
+#include <ompl/multilevel/datastructures/projections/FiberedProjection.h>
 
 #include <ompl/util/Exception.h>
 

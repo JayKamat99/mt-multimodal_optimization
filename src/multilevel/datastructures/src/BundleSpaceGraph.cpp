@@ -35,20 +35,20 @@
 
 /* Author: Andreas Orthey */
 
-#include <multilevel/datastructures/PlannerDataVertexAnnotated.h>
-#include <multilevel/datastructures/BundleSpaceGraph.h>
-#include <multilevel/datastructures/src/BundleSpaceGraphGoalVisitor.hpp>
-#include <multilevel/datastructures/Projection.h>
+#include <ompl/multilevel/datastructures/PlannerDataVertexAnnotated.h>
+#include <ompl/multilevel/datastructures/BundleSpaceGraph.h>
+#include <ompl/multilevel/datastructures/src/BundleSpaceGraphGoalVisitor.hpp>
+#include <ompl/multilevel/datastructures/Projection.h>
 
-#include <multilevel/datastructures/graphsampler/RandomVertex.h>
-#include <multilevel/datastructures/graphsampler/RandomDegreeVertex.h>
-#include <multilevel/datastructures/graphsampler/RandomEdge.h>
-#include <multilevel/datastructures/importance/Greedy.h>
-#include <multilevel/datastructures/importance/Exponential.h>
-#include <multilevel/datastructures/importance/Uniform.h>
-#include <multilevel/datastructures/metrics/Geodesic.h>
-#include <multilevel/datastructures/propagators/Geometric.h>
-#include <multilevel/datastructures/pathrestriction/PathRestriction.h>
+#include <ompl/multilevel/datastructures/graphsampler/RandomVertex.h>
+#include <ompl/multilevel/datastructures/graphsampler/RandomDegreeVertex.h>
+#include <ompl/multilevel/datastructures/graphsampler/RandomEdge.h>
+#include <ompl/multilevel/datastructures/importance/Greedy.h>
+#include <ompl/multilevel/datastructures/importance/Exponential.h>
+#include <ompl/multilevel/datastructures/importance/Uniform.h>
+#include <ompl/multilevel/datastructures/metrics/Geodesic.h>
+#include <ompl/multilevel/datastructures/propagators/Geometric.h>
+#include <ompl/multilevel/datastructures/pathrestriction/PathRestriction.h>
 
 #include <ompl/geometric/PathSimplifier.h>
 #include <ompl/base/goals/GoalSampleableRegion.h>

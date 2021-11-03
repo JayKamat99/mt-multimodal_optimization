@@ -36,7 +36,7 @@
 
 /* Author: Andreas Orthey */
 
-#include <multilevel/datastructures/projections/Identity.h>
+#include <ompl/multilevel/datastructures/projections/Identity.h>
 #include <ompl/base/spaces/EmptyStateSpace.h>
 
 using namespace ompl::multilevel;

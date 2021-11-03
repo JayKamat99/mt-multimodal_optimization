@@ -38,7 +38,7 @@
 
 #ifndef OMPL_MULTILEVEL_PLANNERS_BundleSpace_QRRTSTARIMPL_
 #define OMPL_MULTILEVEL_PLANNERS_BundleSpace_QRRTSTARIMPL_
-#include <multilevel/datastructures/BundleSpaceGraph.h>
+#include <ompl/multilevel/datastructures/BundleSpaceGraph.h>
 #include <ompl/datastructures/PDF.h>
 
 namespace ompl

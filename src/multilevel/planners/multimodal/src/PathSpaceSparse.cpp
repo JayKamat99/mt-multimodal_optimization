@@ -1,9 +1,9 @@
-#include <multilevel/planners/multimodal/PathSpaceSparse.h>
-#include <multilevel/planners/multimodal/datastructures/PathSpaceMetrics.h>
-#include <multilevel/planners/multimodal/datastructures/LocalMinimaTree.h>
-#include <multilevel/planners/multimodal/datastructures/LocalMinimaNode.h>
-#include <multilevel/datastructures/graphsampler/GraphSampler.h>
-#include <multilevel/datastructures/PlannerDataVertexAnnotated.h>
+#include <ompl/multilevel/planners/multimodal/PathSpaceSparse.h>
+#include <ompl/multilevel/planners/multimodal/datastructures/PathSpaceMetrics.h>
+#include <ompl/multilevel/planners/multimodal/datastructures/LocalMinimaTree.h>
+#include <ompl/multilevel/planners/multimodal/datastructures/LocalMinimaNode.h>
+#include <ompl/multilevel/datastructures/graphsampler/GraphSampler.h>
+#include <ompl/multilevel/datastructures/PlannerDataVertexAnnotated.h>
 
 #include <ompl/base/Path.h>
 #include <ompl/base/goals/GoalSampleableRegion.h>
@@ -11,8 +11,8 @@
 #include <ompl/base/objectives/MaximizeMinClearanceObjective.h>
 
 #include <ompl/geometric/PathSimplifier.h>
-#include <multimodal_optimizers/PathOptimizer.h>
-#include <multimodal_optimizers/PathOptimizerKOMO.h>
+#include <ompl/geometric/PathOptimizer.h>
+#include <ompl/geometric/PathOptimizerKOMO.h>
 #include <ompl/tools/config/SelfConfig.h>
 #include <ompl/datastructures/NearestNeighbors.h>
 #include <ompl/util/Exception.h>

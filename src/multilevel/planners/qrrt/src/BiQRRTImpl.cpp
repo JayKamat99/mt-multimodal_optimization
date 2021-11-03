@@ -35,10 +35,10 @@
 
 /* Author: Andreas Orthey */
 
-#include <multilevel/planners/qrrt/BiQRRTImpl.h>
-#include <multilevel/datastructures/graphsampler/GraphSampler.h>
-#include <multilevel/datastructures/propagators/Geometric.h>
-#include <multilevel/datastructures/metrics/Geodesic.h>
+#include <ompl/multilevel/planners/qrrt/BiQRRTImpl.h>
+#include <ompl/multilevel/datastructures/graphsampler/GraphSampler.h>
+#include <ompl/multilevel/datastructures/propagators/Geometric.h>
+#include <ompl/multilevel/datastructures/metrics/Geodesic.h>
 #include <ompl/tools/config/SelfConfig.h>
 #include <boost/foreach.hpp>
 

@@ -41,7 +41,7 @@
 
 #include <ompl/base/Planner.h>
 #include <ompl/base/goals/GoalSampleableRegion.h>
-#include <multilevel/datastructures/ProjectionFactory.h>
+#include <ompl/multilevel/datastructures/ProjectionFactory.h>
 
 namespace ompl
 {

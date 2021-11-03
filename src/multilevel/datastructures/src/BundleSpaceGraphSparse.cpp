@@ -36,10 +36,10 @@
 
 /* Author: Andreas Orthey, Sohaib Akbar */
 
-#include <multilevel/datastructures/src/BundleSpaceGraphGoalVisitor.hpp>
-#include <multilevel/datastructures/BundleSpaceGraphSparse.h>
-#include <multilevel/datastructures/PlannerDataVertexAnnotated.h>
-#include <multilevel/datastructures/graphsampler/VisibilityRegion.h>
+#include <ompl/multilevel/datastructures/src/BundleSpaceGraphGoalVisitor.hpp>
+#include <ompl/multilevel/datastructures/BundleSpaceGraphSparse.h>
+#include <ompl/multilevel/datastructures/PlannerDataVertexAnnotated.h>
+#include <ompl/multilevel/datastructures/graphsampler/VisibilityRegion.h>
 
 // #include <ompl/base/objectives/PathLengthOptimizationObjective.h>
 // #include <ompl/base/objectives/MaximizeMinClearanceObjective.h>

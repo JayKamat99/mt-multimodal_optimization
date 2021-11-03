@@ -36,7 +36,7 @@
 
 /* Author: Andreas Orthey */
 
-#include <multilevel/datastructures/Projection.h>
+#include <ompl/multilevel/datastructures/Projection.h>
 #include <ompl/util/Exception.h>
 
 using namespace ompl::base;

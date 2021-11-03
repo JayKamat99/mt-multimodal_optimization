@@ -36,7 +36,7 @@
 
 /* Author: Andreas Orthey */
 
-#include <multilevel/datastructures/projections/XRN_XRM_SO3.h>
+#include <ompl/multilevel/datastructures/projections/XRN_XRM_SO3.h>
 #include <ompl/base/spaces/SO3StateSpace.h>
 #include <ompl/base/spaces/RealVectorStateSpace.h>
 

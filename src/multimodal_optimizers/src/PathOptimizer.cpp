@@ -1,4 +1,4 @@
-#include <multimodal_optimizers/PathOptimizer.h>
+#include <ompl/geometric/PathOptimizer.h>
 
 #include <KOMO/komo.h>
 #include <Kin/viewer.h>

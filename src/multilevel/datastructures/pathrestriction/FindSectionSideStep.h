@@ -38,7 +38,7 @@
 
 #ifndef OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_PATH_RESTRICTION_FIND_SECTION_SIDESTEP_
 #define OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_PATH_RESTRICTION_FIND_SECTION_SIDESTEP_
-#include <multilevel/datastructures/pathrestriction/FindSection.h>
+#include <ompl/multilevel/datastructures/pathrestriction/FindSection.h>
 
 namespace ompl
 {

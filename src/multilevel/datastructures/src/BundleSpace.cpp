@@ -36,9 +36,9 @@
 
 /* Author: Andreas Orthey */
 
-#include <multilevel/datastructures/BundleSpace.h>
-#include <multilevel/datastructures/Projection.h>
-#include <multilevel/datastructures/projections/FiberedProjection.h>
+#include <ompl/multilevel/datastructures/BundleSpace.h>
+#include <ompl/multilevel/datastructures/Projection.h>
+#include <ompl/multilevel/datastructures/projections/FiberedProjection.h>
 
 #include <ompl/base/objectives/PathLengthOptimizationObjective.h>
 #include <ompl/base/goals/GoalSampleableRegion.h>

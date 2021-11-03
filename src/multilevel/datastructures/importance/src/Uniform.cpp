@@ -36,7 +36,7 @@
 
 /* Author: Andreas Orthey */
 
-#include <multilevel/datastructures/importance/Uniform.h>
+#include <ompl/multilevel/datastructures/importance/Uniform.h>
 
 ompl::multilevel::BundleSpaceImportanceUniform::BundleSpaceImportanceUniform(BundleSpaceGraph *graph) : BaseT(graph)
 {

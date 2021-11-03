@@ -38,7 +38,7 @@
 
 #ifndef OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_DATASTRUCTURES_GRAPHSAMPLER_RANDOM_VERTEX_
 #define OMPL_MULTILEVEL_PLANNERS_BUNDLESPACE_DATASTRUCTURES_GRAPHSAMPLER_RANDOM_VERTEX_
-#include <multilevel/datastructures/graphsampler/GraphSampler.h>
+#include <ompl/multilevel/datastructures/graphsampler/GraphSampler.h>
 
 namespace ompl
 {
