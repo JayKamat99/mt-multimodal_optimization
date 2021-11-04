@@ -5,10 +5,9 @@
 #include <ompl/base/goals/GoalSampleableRegion.h>
 #include <ompl/base/OptimizationObjective.h>
 #include <ompl/geometric/PathGeometric.h>
+#include <ompl/base/OptimizationObjective.h>
 #include <ompl/base/objectives/PathLengthOptimizationObjective.h>
-#include <ompl/base/Planner.h>
-
-#include <limits>
+#include <ompl/base/goals/GoalSampleableRegion.h>
 
 namespace ompl
 {
@@ -16,8 +15,13 @@ namespace ompl
     {
         OMPL_CLASS_FORWARD(PathOptimizer);
 
-        class PathOptimizer : public base::Planner
+        class PathOptimizer
         {
+        protected:
+            double pathCost = 10000.;
+
+            base::SpaceInformationPtr si_;
+
         public:
             PathOptimizer() = default;
             virtual ~PathOptimizer() = default;
@@ -38,20 +42,6 @@ namespace ompl
             virtual void displayPath(PathGeometric &path, const std::string &txt) const;
 
             bool isStepWise{false};
-
-            ompl::base::Cost bestCost() const
-            {
-                return bestCost_;
-            }
-
-        protected:
-
-            double pathCost = std::numeric_limits<double>::quiet_NaN();
-
-            /** \brief Best cost found so far by algorithm */
-            base::Cost bestCost_{std::numeric_limits<double>::quiet_NaN()};
-
-            base::SpaceInformationPtr si_;
         };
     } // namespace geometric
 } // namespace ompl

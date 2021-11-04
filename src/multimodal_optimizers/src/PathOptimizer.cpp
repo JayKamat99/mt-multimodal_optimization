@@ -13,6 +13,7 @@ void ompl::geometric::PathOptimizer::setSI(base::SpaceInformationPtr si)
 
 void ompl::geometric::PathOptimizer::displayPath(PathGeometric &path, const std::string &txt) const
 {
+	std::cout << "We are in PathOptimizer!!" << std::endl;
     arrA configs;
 	//To copy the path to arrA Configs from states.
 	const base::StateSpace *space(si_->getStateSpace().get());
@@ -46,32 +47,15 @@ void ompl::geometric::PathOptimizer::displayPath(PathGeometric &path, const std:
 
     komo.initWithWaypoints(configs, path.getStateCount(), false);
 
-    if (filename == "home/jay/git/optimization-course/rai-robotModels/kuka_drake/kuka_multimodal.g")
-    {
-        for (int i=0; i<=7; i++){
-            std::string frame = "iiwa_link_"+std::to_string(i)+"_1";
-            if (txt == "Repeated")
-                komo.pathConfig.getFrame(frame.c_str())->setColor({1,1,0});
-            else if (txt == "New Solution")
-                komo.pathConfig.getFrame(frame.c_str())->setColor({0,1,0});
-            else if (txt == "Invalid")
-                komo.pathConfig.getFrame(frame.c_str())->setColor({1,0,0});
-        }
+    for (int i=0; i<=7; i++){
+        std::string frame = "iiwa_link_"+std::to_string(i)+"_1";
+        if (txt == "Repeated")
+            komo.pathConfig.getFrame(frame.c_str())->setColor({1,1,0});
+        else if (txt == "New Solution")
+            komo.pathConfig.getFrame(frame.c_str())->setColor({0,1,0});
+        else if (txt == "Invalid")
+            komo.pathConfig.getFrame(frame.c_str())->setColor({1,0,0});
     }
-
-    else if (filename == "/home/jay/git/optimization-course/examples/Models/2D_arm.g")
-    {
-        for (int i=1; i<=2; i++){
-            std::string frame = "arm"+std::to_string(i);
-            if (txt == "Repeated")
-                komo.pathConfig.getFrame(frame.c_str())->setColor({1,1,0});
-            else if (txt == "New Solution")
-                komo.pathConfig.getFrame(frame.c_str())->setColor({0,1,0});
-            else if (txt == "Invalid")
-                komo.pathConfig.getFrame(frame.c_str())->setColor({1,0,0});
-        }
-    }
-
     for (int j=0; j<10 ;j++)
         komo.displayPath(txt.c_str(), false);
 }
