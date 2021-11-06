@@ -6,9 +6,9 @@ add_compile_options(-O3 -g -Wall -fPIC -std=c++0x -Wno-terminate)
 
 include_directories(src)
 
-# include_directories(ompl/src)
+include_directories(ompl/src)
 
-# add_subdirectory(ompl)
+add_subdirectory(ompl)
 
 add_definitions(
   -DRAI_ROOT_PATH=\"${CMAKE_SOURCE_DIR}/rai\"
@@ -65,36 +65,7 @@ add_library(rai SHARED
 target_link_libraries(rai
   jsoncpp lapack blas pthread rt X11
   assimp fcl ann glfw GLEW glut GLU GL png qhull
-#  ${OpenCV_LIBS}
-#  ${BULLET_LIBRARIES}
-#  PhysX3Extensions PhysX3_x64 PhysX3Cooking_x64 PhysX3Common_x64 PxFoundation_x64
-  #BulletSoftBody BulletDynamics BulletCollision LinearMath 
   )
-
-# pybind11_add_module(libry SHARED
-#   #${SRC_ry}
-#   rai/rai/ry/ry.cpp
-#   rai/rai/ry/types.cpp
-#   rai/rai/ry/ry-Optim.cpp
-#   rai/rai/ry/ry-Camera.cpp
-#   rai/rai/ry/ry-Config.cpp
-#   rai/rai/ry/ry-Feature.cpp
-#   rai/rai/ry/ry-Frame.cpp
-#   rai/rai/ry/ry-KOMO.cpp
-#   rai/rai/ry/ry-Control.cpp
-#   rai/rai/ry/ry-Simulation.cpp
-#   #ry-LGP_Tree.cpp
-#   #ry-Operate.cpp
-#   #ry-PhysX.cpp
-#   #lgp-py.cpp
-#   #ry-Bullet.cpp
-#   )
-
-# target_link_libraries(libry PRIVATE
-#   rai
-#   )
-
-
 
 # add_executable($(PROJECT_NAME)
 #         src/main.cpp
@@ -104,5 +75,5 @@ add_executable(mt_multimodalOptimization
           src/mainRai.cpp)
 
 
-target_link_libraries(mt_multimodalOptimization rai #[[ompl]])
+target_link_libraries(mt_multimodalOptimization rai ompl)
 
