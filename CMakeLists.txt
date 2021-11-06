@@ -2,32 +2,13 @@ cmake_minimum_required(VERSION 3.16)
 project(mt_multimodalOptimization)
 set(CMAKE_CXX_STANDARD 14)
 
-# FIND_PACKAGE(ompl 1.5.2 REQUIRED)
-# MESSAGE(${OMPL_VERSION})
-# MESSAGE(${OMPL_INCLUDE_DIRS})
-# MESSAGE(${OMPL_LIBRARIES})
-
-# list(APPEND INCLUDE_DIRS ${OMPL_INCLUDE_DIRS})
-# list(APPEND LIBRARIES ${OMPL_LIBRARIES})
-
-add_compile_options(-O3 -Wall -fPIC -std=c++0x -Wno-terminate)
-
-include_directories(ompl/src)
+add_compile_options(-O3 -g -Wall -fPIC -std=c++0x -Wno-terminate)
 
 include_directories(src)
 
-add_subdirectory(ompl)
+# include_directories(ompl/src)
 
-# include_directories(${INCLUDE_DIRS})
-# link_libraries(${LIBRARIES})
-
-# add_definitions(
-#   -DRAI_ROOT_PATH=\"${CMAKE_SOURCE_DIR}/rai\"
-#   -DRAI_X11 -DRAI_LAPACK -DRAI_EIGEN -DRAI_PTHREAD -DRAI_GL
-#   -DRAI_GLFW -DRAI_QHULL -DRAI_ASSIMP -DNO_CYCLE_DETECTION
-#   -DRAI_extern_SWIFT -DRAI_extern_GJK -DRAI_extern_Lewiner
-#   -DRAI_extern_ply -DRAI_extern_ccd
-#   )
+# add_subdirectory(ompl)
 
 add_definitions(
   -DRAI_ROOT_PATH=\"${CMAKE_SOURCE_DIR}/rai\"
@@ -53,13 +34,13 @@ file(GLOB SRC_Gui rai/rai/Gui/*.cpp)
 file(GLOB SRC_Kin rai/rai/Kin/*.cpp)
 file(GLOB SRC_KinSwift rai/rai/Kin/SWIFT/*.cpp)
 file(GLOB SRC_KOMO rai/rai/KOMO/*.cpp)
-file(GLOB SRC_Logic rai/rai/Logic/*.cpp)
-file(GLOB SRC_LGP rai/rai/LGP/*.cpp)
-file(GLOB SRC_RosCom rai/rai/RosCom/*.cpp)
+# file(GLOB SRC_Logic rai/rai/Logic/*.cpp)
+# file(GLOB SRC_LGP rai/rai/LGP/*.cpp)
+# file(GLOB SRC_RosCom rai/rai/RosCom/*.cpp)
 file(GLOB SRC_Perception rai/rai/Perception/*.cpp)
 file(GLOB SRC_Control rai/rai/Control/*.cpp)
-file(GLOB SRC_Operate rai/rai/Operate/*.cpp)
-file(GLOB SRC_ry rai/rai/ry/*.cpp)
+# file(GLOB SRC_Operate rai/rai/Operate/*.cpp)
+# file(GLOB SRC_ry rai/rai/ry/*.cpp)
 
 add_library(rai SHARED
   ${SRC_Core}
@@ -115,10 +96,13 @@ target_link_libraries(rai
 
 
 
+# add_executable($(PROJECT_NAME)
+#         src/main.cpp
+#         src/Optimizer.h src/Optimizer.cpp)
+
 add_executable(mt_multimodalOptimization
-        src/main.cpp
-        src/Optimizer.h src/Optimizer.cpp)
+          src/mainRai.cpp)
 
 
-target_link_libraries(mt_multimodalOptimization rai ompl)
+target_link_libraries(mt_multimodalOptimization rai #[[ompl]])
 
