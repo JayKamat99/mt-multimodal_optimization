@@ -10,12 +10,12 @@
 #include <ompl/geometric/planners/rrt/LBTRRT.h>
 #include <ompl/geometric/SimpleSetup.h>
 #include <ompl/tools/benchmark/Benchmark.h>
-#include "multilevel/planners/multimodal/LocalMinimaSpanners.h"
+// #include "multilevel/planners/multimodal/LocalMinimaSpanners.h"
 
 #include <ompl/base/samplers/ObstacleBasedValidStateSampler.h>
 #include <ompl/base/samplers/GaussianValidStateSampler.h>
 
-#include <multimodal_optimizers/PathOptimizerKOMO.h>
+// #include <multimodal_optimizers/PathOptimizerKOMO.h>
 
 /* #include <ompl/config.h> */
 
@@ -32,7 +32,7 @@
 
 namespace ob = ompl::base;
 namespace og = ompl::geometric;
-namespace om = ompl::multilevel;
+// namespace om = ompl::multilevel;
 
 class Optimizer
 {

@@ -8,7 +8,7 @@ Optimizer::Optimizer(){
 }
 
 void Optimizer::VisualizePath(arrA configs){
-	static int Trajectory = 1;
+	// static int Trajectory = 1;
 	// setup KOMO
     rai::Configuration C;
     C.addFile(filename.c_str());
@@ -27,15 +27,15 @@ void Optimizer::VisualizePath(arrA configs){
 	std::cout << configs << std::endl;
 
     //use configs to initialize with waypoints
-	// komo.initWithWaypoints(configs, configs.N, false); // no clue why this isn't working
+	komo.initWithWaypoints(configs, configs.N, false); // no clue why this isn't working
     komo.run_prepare(0);
 	komo.plotTrajectory();
-	std::string SaveToPath = std::string("../visualization/DisplayTrajectory_") + std::to_string(Trajectory) + "/";
+	// std::string SaveToPath = std::string("../visualization/DisplayTrajectory_") + std::to_string(Trajectory) + "/";
 
 	rai::ConfigurationViewer V;
 	V.setPath(C, komo.x, "result", true);
-	V.playVideo(true, 1., SaveToPath.c_str());
-	Trajectory ++;
+	V.playVideo(true, 1./* , SaveToPath.c_str() */);
+	// Trajectory ++;
 }
 
 og::SimpleSetup Optimizer::createSimpleSetup(ValidityCheckWithKOMO checker)
@@ -59,13 +59,9 @@ og::SimpleSetup Optimizer::createSimpleSetup(ValidityCheckWithKOMO checker)
 
     // Set the start and goal states
 	ob::ScopedState<> start(space);
-	for (unsigned int i=0; i<startPosition.size(); i++){
-		start[i] = startPosition[i];
-	}
+
     ob::ScopedState<> goal(space);
-	for (unsigned int i=0; i<goalPosition.size(); i++){
-		goal[i] = goalPosition[i];
-	}
+	goal = {2,0};
 
     ss.setStartAndGoalStates(start, goal);
 
@@ -128,17 +124,29 @@ void Optimizer::plan(){
 	bounds.setHigh(PI);
 	space->setBounds(bounds);
 
-	auto ss = Optimizer::createSimpleSetup(checker);
+	// auto ss = Optimizer::createSimpleSetup(checker);
+	og::SimpleSetup ss(space);
+
+	ss.setStateValidityChecker([&checker](const ob::State *state) {
+		return checker.check(state);
+	});
+
+	ob::ScopedState<> start(space);
+
+    ob::ScopedState<> goal(space);
+	goal = {2,0};
+
+    ss.setStartAndGoalStates(start, goal);	
 
 	auto si = ss.getSpaceInformation();
-	std::vector<ob::SpaceInformationPtr> siVec;
-	siVec.push_back(si);
-	auto planner1 = std::make_shared<om::LocalMinimaSpanners>(siVec);
+	// std::vector<ob::SpaceInformationPtr> siVec;
+	// siVec.push_back(si);
+	// auto planner1 = std::make_shared<om::LocalMinimaSpanners>(siVec);
 
 	if (planner == pathOptimizerKOMO){
-		og::PathOptimizerPtr optimizer = std::make_shared<og::PathOptimizerKOMO>(si);
-		planner1->setOptimizer(optimizer);
-		ss.setPlanner(planner1);
+		// og::PathOptimizerPtr optimizer = std::make_shared<og::PathOptimizerKOMO>(si);
+		// planner1->setOptimizer(optimizer);
+		// ss.setPlanner(planner1);
 	}
 	else{
 		auto planner2(std::make_shared<og::RRTstar>(si));
@@ -162,32 +170,32 @@ void Optimizer::plan(){
 	}
 
 	if(planner == pathOptimizerKOMO){ //This code is for visualization of the paths from PathOptimizer
-		auto localMinimaTree = planner1->getLocalMinimaTree();
-		int NumberOfMinima =  (int)localMinimaTree->getNumberOfMinima();
-		int NumberOfLevels =  (int)localMinimaTree->getNumberOfLevel();
+		// auto localMinimaTree = planner1->getLocalMinimaTree();
+		// int NumberOfMinima =  (int)localMinimaTree->getNumberOfMinima();
+		// int NumberOfLevels =  (int)localMinimaTree->getNumberOfLevel();
 
-		for (int i=0; i<NumberOfLevels; i++){
-			for (int j=0; j<NumberOfMinima; j++){
-				std::cout << "\nNew path[" << i << j+1 << "] \n" << std::endl;
-				auto path = std::dynamic_pointer_cast<ompl::geometric::PathGeometric>(localMinimaTree->getPath(i,j)->asPathPtr());
-				//convert path to arrA
-				arrA configs;
-				for (auto state : (*path).getStates())
-				{
-					arr config;
-					std::vector<double> reals;
-					space->copyToReals(reals, state); //Error: This line does not work!
-					std::cout << reals.size() << "size" << std::endl;;
-					for (double r : reals){
-						config.append(r);
-					}
-					configs.append(config);
-				}
-				//Visualize in KOMO
-				VisualizePath(configs);
-				std::dynamic_pointer_cast<ompl::geometric::PathGeometric>(localMinimaTree->getPath(i,j)->asPathPtr())->print(std::cout);
-			}
-		}
+		// for (int i=0; i<NumberOfLevels; i++){
+		// 	for (int j=0; j<NumberOfMinima; j++){
+		// 		std::cout << "\nNew path[" << i << j+1 << "] \n" << std::endl;
+		// 		auto path = std::dynamic_pointer_cast<ompl::geometric::PathGeometric>(localMinimaTree->getPath(i,j)->asPathPtr());
+		// 		//convert path to arrA
+		// 		arrA configs;
+		// 		for (auto state : (*path).getStates())
+		// 		{
+		// 			arr config;
+		// 			std::vector<double> reals;
+		// 			space->copyToReals(reals, state); //Error: This line does not work!
+		// 			std::cout << reals.size() << "size" << std::endl;;
+		// 			for (double r : reals){
+		// 				config.append(r);
+		// 			}
+		// 			configs.append(config);
+		// 		}
+		// 		//Visualize in KOMO
+		// 		VisualizePath(configs);
+		// 		std::dynamic_pointer_cast<ompl::geometric::PathGeometric>(localMinimaTree->getPath(i,j)->asPathPtr())->print(std::cout);
+		// 	}
+		// }
 	}
 	else{// This is for visualization of paths from other planners
 		auto path = ss.getSolutionPath();

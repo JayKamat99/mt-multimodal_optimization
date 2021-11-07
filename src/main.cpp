@@ -28,7 +28,7 @@ int main(int /* argc */, char** /* argv[] */)
 	optimizer.setGoal({3.0,0.0});
 
 	//set planner
-	optimizer.setPlanner(Optimizer::Planners::pathOptimizerKOMO);
+	optimizer.setPlanner(Optimizer::Planners::RRTStar);
 
 	//set maximum solution time
 	optimizer.setSolveTime(5.0);
@@ -36,7 +36,4 @@ int main(int /* argc */, char** /* argv[] */)
 	//plan
 	// optimizer.visualize_random();
 	optimizer.plan();
-
-	// //visualize solution
-	// optimizer.visualizeSolution();
 }

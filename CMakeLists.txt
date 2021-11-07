@@ -67,13 +67,13 @@ target_link_libraries(rai
   assimp fcl ann glfw GLEW glut GLU GL png qhull
   )
 
-# add_executable($(PROJECT_NAME)
-#         src/main.cpp
-#         src/Optimizer.h src/Optimizer.cpp)
-
 add_executable(mt_multimodalOptimization
-          src/mainRai.cpp)
-
+        src/main.cpp
+        src/Optimizer.h src/Optimizer.cpp)
 
 target_link_libraries(mt_multimodalOptimization rai ompl)
 
+add_executable(trial
+          src/mainRai.cpp)
+
+target_link_libraries(trial rai ompl)
