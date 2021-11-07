@@ -15,25 +15,25 @@
 namespace ob = ompl::base;
 namespace og = ompl::geometric;
 
-//   struct ValidityCheckWithKOMO {
-// 	KOMO::Conv_KOMO_SparseNonfactored &nlp;
-// 	ValidityCheckWithKOMO(KOMO::Conv_KOMO_SparseNonfactored &nlp) : nlp(nlp){}
-// 	bool check(const ob::State *state)
-// 	{
-// 		const auto *State = state->as<ob::RealVectorStateSpace::StateType>();
+  struct ValidityCheckWithKOMO {
+	KOMO::Conv_KOMO_SparseNonfactored &nlp;
+	ValidityCheckWithKOMO(KOMO::Conv_KOMO_SparseNonfactored &nlp) : nlp(nlp){}
+	bool check(const ob::State *state)
+	{
+		const auto *State = state->as<ob::RealVectorStateSpace::StateType>();
 
-// 		arr x_query;
-// 		for (unsigned int i = 0; i < 2; i++){
-// 			x_query.append((*State)[i]);
-// 		}
+		arr x_query;
+		for (unsigned int i = 0; i < 2; i++){
+			x_query.append((*State)[i]);
+		}
 
-// 		arr phi;
-// 		nlp.evaluate(phi, NoArr, x_query);
-// 		double tol = 1e-2;
+		arr phi;
+		nlp.evaluate(phi, NoArr, x_query);
+		double tol = 1e-2;
 
-// 		return std::abs(phi(0)) < tol;
-// 	}
-// };
+		return std::abs(phi(0)) < tol;
+	}
+};
 
 void VisualizePath(arrA configs){
 	// setup KOMO
@@ -83,12 +83,12 @@ void test()
 
   og::SimpleSetup ss(space);
 
-	// auto nlp = std::make_shared<KOMO::Conv_KOMO_SparseNonfactored>(komo, false);
-	// ValidityCheckWithKOMO checker(*nlp);
+	auto nlp = std::make_shared<KOMO::Conv_KOMO_SparseNonfactored>(komo, false);
+	ValidityCheckWithKOMO checker(*nlp);
 
-	// ss.setStateValidityChecker([&checker](const ob::State *state) {
-	// 	return checker.check(state);
-	// });
+	ss.setStateValidityChecker([&checker](const ob::State *state) {
+		return checker.check(state);
+	});
 
   ob::ScopedState<> start(space); //start is automatically assumed
 
