@@ -16,7 +16,7 @@ namespace ompl
     {
         OMPL_CLASS_FORWARD(PathOptimizer);
 
-        class PathOptimizer : public base::Planner
+        class PathOptimizer //: public base::Planner
         {
         public:
             PathOptimizer() = default;

@@ -139,14 +139,14 @@ void Optimizer::plan(){
     ss.setStartAndGoalStates(start, goal);	
 
 	auto si = ss.getSpaceInformation();
-	// std::vector<ob::SpaceInformationPtr> siVec;
-	// siVec.push_back(si);
-	// auto planner1 = std::make_shared<om::LocalMinimaSpanners>(siVec);
+	std::vector<ob::SpaceInformationPtr> siVec;
+	siVec.push_back(si);
+	auto planner1(std::make_shared<om::LocalMinimaSpanners>(siVec));
 
 	if (planner == pathOptimizerKOMO){
-		// og::PathOptimizerPtr optimizer = std::make_shared<og::PathOptimizerKOMO>(si);
-		// planner1->setOptimizer(optimizer);
-		// ss.setPlanner(planner1);
+		og::PathOptimizerPtr optimizer(std::make_shared<og::PathOptimizerKOMO>(si));
+		planner1->setOptimizer(optimizer);
+		ss.setPlanner(planner1);
 	}
 	else{
 		auto planner2(std::make_shared<og::RRTstar>(si));

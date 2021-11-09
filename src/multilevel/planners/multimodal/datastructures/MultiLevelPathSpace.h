@@ -2,11 +2,14 @@
 #define OMPL_MULTILEVEL_PLANNERS_MULTIMODAL_MULTILEVELMOTIONMULTIMODAL_
 #include <multilevel/datastructures/BundleSpaceGraph.h>
 #include <multilevel/datastructures/BundleSpaceGraphSparse.h>
+#include <multimodal_optimizers/PathOptimizerKOMO.h>
 
 #include <multilevel/datastructures/BundleSpaceSequence.h>
 #include <multilevel/planners/multimodal/datastructures/PathSpace.h>
 #include <type_traits>
 #include <queue>
+
+namespace og = ompl::geometric;
 
 namespace ompl
 {
