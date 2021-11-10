@@ -14,7 +14,7 @@ ibm_orange = '#FE6100'
 ibm_yellow = '#FFB000'
 
 color_dict = {
-    'spacetime': ibm_blue,
+    'multimodal': ibm_blue,
     'rrtconnect': ibm_red,
     'rrtstar': ibm_yellow
 }
@@ -22,7 +22,7 @@ color_dict = {
 linestyles = ['solid', 'dashed', 'dotted']
 markerstyles = ['.', 'x', 'v']
 
-filepath = 'narrow8/n8'
+filepath = 'BenchMarks/benchmark'
 
 info = {
         "min_time": {
@@ -36,14 +36,14 @@ info = {
         "max_cost": 4,
         "ci_left": 39,
         "ci_right": 59,
-        "rrtconnect_tb": [1, 2, 4],
-        "rrtstar_tb": [1, 2, 4]
-        # "rrtconnect_tb": [],
-        # "rrtstar_tb": [1,2,4]
+        # "rrtconnect_tb": [1, 2, 4],
+        # "rrtstar_tb": [1, 2, 4]
+        "rrtconnect_tb": [],
+        "rrtstar_tb": []
     }
 
 def run():
-    # store()
+    store()
     plot()
 
 def store():

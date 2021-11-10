@@ -48,12 +48,12 @@ def store_optimization_data(filepath):
     ci_left = data["info"]["ci_left"]
     ci_right = data["info"]["ci_right"]
 
-    con = sqlite3.connect(filepath + '_spacetime.db')
+    con = sqlite3.connect(filepath + '_multimodal.db')
     cur = con.cursor()
-    spacetime_rrt = get_plot_data(cur, times, max_cost, ci_left, ci_right)
-    data["spacetime"]["median"] = spacetime_rrt[0].tolist()
-    data["spacetime"]["quantile5"] = spacetime_rrt[1].tolist()
-    data["spacetime"]["quantile95"] = spacetime_rrt[2].tolist()
+    multimodal_rrt = get_plot_data(cur, times, max_cost, ci_left, ci_right)
+    data["multimodal"]["median"] = multimodal_rrt[0].tolist()
+    data["multimodal"]["quantile5"] = multimodal_rrt[1].tolist()
+    data["multimodal"]["quantile95"] = multimodal_rrt[2].tolist()
 
     rrtstar_tb = data["info"]["rrtstar_tb"]
     for i in range(len(rrtstar_tb)):
@@ -80,12 +80,12 @@ def plot_optimization(ax, data, colors, linestyles, markerstyles):
     ax.set_xlim(min_time, max_time)
     ax.set_ylim(0.0, max_cost)
 
-    spacetime_median = data["spacetime"]["median"]
-    spacetime_q5 = data["spacetime"]["quantile5"]
-    spacetime_q95 = data["spacetime"]["quantile95"]
-    start = get_start_index(spacetime_median, times, max_cost)
-    ax.plot(times[start:], spacetime_median[start:], color=colors['spacetime'], label='ST-RRT*')
-    ax.fill_between(times[start:], spacetime_q5[start:], spacetime_q95[start:], color=colors['spacetime'],
+    multimodal_median = data["multimodal"]["median"]
+    multimodal_q5 = data["multimodal"]["quantile5"]
+    multimodal_q95 = data["multimodal"]["quantile95"]
+    start = get_start_index(multimodal_median, times, max_cost)
+    ax.plot(times[start:], multimodal_median[start:], color=colors['multimodal'], label='ST-RRT*')
+    ax.fill_between(times[start:], multimodal_q5[start:], multimodal_q95[start:], color=colors['multimodal'],
                      alpha=0.5)
 
 
@@ -113,10 +113,10 @@ def plot_optimization(ax, data, colors, linestyles, markerstyles):
     #     plt.errorbar(rrtstar_point["time"][0], rrtstar_point["cost"][0], cost_errors, time_errors,
     #                  c=colors['rrtstar'], marker=markerstyles[i], ms=10, lw=0.5)
     #
-    # spacetime_point = data["spacetime"]["point"]
-    # time_errors, cost_errors = get_errors(spacetime_point)
-    # plt.errorbar(spacetime_point["time"][0], spacetime_point["cost"][0], cost_errors, time_errors,
-    #              c=colors['spacetime'], marker=markerstyles[0], ms=10, lw=0.5)
+    # multimodal_point = data["multimodal"]["point"]
+    # time_errors, cost_errors = get_errors(multimodal_point)
+    # plt.errorbar(multimodal_point["time"][0], multimodal_point["cost"][0], cost_errors, time_errors,
+    #              c=colors['multimodal'], marker=markerstyles[0], ms=10, lw=0.5)
 
     ax.grid(True, which="both", ls='--')
     ax.set_xlabel("run time [s]")

@@ -66,7 +66,7 @@ def store_success_data(filepath):
     times = np.logspace(np.log10(data["info"]["min_time"]["success"]), np.log10(data["info"]["max_time"]["success"]),
                         resolution)
 
-    con = sqlite3.connect(filepath + '_spacetime.db')
+    con = sqlite3.connect(filepath + '_multimodal.db')
     cur = con.cursor()
     # space_time_rrt = get_percentages_first_solution(cur, times)
     space_time_rrt = get_from_progress(cur, times)
@@ -86,7 +86,7 @@ def store_success_data(filepath):
         cur = con.cursor()
         rrt_star.append(get_from_progress(cur, times))
 
-    data["spacetime"] = {
+    data["multimodal"] = {
         "success": space_time_rrt.tolist()
     }
     for i in range(len(rrtconnect_tb)):
@@ -115,8 +115,8 @@ def plot_success(ax, data, colors, linestyles):
     ax.set_xlim(min_time, max_time)
     ax.set_ylim(0.0, 100.0)
 
-    space_time_rrt = data["spacetime"]["success"]
-    ax.plot(times, space_time_rrt, color=colors["spacetime"], linestyle='-', label='ST-RRT*')
+    space_time_rrt = data["multimodal"]["success"]
+    ax.plot(times, space_time_rrt, color=colors["multimodal"], linestyle='-', label='ST-RRT*')
 
 
     rrtconnect_tb = data["info"]["rrtconnect_tb"]
