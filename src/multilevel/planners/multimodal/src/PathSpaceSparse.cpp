@@ -11,7 +11,7 @@
 #include <ompl/base/objectives/MaximizeMinClearanceObjective.h>
 
 #include <ompl/geometric/PathSimplifier.h>
-#include <multimodal_optimizers/PathOptimizer.h>
+#include <ompl/geometric/PathOptimizer.h>
 #include <multimodal_optimizers/PathOptimizerKOMO.h>
 #include <ompl/tools/config/SelfConfig.h>
 #include <ompl/datastructures/NearestNeighbors.h>

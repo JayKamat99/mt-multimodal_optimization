@@ -16,6 +16,7 @@
 #include <ompl/base/samplers/GaussianValidStateSampler.h>
 
 #include <multimodal_optimizers/PathOptimizerKOMO.h>
+// #include <ompl/geometric/PathOptimizer.h>
 
 /* #include <ompl/config.h> */
 

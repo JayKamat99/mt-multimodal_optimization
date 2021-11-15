@@ -67,9 +67,22 @@ target_link_libraries(rai
   assimp fcl ann glfw GLEW glut GLU GL png qhull
   )
 
+file(GLOB SRC_Multilevel src/mutilevel/*.cpp)
+# add_library(ompl SHARED ${SRC_Multilevel})
+
 add_executable(mt_multimodalOptimization
         src/main.cpp
-        src/Optimizer.h src/Optimizer.cpp)
+        src/Optimizer.h src/Optimizer.cpp
+        src/multimodal_optimizers/PathOptimizerKOMO.h
+        src/multimodal_optimizers/src/PathOptimizerKOMO.cpp
+        ${SRC_Multilevel}
+        # src/multilevel/datastructures/BundleSpace.h
+        # src/multilevel/datastructures/BundleSpaceGraph.h
+        # src/multilevel/datastructures/BundleSpaceGraphSparse.h
+        # src/multilevel/datastructures/src/BundleSpace.cpp
+        # src/multilevel/datastructures/src/BundleSpaceGraph.cpp
+        # src/multilevel/datastructures/src/BundleSpaceGraphSparse.cpp
+        )
 
 target_link_libraries(mt_multimodalOptimization rai ompl)
 

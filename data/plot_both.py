@@ -30,16 +30,16 @@ info = {
             "optimization": 0.001
         },
         "max_time": {
-            "success": 30,
-            "optimization": 30
+            "success": 1000,
+            "optimization": 1000
         },
-        "max_cost": 4,
+        "max_cost": 10,
         "ci_left": 39,
         "ci_right": 59,
         # "rrtconnect_tb": [1, 2, 4],
         # "rrtstar_tb": [1, 2, 4]
         "rrtconnect_tb": [],
-        "rrtstar_tb": []
+        "rrtstar_tb": [1]
     }
 
 def run():

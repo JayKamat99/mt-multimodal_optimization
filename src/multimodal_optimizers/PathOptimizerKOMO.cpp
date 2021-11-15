@@ -1,4 +1,4 @@
-#include <multimodal_optimizers/PathOptimizer.h>
+#include <ompl/geometric/PathOptimizer.h>
 #include <multimodal_optimizers/PathOptimizerKOMO.h>
 #include <multilevel/planners/multimodal/PathSpaceSparse.h>
 #include <multilevel/planners/multimodal/datastructures/PathSpace.h>
