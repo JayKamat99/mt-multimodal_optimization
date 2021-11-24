@@ -1,1 +1,0 @@
-/home/jay/mt-multimodal_optimization/Models/2D_arm.g

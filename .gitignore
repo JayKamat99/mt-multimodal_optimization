@@ -1,6 +1,9 @@
+.gitignore
 build/
-.vscode/
+visualize/*
+visualize/data/Benchmarks/*
+!visualize/data
+*.exe
 z.*
-visualization/
-data/*/
-Notes/
+.vscode
+*.pyc

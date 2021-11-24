@@ -1,0 +1,14 @@
+
+[x] select a decent start and goal configuration. For the goal maybe you can choose the answer that you get from the optimization algorithm.
+
+[x] get a path using sparse roadmap planner.
+
+[ ] see if you can interpolate for the points and make an animation.
+
+[ ] Use those points to optimize the trajectory.
+
+[ ] >Use planner of Andreas to get multimodal solutions. Vsualize it.
+
+[ ] See how to run code of Andreas. [Urgent]
+
+[ ] Use Torus as statespace.
