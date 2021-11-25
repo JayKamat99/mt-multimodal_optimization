@@ -197,7 +197,7 @@ void benchmark(const char* filename = "../examples/Models/2D_arm.g", std::string
 		ompl::tools::Benchmark::Request req;
 		req.maxTime = 5.0;
 		req.maxMem = 100.0;
-		req.runCount = 10;
+		req.runCount = 1;
 		req.displayProgress = true;
 		b.benchmark(req);
 		

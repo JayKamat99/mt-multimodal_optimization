@@ -30,10 +30,10 @@ info = {
             "optimization": 0.001
         },
         "max_time": {
-            "success": 30,
-            "optimization": 30
+            "success": 10,
+            "optimization": 10
         },
-        "max_cost": 10,
+        "max_cost": 20,
         "ci_left": 39,
         "ci_right": 59,
         # "rrtconnect_tb": [1, 2, 4],
