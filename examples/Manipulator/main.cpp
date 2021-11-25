@@ -12,6 +12,8 @@
 
 #include <ompl/base/samplers/ObstacleBasedValidStateSampler.h>
 #include <ompl/base/samplers/GaussianValidStateSampler.h>
+#include <ompl/base/samplers/MinimumClearanceValidStateSampler.h>
+#include <ompl/base/samplers/MaximizeClearanceValidStateSampler.h>
 
 #include <path/PathOptimizerKOMO.h>
 #include <path/Planner_KOMO.h>
@@ -50,14 +52,24 @@ struct ValidityCheckWithKOMO {
 	}
 };
 
-ob::ValidStateSamplerPtr allocOBValidStateSampler(const ob::SpaceInformation *si)
+ob::ValidStateSamplerPtr allocObstacleBasedVSS(const ob::SpaceInformation *si)
 {
     return std::make_shared<ob::ObstacleBasedValidStateSampler>(si);
 }
 
-ob::ValidStateSamplerPtr allocGaussianValidStateSampler(const ob::SpaceInformation *si)
+ob::ValidStateSamplerPtr allocGaussianVSS(const ob::SpaceInformation *si)
 {
     return std::make_shared<ob::GaussianValidStateSampler>(si);
+}
+
+ob::ValidStateSamplerPtr allocMinimumClearanceVSS(const ob::SpaceInformation *si)
+{
+    return std::make_shared<ob::MinimumClearanceValidStateSampler>(si);
+}
+
+ob::ValidStateSamplerPtr allocMaximizeClearanceVSS(const ob::SpaceInformation *si)
+{
+    return std::make_shared<ob::MaximizeClearanceValidStateSampler>(si);
 }
 
 void VisualizePath(arrA configs, const char* filename = ""){
@@ -122,8 +134,10 @@ void benchmark(const char* filename = "../examples/Models/2D_arm.g", std::string
 		return checker.check(state);
 	});
 
-	// ss.getSpaceInformation()->setValidStateSamplerAllocator(allocOBValidStateSampler);
-	// ss.getSpaceInformation()->setValidStateSamplerAllocator(allocGaussianValidStateSampler);
+	// ss.getSpaceInformation()->setValidStateSamplerAllocator(allocObstacleBasedVSS);
+	// ss.getSpaceInformation()->setValidStateSamplerAllocator(allocGaussianVSS);
+	// ss.getSpaceInformation()->setValidStateSamplerAllocator(allocMinimumClearanceVSS);
+	ss.getSpaceInformation()->setValidStateSamplerAllocator(allocMaximizeClearanceVSS);
 
     // create a start state
     ob::ScopedState<> start(space);
@@ -197,7 +211,7 @@ void benchmark(const char* filename = "../examples/Models/2D_arm.g", std::string
 		ompl::tools::Benchmark::Request req;
 		req.maxTime = 5.0;
 		req.maxMem = 100.0;
-		req.runCount = 1;
+		req.runCount = 10;
 		req.displayProgress = true;
 		b.benchmark(req);
 		
