@@ -23,6 +23,7 @@ namespace ompl
                 return std::to_string(bestCost);
             }
             std::shared_ptr<KOMO> komo_;
+            void clear() override;
 
         public:
             Planner_KOMO(const base::SpaceInformationPtr &si, std::shared_ptr<KOMO> komo_);

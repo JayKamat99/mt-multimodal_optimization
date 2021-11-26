@@ -11,7 +11,7 @@ cd ../visualize
 ../build/t_manip "../examples/Models/kuka_multimodal.g" "PathOptimizerKOMO" "true" # run the executable
 ../ompl/scripts/ompl_benchmark_statistics.py data/Benchmarks/benchmark_PathOptimizerKOMO.log -d data/Benchmarks/benchmark_multimodal.db # make the database file out of the log file
 
-# ../build/t_manip "KOMO" # run the executable
+# ../build/t_manip "../examples/Models/kuka_multimodal.g" "KOMO" "true" # run the executable
 # ../ompl/scripts/ompl_benchmark_statistics.py data/Benchmarks/benchmark_KOMO.log -d data/Benchmarks/benchmark_multimodal.db # make the database file out of the log file
 
 # # .build/t_manip "PathSimplifier"

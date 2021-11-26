@@ -17,6 +17,12 @@ void ompl::geometric::Planner_KOMO::freeMemory()
 	std::cout << "Memory has been freed" << std::endl;
 }
 
+void ompl::geometric::Planner_KOMO::clear()
+{
+	std::cout << "Clear called" << std::endl;
+	Planner::clear();
+}
+
 ompl::base::PlannerStatus ompl::geometric::Planner_KOMO::solve(const base::PlannerTerminationCondition &ptc)
 {
 	std::cout << "This will run KOMO.optimize" << std::endl;
@@ -42,7 +48,7 @@ ompl::base::PlannerStatus ompl::geometric::Planner_KOMO::solve(const base::Plann
     komo.addObjective({}, FS_accumulatedCollisions, {}, OT_eq, {1.});
     komo.add_collision(true); */
 
-    komo_->run_prepare(0);
+    komo_->run_prepare(0.5);
     komo_->animateOptimization = 0;
     komo_->optimize();
 	rai::Graph R = komo_->getReport(false);
