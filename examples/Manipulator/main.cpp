@@ -9,6 +9,7 @@
 #include <ompl/multilevel/planners/multimodal/LocalMinimaSpanners.h>
 #include <ompl/geometric/SimpleSetup.h>
 #include <ompl/tools/benchmark/Benchmark.h>
+#include <ompl/base/objectives/PathLengthSquaredOptimizationObjective.h>
 
 #include <ompl/base/samplers/ObstacleBasedValidStateSampler.h>
 #include <ompl/base/samplers/GaussianValidStateSampler.h>
@@ -26,11 +27,11 @@
 
 #define PI 3.1412
 
+unsigned int C_Dimension;
+
 namespace ob = ompl::base;
 namespace og = ompl::geometric;
 namespace om = ompl::multilevel;
-
-unsigned int C_Dimension;
 
 struct ValidityCheckWithKOMO {
 	KOMO::Conv_KOMO_SparseNonfactored &nlp;
@@ -85,9 +86,9 @@ void VisualizePath(arrA configs, const char* filename = ""){
     komo.setTiming(1., configs.N, 5., 2);
 	komo.add_qControlObjective({}, 1, 1.);
 
-    komo.addObjective({1.}, FS_qItself, {}, OT_eq, {10}, configs(configs.N-1), 0);
-    komo.addObjective({}, FS_accumulatedCollisions, {}, OT_eq, {1.});
-    komo.add_collision(true);
+    // komo.addObjective({1.}, FS_qItself, {}, OT_eq, {10}, configs(configs.N-1), 0);
+    // komo.addObjective({}, FS_accumulatedCollisions, {}, OT_eq, {1.});
+    // komo.add_collision(true);
 
     //use configs to initialize with waypoints
 	komo.initWithWaypoints(configs, configs.N, false);
@@ -113,7 +114,7 @@ void benchmark(const char* filename = "../examples/Models/2D_arm.g", std::string
 	komo.run_prepare(0);
 
 	C_Dimension = C.getJointStateDimension();
-	uint stepsPerPhase_ = 150;
+	uint stepsPerPhase_ = 40;
 
 	//Construct the state space we are planning in
 	auto space(std::make_shared<ob::RealVectorStateSpace>(C_Dimension));
@@ -137,7 +138,7 @@ void benchmark(const char* filename = "../examples/Models/2D_arm.g", std::string
 	// ss.getSpaceInformation()->setValidStateSamplerAllocator(allocObstacleBasedVSS);
 	// ss.getSpaceInformation()->setValidStateSamplerAllocator(allocGaussianVSS);
 	// ss.getSpaceInformation()->setValidStateSamplerAllocator(allocMinimumClearanceVSS);
-	ss.getSpaceInformation()->setValidStateSamplerAllocator(allocMaximizeClearanceVSS);
+	// ss.getSpaceInformation()->setValidStateSamplerAllocator(allocMaximizeClearanceVSS);
 
     // create a start state
     ob::ScopedState<> start(space);
@@ -161,6 +162,9 @@ void benchmark(const char* filename = "../examples/Models/2D_arm.g", std::string
     // Set the start and goal states
     ss.setStartAndGoalStates(start, goal);
 
+	//set Optimization Objective
+	// ompl::base::OptimizationObjectivePtr opt_ = std::make_shared<ompl::base::PathLengthSquaredOptimizationObjective>(ss.getSpaceInformation());
+	// ss.setOptimizationObjective(opt_);
 
 	if(benchmark)
 	{
@@ -190,10 +194,10 @@ void benchmark(const char* filename = "../examples/Models/2D_arm.g", std::string
 			
 			komo_->setTiming(1., stepsPerPhase_, 5., 2);
 			// komo_->add_qControlObjective({}, 1, 2.);
-			komo_->add_qControlObjective({}, 2, 10000.);
+			komo_->add_qControlObjective({}, 1, 1.);
 
-			komo_->addObjective({1.}, FS_qItself, {}, OT_eq, {10}, goal_, 0);
-			komo_->addObjective({}, FS_qItself, {}, OT_ineq, {1.}, {}, 1);
+			komo_->addObjective({1.}, FS_qItself, {}, OT_eq, {1000}, goal_, 0);
+			komo_->addObjective({}, FS_qItself, {}, OT_sos, {1.}, {}, 1);
 			komo_->add_collision(true);
 
 			if (planner_ == "PathOptimizerKOMO"){
@@ -211,7 +215,7 @@ void benchmark(const char* filename = "../examples/Models/2D_arm.g", std::string
 		ompl::tools::Benchmark::Request req;
 		req.maxTime = 5.0;
 		req.maxMem = 100.0;
-		req.runCount = 10;
+		req.runCount = 100;
 		req.displayProgress = true;
 		b.benchmark(req);
 		
@@ -246,7 +250,8 @@ void benchmark(const char* filename = "../examples/Models/2D_arm.g", std::string
 			komo_->add_qControlObjective({}, 1, 2.);
 
 			komo_->addObjective({1.}, FS_qItself, {}, OT_eq, {10}, goal_, 0);
-			komo_->addObjective({}, FS_accumulatedCollisions, {}, OT_eq, {1.});
+			komo_->addObjective({1.}, FS_qItself, {}, OT_sos, {1}, {}, 0);
+			// komo_->addObjective({}, FS_accumulatedCollisions, {}, OT_eq, {1.});
 			komo_->add_collision(true);
 
 			if (planner_ == "PathOptimizerKOMO"){
@@ -325,6 +330,7 @@ void benchmark(const char* filename = "../examples/Models/2D_arm.g", std::string
 
 int main(int argc, char ** argv)
 {
+  	rai::initCmdLine(argc,argv);
 	std::cout << "OMPL version: " << OMPL_VERSION << std::endl;
 	if (argc<2){
 		benchmark();

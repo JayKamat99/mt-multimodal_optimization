@@ -2,6 +2,7 @@
 #include <path/PathOptimizerKOMO.h>
 #include <ompl/multilevel/planners/multimodal/PathSpaceSparse.h>
 #include <ompl/multilevel/planners/multimodal/datastructures/PathSpace.h>
+#include <chrono>
 
 namespace ob = ompl::base;
 namespace og = ompl::geometric;
@@ -15,6 +16,11 @@ std::shared_ptr<KOMO> komo_) : komo_(std::move(komo_)){
 
 bool ompl::geometric::PathOptimizerKOMO::optimize(PathGeometric &path)
 {
+    // static std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+    // static std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+    // begin = std::chrono::steady_clock::now();
+    // std::cout << "Non-KOMO time = " << std::chrono::duration_cast<std::chrono::microseconds>(begin-end).count() << "[µs]" << std::endl;
+    // std::cout << "Non-KOMO time = " << std::chrono::duration_cast<std::chrono::nanoseconds> (begin-end).count() << "[ns]" << std::endl;
 	arrA configs;
 	//To copy the path to arrA Configs from states.
 	const base::StateSpace *space(si_->getStateSpace().get());
@@ -69,7 +75,12 @@ bool ompl::geometric::PathOptimizerKOMO::optimize(PathGeometric &path)
 		space->copyFromReals(state, reals);
 		i++;
     }
-	isStepWise = false;
+    // end = std::chrono::steady_clock::now();
+
+    // std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "[µs]" << std::endl;
+    // std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::nanoseconds> (end - begin).count() << "[ns]" << std::endl;
+	
+    isStepWise = false;
     setPathCost(R.get<double>("sos"));
     return isValid;
 }

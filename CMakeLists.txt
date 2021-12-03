@@ -4,9 +4,6 @@ set(CMAKE_CXX_STANDARD 14)
 
 add_compile_options(-O3 -g -Wall -fPIC -std=c++14 -Wno-terminate)
 
-# include_directories(src)
-# include_directories(src/multimodal_optimizers)
-
 include_directories(ompl/src)
 
 add_subdirectory(ompl)
