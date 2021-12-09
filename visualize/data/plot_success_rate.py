@@ -11,9 +11,10 @@ ibm_red = '#DC267F'
 ibm_orange = '#FE6100'
 ibm_yellow = '#FFB000'
 
-col_space_time_rrt = ibm_blue
+col_MOMO = ibm_blue
 col_rrt_connect = ibm_red
 col_rrt_star = ibm_orange
+col_PathSimplifier_planner = ibm_violet
 
 # filepath = 'narrow8/n8'
 
@@ -62,14 +63,23 @@ def store_success_data(filepath):
     with open(filepath + '.json', 'r') as jsonfile:
         data = json.load(jsonfile)
 
-    # plot space time rrt
+    # plot MOMO
     times = np.logspace(np.log10(data["info"]["min_time"]["success"]), np.log10(data["info"]["max_time"]["success"]),
                         resolution)
 
     con = sqlite3.connect(filepath + '_multimodal.db')
     cur = con.cursor()
-    # space_time_rrt = get_percentages_first_solution(cur, times)
-    space_time_rrt = get_from_progress(cur, times)
+    # MOMO = get_percentages_first_solution(cur, times)
+    MOMO = get_from_progress(cur, times)
+
+    # plot PathSimplifier_Planner
+    times = np.logspace(np.log10(data["info"]["min_time"]["success"]), np.log10(data["info"]["max_time"]["success"]),
+                        resolution)
+
+    con = sqlite3.connect(filepath + '_PathSimplifier.db')
+    cur = con.cursor()
+    # PathSimplifier_Planner = get_percentages_first_solution(cur, times)
+    PathSimplifier_Planner = get_from_progress(cur, times)
 
     rrt_connect = []
     rrt_star = []
@@ -87,8 +97,13 @@ def store_success_data(filepath):
         rrt_star.append(get_from_progress(cur, times))
 
     data["multimodal"] = {
-        "success": space_time_rrt.tolist()
+        "success": MOMO.tolist()
     }
+
+    data["PathSimplifier"] = {
+        "success": PathSimplifier_Planner.tolist()
+    }
+
     for i in range(len(rrtconnect_tb)):
         data["rrtconnect" + str(rrtconnect_tb[i])] = {
             "success": rrt_connect[i].tolist()
@@ -115,9 +130,11 @@ def plot_success(ax, data, colors, linestyles):
     ax.set_xlim(min_time, max_time)
     ax.set_ylim(0.0, 100.0)
 
-    space_time_rrt = data["multimodal"]["success"]
-    ax.plot(times, space_time_rrt, color=colors["multimodal"], linestyle='-', label='ST-RRT*')
+    MOMO = data["multimodal"]["success"]
+    ax.plot(times, MOMO, color=colors["multimodal"], linestyle='-', label='MOMO')
 
+    PathSimplifier_Planner = data["PathSimplifier"]["success"]
+    ax.plot(times, PathSimplifier_Planner, color=colors["PathSimplifier"], linestyle='-', label='PathSimplifier')
 
     rrtconnect_tb = data["info"]["rrtconnect_tb"]
     for i in range(len(rrtconnect_tb)):

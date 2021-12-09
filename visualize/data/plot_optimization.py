@@ -50,10 +50,17 @@ def store_optimization_data(filepath):
 
     con = sqlite3.connect(filepath + '_multimodal.db')
     cur = con.cursor()
-    multimodal_rrt = get_plot_data(cur, times, max_cost, ci_left, ci_right)
-    data["multimodal"]["median"] = multimodal_rrt[0].tolist()
-    data["multimodal"]["quantile5"] = multimodal_rrt[1].tolist()
-    data["multimodal"]["quantile95"] = multimodal_rrt[2].tolist()
+    multimodal_planner = get_plot_data(cur, times, max_cost, ci_left, ci_right)
+    data["multimodal"]["median"] = multimodal_planner[0].tolist()
+    data["multimodal"]["quantile5"] = multimodal_planner[1].tolist()
+    data["multimodal"]["quantile95"] = multimodal_planner[2].tolist()
+
+    con = sqlite3.connect(filepath + '_PathSimplifier.db')
+    cur = con.cursor()
+    PathSimplifier_planner = get_plot_data(cur, times, max_cost, ci_left, ci_right)
+    data["PathSimplifier"]["median"] = PathSimplifier_planner[0].tolist()
+    data["PathSimplifier"]["quantile5"] = PathSimplifier_planner[1].tolist()
+    data["PathSimplifier"]["quantile95"] = PathSimplifier_planner[2].tolist()
 
     rrtstar_tb = data["info"]["rrtstar_tb"]
     for i in range(len(rrtstar_tb)):
@@ -84,11 +91,17 @@ def plot_optimization(ax, data, colors, linestyles, markerstyles):
     multimodal_q5 = data["multimodal"]["quantile5"]
     multimodal_q95 = data["multimodal"]["quantile95"]
     start = get_start_index(multimodal_median, times, max_cost)
-    ax.plot(times[start:], multimodal_median[start:], color=colors['multimodal'], label='ST-RRT*')
+    ax.plot(times[start:], multimodal_median[start:], color=colors['multimodal'], label='MOMO')
     ax.fill_between(times[start:], multimodal_q5[start:], multimodal_q95[start:], color=colors['multimodal'],
                      alpha=0.5)
 
-
+    PathSimplifier_median = data["PathSimplifier"]["median"]
+    PathSimplifier_q5 = data["PathSimplifier"]["quantile5"]
+    PathSimplifier_q95 = data["PathSimplifier"]["quantile95"]
+    start = get_start_index(PathSimplifier_median, times, max_cost)
+    ax.plot(times[start:], PathSimplifier_median[start:], color=colors['PathSimplifier'], label='PathSimplifier')
+    ax.fill_between(times[start:], PathSimplifier_q5[start:], PathSimplifier_q95[start:], color=colors['PathSimplifier'],
+                     alpha=0.5)
 
     rrtstar_tb = data["info"]["rrtstar_tb"]
     for i in range(len(rrtstar_tb)):

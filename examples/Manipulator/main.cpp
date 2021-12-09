@@ -25,6 +25,8 @@
 #include <KOMO/komo.h>
 #include <Kin/viewer.h>
 
+#include <chrono>
+
 #define PI 3.1412
 
 unsigned int C_Dimension;
@@ -114,7 +116,7 @@ void benchmark(const char* filename = "../examples/Models/2D_arm.g", std::string
 	komo.run_prepare(0);
 
 	C_Dimension = C.getJointStateDimension();
-	uint stepsPerPhase_ = 40;
+	uint stepsPerPhase_ = 70;
 
 	//Construct the state space we are planning in
 	auto space(std::make_shared<ob::RealVectorStateSpace>(C_Dimension));
@@ -213,9 +215,9 @@ void benchmark(const char* filename = "../examples/Models/2D_arm.g", std::string
 		}
 
 		ompl::tools::Benchmark::Request req;
-		req.maxTime = 5.0;
+		req.maxTime = 10.0;
 		req.maxMem = 100.0;
-		req.runCount = 100;
+		req.runCount = 10;
 		req.displayProgress = true;
 		b.benchmark(req);
 		
@@ -268,7 +270,9 @@ void benchmark(const char* filename = "../examples/Models/2D_arm.g", std::string
 		ss.setup();
 
 		// attempt to solve the problem
-		ob::PlannerStatus solved = ss.solve(20.0);
+
+		auto startTime = std::chrono::system_clock::now();
+		ob::PlannerStatus solved = ss.solve(60.0);
 
 		if (solved == ob::PlannerStatus::StatusType::APPROXIMATE_SOLUTION)
 			std::cout << "Found solution: APPROXIMATE_SOLUTION" << std::endl;
@@ -281,11 +285,19 @@ void benchmark(const char* filename = "../examples/Models/2D_arm.g", std::string
 			return;
 		}
 
+		auto endTime = std::chrono::system_clock::now();
+	
 		if(planner_ == "PathOptimizerKOMO" || planner_ == "PathSimplifier"){ //This code is for visualization of the paths from PathOptimizer
 			auto localMinimaTree = planner1->getLocalMinimaTree();
 			int NumberOfMinima =  (int)localMinimaTree->getNumberOfMinima();
 			int NumberOfLevels =  (int)localMinimaTree->getNumberOfLevel();
 
+		// ofstream myfile;
+		// myfile.open ("PathOptimizerKOMO_035_times.txt", std::ios_base::app);
+		// myfile << std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime).count() << ","<< NumberOfMinima <<"\n";
+		// myfile.close();
+		
+		// return;
 			for (int i=0; i<NumberOfLevels; i++){
 				for (int j=0; j<NumberOfMinima; j++){
 					std::cout << "\nNew path[" << i << j+1 << "] \n" << std::endl;
@@ -340,7 +352,9 @@ int main(int argc, char ** argv)
 		std::string planner_ = argv[2];
 		std::string b = argv[3];
 		bool benchmark_ = (b == "true");
+		// for (int i = 0; i<50; i++){
 		benchmark(filename, planner_, benchmark_);
+		// }
 	}
 	return 0;
 }

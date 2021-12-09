@@ -1,6 +1,7 @@
 .gitignore
 build/
 visualize/*
+visualize/data/kuka_035
 visualize/data/Benchmarks/*
 !visualize/data
 *.exe
