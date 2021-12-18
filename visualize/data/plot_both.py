@@ -64,12 +64,14 @@ def plot():
 
     # create handles for the legend
     handles = []
-    rrtconnect_tb = data["info"]["rrtconnect_tb"]
-    for i in range(len(rrtconnect_tb)):
-        handles.append(Line2D([], [], color='black', marker='', ls=linestyles[i], label=rrtconnect_tb[i]))
-    for i in range(len(rrtconnect_tb)):
-        handles.append(Line2D([], [], color='black', marker=markerstyles[i], ls='', label=rrtconnect_tb[i]))
-    axs[1].legend(handles=handles, loc='upper left', title='$t_{ub}$')
+    # rrtconnect_tb = data["info"]["rrtconnect_tb"]
+    # for i in range(len(rrtconnect_tb)):
+    handles.append(Line2D([], [], color=ibm_blue, marker='', label='MOMO'))
+    handles.append(Line2D([], [], color=ibm_red, marker='', label='Multi-mode Estimator'))
+    handles.append(Line2D([], [], color=ibm_yellow, marker='', label='RRT*'))
+    # for i in range(len(rrtconnect_tb)):
+    #     handles.append(Line2D([], [], color='black', marker=markerstyles[i], ls='', label=rrtconnect_tb[i]))
+    axs[1].legend(handles=handles, loc='upper left')
 
 
     plt.show()
