@@ -9,6 +9,12 @@ git clone --recurse-submodules git@github.com:JayKamat99/mt-multimodal_optimizat
 git clone --recurse-submodules https://github.com/JayKamat99/mt-multimodal_optimization.git
 cd mt-multimodal_optimization
 
+#Move to rai to install all dependencies for rai
+cd rai
+make -j1 printUbuntuAll    # for your information: what the next step will install
+make -j1 installUbuntuAll  # calls sudo apt-get install; you can always interrupt
+cd ..
+
 # Create and move to the build folder
 mkdir build
 cd build
