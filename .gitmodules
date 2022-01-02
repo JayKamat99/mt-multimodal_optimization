@@ -6,4 +6,4 @@
 	url = git@github.com:JayKamat99/ompl.git
 [submodule "rai-robotModels"]
 	path = rai-robotModels
-	url = git@github.com:MarcToussaint/rai-robotModels.git
+	url = git@github.com:JayKamat99/rai-robotModels.git
