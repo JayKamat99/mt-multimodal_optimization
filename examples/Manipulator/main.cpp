@@ -3,9 +3,6 @@
 #include <ompl/base/SpaceInformation.h>
 #include <ompl/base/ProblemDefinition.h>
 #include <ompl/base/spaces/RealVectorStateSpace.h>
-#include <ompl/geometric/planners/rrt/RRTstar.h>
-#include <ompl/geometric/planners/rrt/RRTConnect.h>
-#include <ompl/geometric/planners/est/EST.h>
 #include <ompl/multilevel/planners/multimodal/LocalMinimaSpanners.h>
 #include <ompl/geometric/SimpleSetup.h>
 #include <ompl/tools/benchmark/Benchmark.h>
@@ -16,8 +13,13 @@
 #include <ompl/base/samplers/MinimumClearanceValidStateSampler.h>
 #include <ompl/base/samplers/MaximizeClearanceValidStateSampler.h>
 
+// Planners
 #include <path/PathOptimizerKOMO.h>
 #include <path/Planner_KOMO.h>
+#include <ompl/geometric/planners/rrt/RRTstar.h>
+#include <ompl/geometric/planners/fmt/FMT.h>
+#include <ompl/geometric/planners/rrt/LBTRRT.h>
+#include <ompl/geometric/planners/informedtrees/BITstar.h>
 #include <ompl/geometric/PathSimplifier.h>
 
 #include <ompl/config.h>
@@ -181,6 +183,16 @@ void benchmark(const char* filename = "../examples/Models/2D_arm.g", std::string
 			auto planner1(std::make_shared<og::RRTstar>(si));
 			b.addPlanner(planner1);
 		}
+		if (planner_ == "BITstar"){
+			auto planner1(std::make_shared<og::BITstar>(si));
+			b.addPlanner(planner1);
+		}if (planner_ == "FMT"){
+			auto planner1(std::make_shared<og::FMT>(si));
+			b.addPlanner(planner1);
+		}if (planner_ == "LBTRRT"){
+			auto planner1(std::make_shared<og::LBTRRT>(si));
+			b.addPlanner(planner1);
+		}
 		if (planner_ == "PathSimplifier"){
 			auto planner(std::make_shared<om::LocalMinimaSpanners>(siVec));
 			og::PathOptimizerPtr optimizer = std::make_shared<og::PathSimplifier>(si);
@@ -237,6 +249,18 @@ void benchmark(const char* filename = "../examples/Models/2D_arm.g", std::string
 			auto planner(std::make_shared<og::RRTstar>(si));
 			ss.setPlanner(planner);
 		}
+		else if(planner_ == "BITstar"){
+			auto planner(std::make_shared<og::BITstar>(si));
+			ss.setPlanner(planner);
+		}
+		else if(planner_ == "FMT"){
+			auto planner(std::make_shared<og::FMT>(si));
+			ss.setPlanner(planner);
+		}
+		else if(planner_ == "LBTRRT"){
+			auto planner(std::make_shared<og::LBTRRT>(si));
+			ss.setPlanner(planner);
+		}
 		else if (planner_ == "PathSimplifier"){
 			og::PathOptimizerPtr optimizer = std::make_shared<og::PathSimplifier>(si);
 			planner1->setOptimizer(optimizer);
@@ -272,7 +296,7 @@ void benchmark(const char* filename = "../examples/Models/2D_arm.g", std::string
 		// attempt to solve the problem
 
 		auto startTime = std::chrono::system_clock::now();
-		ob::PlannerStatus solved = ss.solve(60.0);
+		ob::PlannerStatus solved = ss.solve(10.0);
 
 		if (solved == ob::PlannerStatus::StatusType::APPROXIMATE_SOLUTION)
 			std::cout << "Found solution: APPROXIMATE_SOLUTION" << std::endl;
