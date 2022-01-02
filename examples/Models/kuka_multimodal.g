@@ -1,4 +1,4 @@
-Include = '/home/jay/git/optimization-course/rai-robotModels/kuka_drake/kuka.g'
+Include = '../../rai-robotModels/kuka_drake/kuka.g'
 
 ball {shape:sphere, mass:1, size:[.05], color:[0 1 0], X = <t(0.5 0.5 0.5)> }
 
