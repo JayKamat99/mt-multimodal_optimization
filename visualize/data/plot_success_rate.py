@@ -10,11 +10,15 @@ ibm_violet = '#785EF0'
 ibm_red = '#DC267F'
 ibm_orange = '#FE6100'
 ibm_yellow = '#FFB000'
+ibm_green = '#24A148'
 
 col_MOMO = ibm_blue
 col_rrt_connect = ibm_red
 col_rrt_star = ibm_orange
-col_PathSimplifier_planner = ibm_violet
+col_PathSimplifier_planner = ibm_red
+col_BITstar_planner = ibm_violet
+col_FMT_planner = ibm_orange
+col_LBTRRT_planner = ibm_green
 
 # filepath = 'narrow8/n8'
 
@@ -81,6 +85,33 @@ def store_success_data(filepath):
     # PathSimplifier_Planner = get_percentages_first_solution(cur, times)
     PathSimplifier_Planner = get_from_progress(cur, times)
 
+    # plot BITstar_Planner
+    times = np.logspace(np.log10(data["info"]["min_time"]["success"]), np.log10(data["info"]["max_time"]["success"]),
+                        resolution)
+
+    con = sqlite3.connect(filepath + '_BITstar.db')
+    cur = con.cursor()
+    # BITstar_Planner = get_percentages_first_solution(cur, times)
+    BITstar_Planner = get_from_progress(cur, times)
+
+    # # plot FMT_Planner
+    # times = np.logspace(np.log10(data["info"]["min_time"]["success"]), np.log10(data["info"]["max_time"]["success"]),
+    #                     resolution)
+
+    # con = sqlite3.connect(filepath + '_FMT.db')
+    # cur = con.cursor()
+    # # FMT_Planner = get_percentages_first_solution(cur, times)
+    # FMT_Planner = get_from_progress(cur, times)
+
+    # plot LBTRRT_Planner
+    times = np.logspace(np.log10(data["info"]["min_time"]["success"]), np.log10(data["info"]["max_time"]["success"]),
+                        resolution)
+
+    con = sqlite3.connect(filepath + '_LBTRRT.db')
+    cur = con.cursor()
+    # LBTRRT_Planner = get_percentages_first_solution(cur, times)
+    LBTRRT_Planner = get_from_progress(cur, times)
+
     rrt_connect = []
     rrt_star = []
 
@@ -102,6 +133,18 @@ def store_success_data(filepath):
 
     data["PathSimplifier"] = {
         "success": PathSimplifier_Planner.tolist()
+    }
+
+    data["BITstar"] = {
+        "success": BITstar_Planner.tolist()
+    }
+
+    # data["FMT"] = {
+    #     "success": FMT_Planner.tolist()
+    # }
+
+    data["LBTRRT"] = {
+        "success": LBTRRT_Planner.tolist()
     }
 
     for i in range(len(rrtconnect_tb)):
@@ -135,6 +178,15 @@ def plot_success(ax, data, colors, linestyles):
 
     PathSimplifier_Planner = data["PathSimplifier"]["success"]
     ax.plot(times, PathSimplifier_Planner, color=colors["PathSimplifier"], linestyle='-', label='PathSimplifier')
+
+    BITstar_Planner = data["BITstar"]["success"]
+    ax.plot(times, BITstar_Planner, color=colors["BITstar"], linestyle='-', label='BIT*')
+
+    # FMT_Planner = data["FMT"]["success"]
+    # ax.plot(times, FMT_Planner, color=colors["FMT"], linestyle='-', label='FMT')
+
+    LBTRRT_Planner = data["LBTRRT"]["success"]
+    ax.plot(times, LBTRRT_Planner, color=colors["LBTRRT"], linestyle='-', label='LBTRRT')
 
     rrtconnect_tb = data["info"]["rrtconnect_tb"]
     for i in range(len(rrtconnect_tb)):

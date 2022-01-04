@@ -62,6 +62,27 @@ def store_optimization_data(filepath):
     data["PathSimplifier"]["quantile5"] = PathSimplifier_planner[1].tolist()
     data["PathSimplifier"]["quantile95"] = PathSimplifier_planner[2].tolist()
 
+    con = sqlite3.connect(filepath + '_BITstar.db')
+    cur = con.cursor()
+    BITstar_planner = get_plot_data(cur, times, max_cost, ci_left, ci_right)
+    data["BITstar"]["median"] = BITstar_planner[0].tolist()
+    data["BITstar"]["quantile5"] = BITstar_planner[1].tolist()
+    data["BITstar"]["quantile95"] = BITstar_planner[2].tolist()
+
+    # con = sqlite3.connect(filepath + '_FMT.db')
+    # cur = con.cursor()
+    # FMT_planner = get_plot_data(cur, times, max_cost, ci_left, ci_right)
+    # data["FMT"]["median"] = FMT_planner[0].tolist()
+    # data["FMT"]["quantile5"] = FMT_planner[1].tolist()
+    # data["FMT"]["quantile95"] = FMT_planner[2].tolist()
+
+    con = sqlite3.connect(filepath + '_LBTRRT.db')
+    cur = con.cursor()
+    LBTRRT_planner = get_plot_data(cur, times, max_cost, ci_left, ci_right)
+    data["LBTRRT"]["median"] = LBTRRT_planner[0].tolist()
+    data["LBTRRT"]["quantile5"] = LBTRRT_planner[1].tolist()
+    data["LBTRRT"]["quantile95"] = LBTRRT_planner[2].tolist()
+
     rrtstar_tb = data["info"]["rrtstar_tb"]
     for i in range(len(rrtstar_tb)):
         con = sqlite3.connect(filepath + '_' + str(rrtstar_tb[i]) + '.db')
@@ -101,6 +122,30 @@ def plot_optimization(ax, data, colors, linestyles, markerstyles):
     start = get_start_index(PathSimplifier_median, times, max_cost)
     ax.plot(times[start:], PathSimplifier_median[start:], color=colors['PathSimplifier'], label='PathSimplifier')
     ax.fill_between(times[start:], PathSimplifier_q5[start:], PathSimplifier_q95[start:], color=colors['PathSimplifier'],
+                     alpha=0.5)
+
+    BITstar_median = data["BITstar"]["median"]
+    BITstar_q5 = data["BITstar"]["quantile5"]
+    BITstar_q95 = data["BITstar"]["quantile95"]
+    start = get_start_index(BITstar_median, times, max_cost)
+    ax.plot(times[start:], BITstar_median[start:], color=colors['BITstar'], label='BIT*')
+    ax.fill_between(times[start:], BITstar_q5[start:], BITstar_q95[start:], color=colors['BITstar'],
+                     alpha=0.5)
+
+    # FMT_median = data["FMT"]["median"]
+    # FMT_q5 = data["FMT"]["quantile5"]
+    # FMT_q95 = data["FMT"]["quantile95"]
+    # start = get_start_index(FMT_median, times, max_cost)
+    # ax.plot(times[start:], FMT_median[start:], color=colors['FMT'], label='FMT')
+    # ax.fill_between(times[start:], FMT_q5[start:], FMT_q95[start:], color=colors['FMT'],
+    #                  alpha=0.5)
+
+    LBTRRT_median = data["LBTRRT"]["median"]
+    LBTRRT_q5 = data["LBTRRT"]["quantile5"]
+    LBTRRT_q95 = data["LBTRRT"]["quantile95"]
+    start = get_start_index(LBTRRT_median, times, max_cost)
+    ax.plot(times[start:], LBTRRT_median[start:], color=colors['LBTRRT'], label='LBTRRT')
+    ax.fill_between(times[start:], LBTRRT_q5[start:], LBTRRT_q95[start:], color=colors['LBTRRT'],
                      alpha=0.5)
 
     rrtstar_tb = data["info"]["rrtstar_tb"]

@@ -12,12 +12,16 @@ ibm_violet = '#785EF0'
 ibm_red = '#DC267F'
 ibm_orange = '#FE6100'
 ibm_yellow = '#FFB000'
+ibm_green = '#24A148'
 
 color_dict = {
     'multimodal': ibm_blue,
     'rrtconnect': ibm_red,
     'rrtstar': ibm_yellow,
-    'PathSimplifier' : ibm_red
+    'PathSimplifier' : ibm_red,
+    'BITstar' : ibm_violet,
+    'FMT' : ibm_orange,
+    'LBTRRT' : ibm_green
 }
 
 linestyles = ['solid', 'dashed', 'dotted']
@@ -69,6 +73,9 @@ def plot():
     handles.append(Line2D([], [], color=ibm_blue, marker='', label='MOMO'))
     handles.append(Line2D([], [], color=ibm_red, marker='', label='Multi-mode Estimator'))
     handles.append(Line2D([], [], color=ibm_yellow, marker='', label='RRT*'))
+    handles.append(Line2D([], [], color=ibm_violet, marker='', label='BIT*'))
+    # handles.append(Line2D([], [], color=ibm_orange, marker='', label='FMT'))
+    handles.append(Line2D([], [], color=ibm_green, marker='', label='LBTRRT'))
     # for i in range(len(rrtconnect_tb)):
     #     handles.append(Line2D([], [], color='black', marker=markerstyles[i], ls='', label=rrtconnect_tb[i]))
     axs[1].legend(handles=handles, loc='upper left')
