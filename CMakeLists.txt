@@ -129,4 +129,7 @@ target_link_libraries( t_ompl_komo ompl rai )
 add_executable(t_manip ./examples/Manipulator/main.cpp)
 target_link_libraries( t_manip ompl rai Path )
 
+# Example executable
+add_executable(t_example ./examples/Just_Visualize_Example/main.cpp)
+target_link_libraries( t_example rai )
 
