@@ -77,12 +77,12 @@ ob::ValidStateSamplerPtr allocMaximizeClearanceVSS(const ob::SpaceInformation *s
     return std::make_shared<ob::MaximizeClearanceValidStateSampler>(si);
 }
 
-void VisualizePath(arrA configs, const char* filename = ""){
+void VisualizePath(arrA configs, std::string filename = ""){
 	static int Trajectory = 1;
 	
 	// Create an instance of KOMO
     rai::Configuration C;
-    C.addFile(filename);
+    C.addFile(filename.c_str());
     KOMO komo;
     komo.verbose = 0;
     komo.setModel(C, true);
@@ -106,11 +106,12 @@ void VisualizePath(arrA configs, const char* filename = ""){
 	Trajectory ++;
 }
 
-void benchmark(const char* filename = "../examples/Models/2D_arm.g", std::string planner_ = "PathOptimizerKOMO", bool benchmark = false)
+void benchmark(std::string filename = "../examples/Models/2D_arm.g", std::string planner_ = "PathOptimizerKOMO", bool benchmark = false)
 {
 	// set state validity checking based on KOMO
 	rai::Configuration C;
-	C.addFile(filename);
+	C.addFile(filename.c_str());
+	std::cout << "filename : " << filename << std::endl;
 	KOMO komo;
 	komo.setModel(C, true);
 	komo.setTiming(1, 1, 1, 1);
@@ -118,7 +119,11 @@ void benchmark(const char* filename = "../examples/Models/2D_arm.g", std::string
 	komo.run_prepare(0);
 
 	C_Dimension = C.getJointStateDimension();
-	uint stepsPerPhase_ = 70;
+	// std::cout << "C_Dimension: " << C_Dimension << std::endl;
+	// return;
+
+	// This must chnage from example to example
+	uint stepsPerPhase_ = 15;
 
 	//Construct the state space we are planning in
 	auto space(std::make_shared<ob::RealVectorStateSpace>(C_Dimension));
@@ -152,12 +157,22 @@ void benchmark(const char* filename = "../examples/Models/2D_arm.g", std::string
 
 	std::cout << start << std::endl;
 
-    // create a goal state
-    ob::ScopedState<> goal(space);
+	// goal state will change from example to example
+	ob::ScopedState<> goal(space);
+	if (filename == "../examples/Models/2_Two_Pandas.g"){
+		// goal = {-0.119527, -0.715569, -0.0174884, -1.8619, -0.0564344, 2.10074, -0.00834383, 0.0469022, -0.110201, -0.70319, -0.00590797, -1.87372, -0.0644692, 2.10377, -0.0100299, 0.0466833};
+		// goal = {-0.375717, 1.04588, 0.337007, -1.04422, -0.401061, 2.59755, -0.0385004, 0.0195842, -0.367046, 1.06017, 0.364706, -1.05986, -0.423203, 2.59865, -0.0562032, 0.0240985};
+		goal = {-0.348907, 1.34251, 0.464246, -0.888288, -0.462429, 2.66979, -0.0416295, 0.0134267, -0.350246, 1.3497, 0.486382, -0.897415, -0.482546, 2.6686, -0.0623223, 0.0197671};
+	}
+	else{// Default goal
+		for (unsigned int i=0; i<C.getJointStateDimension(); i++){
+			if (i>3){continue;}
+			goal[i] = komo.getConfiguration_q(0).elem(i)+1.5;
+		}
+	}
+
 	arr goal_;
 	for (unsigned int i=0; i<C.getJointStateDimension(); i++){
-		if (i>3){goal_.append(0);	continue;}
-		goal[i] = komo.getConfiguration_q(0).elem(i)+1.5;
 		goal_.append(goal[i]);
 	}
 
@@ -296,7 +311,7 @@ void benchmark(const char* filename = "../examples/Models/2D_arm.g", std::string
 		// attempt to solve the problem
 
 		auto startTime = std::chrono::system_clock::now();
-		ob::PlannerStatus solved = ss.solve(10.0);
+		ob::PlannerStatus solved = ss.solve(60.0);
 
 		if (solved == ob::PlannerStatus::StatusType::APPROXIMATE_SOLUTION)
 			std::cout << "Found solution: APPROXIMATE_SOLUTION" << std::endl;
@@ -372,7 +387,7 @@ int main(int argc, char ** argv)
 		benchmark();
 	}
 	else{
-		const char* filename = argv[1];
+		std::string filename = argv[1];
 		std::string planner_ = argv[2];
 		std::string b = argv[3];
 		bool benchmark_ = (b == "true");

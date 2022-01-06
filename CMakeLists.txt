@@ -133,3 +133,7 @@ target_link_libraries( t_manip ompl rai Path )
 add_executable(t_example ./examples/Just_Visualize_Example/main.cpp)
 target_link_libraries( t_example rai )
 
+# Example executable
+add_executable(t_komo ./examples/only_KOMO/main.cpp)
+target_link_libraries( t_komo rai )
+
