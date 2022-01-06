@@ -123,7 +123,7 @@ void benchmark(std::string filename = "../examples/Models/2D_arm.g", std::string
 	// return;
 
 	// This must chnage from example to example
-	uint stepsPerPhase_ = 15;
+	uint stepsPerPhase_ = 30;
 
 	//Construct the state space we are planning in
 	auto space(std::make_shared<ob::RealVectorStateSpace>(C_Dimension));
@@ -159,10 +159,23 @@ void benchmark(std::string filename = "../examples/Models/2D_arm.g", std::string
 
 	// goal state will change from example to example
 	ob::ScopedState<> goal(space);
-	if (filename == "../examples/Models/2_Two_Pandas.g"){
-		// goal = {-0.119527, -0.715569, -0.0174884, -1.8619, -0.0564344, 2.10074, -0.00834383, 0.0469022, -0.110201, -0.70319, -0.00590797, -1.87372, -0.0644692, 2.10377, -0.0100299, 0.0466833};
-		// goal = {-0.375717, 1.04588, 0.337007, -1.04422, -0.401061, 2.59755, -0.0385004, 0.0195842, -0.367046, 1.06017, 0.364706, -1.05986, -0.423203, 2.59865, -0.0562032, 0.0240985};
+	if (filename == "../examples/Models/1_kuka_shelf.g"){
+		goal = {1.05248, -0.982536, -1.70613, -0.816571, -0.0301295, 0.0453272, 0.000650022};
+	}
+	else if (filename == "../examples/Models/2_Two_Pandas.g"){
 		goal = {-0.348907, 1.34251, 0.464246, -0.888288, -0.462429, 2.66979, -0.0416295, 0.0134267, -0.350246, 1.3497, 0.486382, -0.897415, -0.482546, 2.6686, -0.0623223, 0.0197671};
+	}
+	else if (filename == "../examples/Models/3_TwoMobileManipulators.g"){
+		goal = {-0.605107, 0.0441026, 1.59182, 0.0554067, 0.877096, 0.020064, -2.19427, 0.130015, 2.3168, 0.132783, 0.15148, 0.612561, -0.0548847, -1.52128, 0.0674673, 0.873418, 0.0154376, -2.20752, 0.0258739, 2.31415, 0.00219257, 0.0930736};
+	}	
+	else if (filename == "../examples/Models/4_kuka_box.g"){
+		goal = {-0.00769556, 0.729782, -0.000104823, -2.1528, 0.0961055, 0.173696, 0.000571979};
+	}
+	else if (filename == "../examples/Models/5_disc_obstacle.g"){
+		goal = {0.8,-0.25,0};
+	}
+	else if (filename == "../examples/Models/6_rectangle_opening.g"){
+		goal = {0.7,0,0};
 	}
 	else{// Default goal
 		for (unsigned int i=0; i<C.getJointStateDimension(); i++){
@@ -311,7 +324,7 @@ void benchmark(std::string filename = "../examples/Models/2D_arm.g", std::string
 		// attempt to solve the problem
 
 		auto startTime = std::chrono::system_clock::now();
-		ob::PlannerStatus solved = ss.solve(60.0);
+		ob::PlannerStatus solved = ss.solve(10.0);
 
 		if (solved == ob::PlannerStatus::StatusType::APPROXIMATE_SOLUTION)
 			std::cout << "Found solution: APPROXIMATE_SOLUTION" << std::endl;

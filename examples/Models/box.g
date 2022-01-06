@@ -1,6 +1,9 @@
+body box { X=<T t(.4 0 .15) d(0 0 0 1)> fixed }
 
-Base { X=<t(0 0 0) }
-Side1(Base) { X=<t(0 0 0) d(90 0 1 0)> shape:box, mass:1, size:[.5 .5 .05] contact}
-Side2(Base) { X=<t(.5 0 0) d(90 0 1 0)> shape:box, mass:1, size:[.5 .5 .05] contact}
-Side3(Base) { X=<t(.25 .25 0) d(90 1 0 0)> shape:box, mass:1, size:[.5 .5 .05] contact}
-Side4(Base) { X=<t(.25 -.25 0) d(90 1 0 0)> shape:box, mass:1, size:[.5 .5 .05] contact}
+shape(box){ shape:ssBox color=[0 .3 .7 0.5] rel=<T t(0  .15 0.)> size=[.3 .05 .3 .02] contact }
+shape(box){ shape:ssBox color=[0 .3 .7 0.5] rel=<T t(0  -.15 0.)> size=[.3 .05 .3 .02] contact }
+shape(box){ shape:ssBox color=[0 .3 .7 0.5] rel=<T t(.15  0  0.) d(90 0 0 1)> size=[.3 .05 .3 .02] contact }
+shape(box){ shape:ssBox color=[0 .3 .7 0.5] rel=<T t(-.15  0  0.) d(90 0 0 1)> size=[.3 .05 .3 .02] contact }
+shape(box){ shape:ssBox color=[0 .3 .7] rel=<T t(0. 0  -.15) d(90 1 0 0)> size=[.3 .05 .3 .02] contact }
+
+target(box){ shape:sphere color=[1. 0 0] rel=<T t(0 0 0)> size=[.07] }
