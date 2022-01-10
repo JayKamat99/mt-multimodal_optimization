@@ -52,9 +52,10 @@ bool ompl::geometric::PathOptimizerKOMO::optimize(PathGeometric &path)
     //use configs to initialize with waypoints
     komo_->initWithWaypoints(configs, path.getStateCount(), false);
     komo_->run_prepare(0);
-    komo_->animateOptimization = 0;
-    komo_->optimize();
+    komo_->animateOptimization = 1;
+    komo_->optimize(0);
 	rai::Graph R = komo_->getReport(false);
+    // double cost = R.get<double>("sos");
  	double constraint_violation = R.get<double>("eq") + R.get<double>("ineq");
 
     configs = komo_->getPath_q();

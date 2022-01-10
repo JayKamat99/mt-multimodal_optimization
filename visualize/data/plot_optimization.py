@@ -55,12 +55,12 @@ def store_optimization_data(filepath):
     data["multimodal"]["quantile5"] = multimodal_planner[1].tolist()
     data["multimodal"]["quantile95"] = multimodal_planner[2].tolist()
 
-    con = sqlite3.connect(filepath + '_PathSimplifier.db')
+    con = sqlite3.connect(filepath + '_KOMO.db')
     cur = con.cursor()
-    PathSimplifier_planner = get_plot_data(cur, times, max_cost, ci_left, ci_right)
-    data["PathSimplifier"]["median"] = PathSimplifier_planner[0].tolist()
-    data["PathSimplifier"]["quantile5"] = PathSimplifier_planner[1].tolist()
-    data["PathSimplifier"]["quantile95"] = PathSimplifier_planner[2].tolist()
+    KOMO_planner = get_plot_data(cur, times, max_cost, ci_left, ci_right)
+    data["KOMO"]["median"] = KOMO_planner[0].tolist()
+    data["KOMO"]["quantile5"] = KOMO_planner[1].tolist()
+    data["KOMO"]["quantile95"] = KOMO_planner[2].tolist()
 
     con = sqlite3.connect(filepath + '_BITstar.db')
     cur = con.cursor()
@@ -116,12 +116,12 @@ def plot_optimization(ax, data, colors, linestyles, markerstyles):
     ax.fill_between(times[start:], multimodal_q5[start:], multimodal_q95[start:], color=colors['multimodal'],
                      alpha=0.5)
 
-    PathSimplifier_median = data["PathSimplifier"]["median"]
-    PathSimplifier_q5 = data["PathSimplifier"]["quantile5"]
-    PathSimplifier_q95 = data["PathSimplifier"]["quantile95"]
-    start = get_start_index(PathSimplifier_median, times, max_cost)
-    ax.plot(times[start:], PathSimplifier_median[start:], color=colors['PathSimplifier'], label='PathSimplifier')
-    ax.fill_between(times[start:], PathSimplifier_q5[start:], PathSimplifier_q95[start:], color=colors['PathSimplifier'],
+    KOMO_median = data["KOMO"]["median"]
+    KOMO_q5 = data["KOMO"]["quantile5"]
+    KOMO_q95 = data["KOMO"]["quantile95"]
+    start = get_start_index(KOMO_median, times, max_cost)
+    ax.plot(times[start:], KOMO_median[start:], color=colors['KOMO'], label='KOMO')
+    ax.fill_between(times[start:], KOMO_q5[start:], KOMO_q95[start:], color=colors['KOMO'],
                      alpha=0.5)
 
     BITstar_median = data["BITstar"]["median"]

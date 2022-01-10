@@ -15,7 +15,7 @@ ibm_green = '#24A148'
 col_MOMO = ibm_blue
 col_rrt_connect = ibm_red
 col_rrt_star = ibm_orange
-col_PathSimplifier_planner = ibm_red
+col_KOMO_planner = ibm_red
 col_BITstar_planner = ibm_violet
 col_FMT_planner = ibm_orange
 col_LBTRRT_planner = ibm_green
@@ -76,14 +76,14 @@ def store_success_data(filepath):
     # MOMO = get_percentages_first_solution(cur, times)
     MOMO = get_from_progress(cur, times)
 
-    # plot PathSimplifier_Planner
+    # plot KOMO_Planner
     times = np.logspace(np.log10(data["info"]["min_time"]["success"]), np.log10(data["info"]["max_time"]["success"]),
                         resolution)
 
-    con = sqlite3.connect(filepath + '_PathSimplifier.db')
+    con = sqlite3.connect(filepath + '_KOMO.db')
     cur = con.cursor()
-    # PathSimplifier_Planner = get_percentages_first_solution(cur, times)
-    PathSimplifier_Planner = get_from_progress(cur, times)
+    # KOMO_Planner = get_percentages_first_solution(cur, times)
+    KOMO_Planner = get_from_progress(cur, times)
 
     # plot BITstar_Planner
     times = np.logspace(np.log10(data["info"]["min_time"]["success"]), np.log10(data["info"]["max_time"]["success"]),
@@ -131,8 +131,8 @@ def store_success_data(filepath):
         "success": MOMO.tolist()
     }
 
-    data["PathSimplifier"] = {
-        "success": PathSimplifier_Planner.tolist()
+    data["KOMO"] = {
+        "success": KOMO_Planner.tolist()
     }
 
     data["BITstar"] = {
@@ -176,8 +176,8 @@ def plot_success(ax, data, colors, linestyles):
     MOMO = data["multimodal"]["success"]
     ax.plot(times, MOMO, color=colors["multimodal"], linestyle='-', label='MOMO')
 
-    PathSimplifier_Planner = data["PathSimplifier"]["success"]
-    ax.plot(times, PathSimplifier_Planner, color=colors["PathSimplifier"], linestyle='-', label='PathSimplifier')
+    KOMO_Planner = data["KOMO"]["success"]
+    ax.plot(times, KOMO_Planner, color=colors["KOMO"], linestyle='-', label='KOMO')
 
     BITstar_Planner = data["BITstar"]["success"]
     ax.plot(times, BITstar_Planner, color=colors["BITstar"], linestyle='-', label='BIT*')

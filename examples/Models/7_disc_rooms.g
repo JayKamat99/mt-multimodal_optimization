@@ -1,4 +1,4 @@
-Include = 'maze.g'
+Include = 'rooms.g'
 
 world {}
 

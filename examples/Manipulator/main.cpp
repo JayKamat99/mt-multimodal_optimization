@@ -177,6 +177,9 @@ void benchmark(std::string filename = "../examples/Models/2D_arm.g", std::string
 	else if (filename == "../examples/Models/6_rectangle_opening.g"){
 		goal = {0.7,0,0};
 	}
+	else if (filename == "../examples/Models/7_disc_rooms.g"){
+		goal = {0.7,0,0};
+	}
 	else{// Default goal
 		for (unsigned int i=0; i<C.getJointStateDimension(); i++){
 			if (i>3){continue;}
@@ -239,7 +242,7 @@ void benchmark(std::string filename = "../examples/Models/2D_arm.g", std::string
 			komo_->add_qControlObjective({}, 1, 1.);
 
 			komo_->addObjective({1.}, FS_qItself, {}, OT_eq, {1000}, goal_, 0);
-			komo_->addObjective({}, FS_qItself, {}, OT_sos, {1.}, {}, 1);
+			// komo_->addObjective({}, FS_qItself, {}, OT_sos, {1.}, {}, 1);
 			komo_->add_collision(true);
 
 			if (planner_ == "PathOptimizerKOMO"){
@@ -257,9 +260,11 @@ void benchmark(std::string filename = "../examples/Models/2D_arm.g", std::string
 		ompl::tools::Benchmark::Request req;
 		req.maxTime = 10.0;
 		req.maxMem = 100.0;
-		req.runCount = 100;
+		req.runCount = 10;
 		req.displayProgress = true;
 		b.benchmark(req);
+
+		//TODO: add postrunevent ompl - to make sure the path is feasible
 		
 		// This will generate a .log file
 		std::ostringstream oss;
@@ -324,7 +329,7 @@ void benchmark(std::string filename = "../examples/Models/2D_arm.g", std::string
 		// attempt to solve the problem
 
 		auto startTime = std::chrono::system_clock::now();
-		ob::PlannerStatus solved = ss.solve(10.0);
+		ob::PlannerStatus solved = ss.solve(5.0);
 
 		if (solved == ob::PlannerStatus::StatusType::APPROXIMATE_SOLUTION)
 			std::cout << "Found solution: APPROXIMATE_SOLUTION" << std::endl;

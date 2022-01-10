@@ -18,7 +18,7 @@ color_dict = {
     'multimodal': ibm_blue,
     'rrtconnect': ibm_red,
     'rrtstar': ibm_yellow,
-    'PathSimplifier' : ibm_red,
+    'KOMO' : ibm_red,
     'BITstar' : ibm_violet,
     'FMT' : ibm_orange,
     'LBTRRT' : ibm_green
@@ -71,7 +71,7 @@ def plot():
     # rrtconnect_tb = data["info"]["rrtconnect_tb"]
     # for i in range(len(rrtconnect_tb)):
     handles.append(Line2D([], [], color=ibm_blue, marker='', label='MOMO'))
-    handles.append(Line2D([], [], color=ibm_red, marker='', label='Multi-mode Estimator'))
+    handles.append(Line2D([], [], color=ibm_red, marker='', label='KOMO'))
     handles.append(Line2D([], [], color=ibm_yellow, marker='', label='RRT*'))
     handles.append(Line2D([], [], color=ibm_violet, marker='', label='BIT*'))
     # handles.append(Line2D([], [], color=ibm_orange, marker='', label='FMT'))
