@@ -137,3 +137,6 @@ target_link_libraries( t_example rai )
 add_executable(t_komo ./examples/only_KOMO/main.cpp)
 target_link_libraries( t_komo rai )
 
+# try_path executable
+add_executable(t_path ./examples/Test_KOMO/main.cpp)
+target_link_libraries( t_path rai )

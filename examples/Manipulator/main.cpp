@@ -237,7 +237,7 @@ void benchmark(std::string filename = "../examples/Models/2D_arm.g", std::string
 			komo_->verbose = 0;
 			komo_->setModel(C, true);
 			
-			komo_->setTiming(1., stepsPerPhase_, 5., 2);
+			komo_->setTiming(1., stepsPerPhase_, 1., 2);
 			// komo_->add_qControlObjective({}, 1, 2.);
 			komo_->add_qControlObjective({}, 1, 1.);
 
@@ -372,6 +372,10 @@ void benchmark(std::string filename = "../examples/Models/2D_arm.g", std::string
 						configs.append(config);
 					}
 					//Visualize in KOMO
+					std::ofstream myfile;
+					myfile.open ("7_configs.txt");
+					myfile << configs;
+					myfile.close();
 					VisualizePath(configs, filename);
 					std::dynamic_pointer_cast<ompl::geometric::PathGeometric>(localMinimaTree->getPath(i,j)->asPathPtr())->print(std::cout);
 				}
