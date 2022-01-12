@@ -4,18 +4,23 @@
 #include <Kin/viewer.h>
 #include <fstream>
 
-void optimize(){
+void optimize(std::string filename){
     // Load the configuration
     rai::Configuration C;
-    // const char* filename = "../examples/Models/7_disc_rooms.g";
-    const char* filename = "../examples/Models/2_Two_Pandas.g";
-    C.addFile(filename);
+    C.addFile(filename.c_str());
     cout <<"configuration space dim=" <<C.getJointStateDimension() <<endl;
+    std::string file;
+
+    if (filename == "../examples/Models/2_Two_Pandas.g"){
+        file = "../debug/initPathConfigs.txt";
+    }
+    else if (filename == "../examples/Models/7_disc_rooms.g"){
+        file = "../debug/7_configs.txt";
+    }
 
     std::ifstream myfile;
     arrA configs;
-    // myfile.open ("../debug/7_configs.txt");
-    myfile.open ("../debug/initPathConfigs.txt");
+    myfile.open (file.c_str());
     myfile >> configs;
     myfile.close();
 
@@ -43,7 +48,8 @@ void optimize(){
 
 int main(int argc, char ** argv)
 {
-  	rai::initCmdLine(argc,argv);    
-    optimize();
+  	rai::initCmdLine(argc,argv);   
+    std::string filename = argv[1]; 
+    optimize(filename);
 	return 0;
 }
