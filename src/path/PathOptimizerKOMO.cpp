@@ -35,24 +35,10 @@ bool ompl::geometric::PathOptimizerKOMO::optimize(PathGeometric &path)
 			configs.append(config);
 	}
 
-    // setup KOMO
-    // rai::Configuration C;
-    // C.addFile(filename.c_str());
-    // KOMO komo;
-    // komo.verbose = 0;
-    // komo.setModel(C, true);
-    
-    // komo.setTiming(1., configs.N, 5., 2);
-    // komo.add_qControlObjective({}, 1, 2.);
-
-    // komo.addObjective({1.}, FS_qItself, {}, OT_eq, {10}, configs(configs.N-1), 0);
-    // komo.addObjective({}, FS_accumulatedCollisions, {}, OT_eq, {1.});
-    // komo.add_collision(true);
-
     //use configs to initialize with waypoints
     komo_->initWithWaypoints(configs, path.getStateCount(), false);
     komo_->run_prepare(0);
-    komo_->animateOptimization = 1;
+    komo_->animateOptimization = 0;
     komo_->optimize(0);
 	rai::Graph R = komo_->getReport(false);
     // double cost = R.get<double>("sos");

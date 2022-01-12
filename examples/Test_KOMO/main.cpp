@@ -7,13 +7,15 @@
 void optimize(){
     // Load the configuration
     rai::Configuration C;
-    const char* filename = "../examples/Models/7_disc_rooms.g";
+    // const char* filename = "../examples/Models/7_disc_rooms.g";
+    const char* filename = "../examples/Models/2_Two_Pandas.g";
     C.addFile(filename);
     cout <<"configuration space dim=" <<C.getJointStateDimension() <<endl;
 
     std::ifstream myfile;
     arrA configs;
-    myfile.open ("7_configs.txt");
+    // myfile.open ("../debug/7_configs.txt");
+    myfile.open ("../debug/initPathConfigs.txt");
     myfile >> configs;
     myfile.close();
 

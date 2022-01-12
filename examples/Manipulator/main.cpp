@@ -169,7 +169,8 @@ void benchmark(std::string filename = "../examples/Models/2D_arm.g", std::string
 		goal = {-0.605107, 0.0441026, 1.59182, 0.0554067, 0.877096, 0.020064, -2.19427, 0.130015, 2.3168, 0.132783, 0.15148, 0.612561, -0.0548847, -1.52128, 0.0674673, 0.873418, 0.0154376, -2.20752, 0.0258739, 2.31415, 0.00219257, 0.0930736};
 	}	
 	else if (filename == "../examples/Models/4_kuka_box.g"){
-		goal = {-0.00769556, 0.729782, -0.000104823, -2.1528, 0.0961055, 0.173696, 0.000571979};
+		goal = {0.00241061, 0.872391, -0.00871117, -2.09305, -0.0101917, 0.314683, 0.000963466};
+		// goal = {-0.00769556, 0.729782, -0.000104823, -2.1528, 0.0961055, 0.173696, 0.000571979};
 	}
 	else if (filename == "../examples/Models/5_disc_obstacle.g"){
 		goal = {0.8,-0.25,0};
@@ -329,7 +330,7 @@ void benchmark(std::string filename = "../examples/Models/2D_arm.g", std::string
 		// attempt to solve the problem
 
 		auto startTime = std::chrono::system_clock::now();
-		ob::PlannerStatus solved = ss.solve(5.0);
+		ob::PlannerStatus solved = ss.solve(40.0);
 
 		if (solved == ob::PlannerStatus::StatusType::APPROXIMATE_SOLUTION)
 			std::cout << "Found solution: APPROXIMATE_SOLUTION" << std::endl;
