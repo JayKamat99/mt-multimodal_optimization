@@ -2,6 +2,9 @@
 #define OMPL_GEOMETRIC_PKOMO_
 
 #include <ompl/geometric/planners/PlannerIncludes.h>
+#include <ompl/base/spaces/RealVectorStateSpace.h>
+#include <ompl/base/spaces/RealVectorBounds.h>
+#include <ompl/base/State.h>
 #include <KOMO/komo.h>
 #include <Kin/viewer.h>
 #include <Core/graph.h>
@@ -23,11 +26,15 @@ namespace ompl
             {
                 return std::to_string(bestCost);
             }
+            std::string filename_;
             arrA OptimalPath;
             void clear() override;
             double dist(arr p1,arr p2);
             bool compare(arrA path,arrA OptimalPath,double threshold);
-            int dim;
+            ompl::base::RealVectorStateSpace *RN = si_->getStateSpace()->as<ompl::base::RealVectorStateSpace>();
+            int dim = RN->getDimension();
+            const std::vector<double> &bl = RN->getBounds().low;
+            const std::vector<double> &bh = RN->getBounds().high;
             std::default_random_engine generator;
 
             /**
@@ -45,8 +52,39 @@ namespace ompl
              */
             void generate_randomUnitVector();
 
+            void generate_grid(double delta);
+
+            /** \brief Representation of a motion
+
+                This only contains pointers to parent motions as we
+                only need to go backwards in the tree. */
+            class Motion
+            {
+            public:
+                Motion() = default;
+
+                /** \brief Constructor that allocates memory for the state */
+                Motion(const base::SpaceInformationPtr &si) : state(si->allocState())
+                {
+                }
+
+                ~Motion() = default;
+
+                /** \brief The state contained by the motion */
+                base::State *state{nullptr};
+
+                /** \brief The parent motion in the exploration tree */
+                Motion *parent{nullptr};
+            };
+
+            /** \brief Compute distance between motions (actually distance between contained states) */
+            double distanceFunction(const Motion *a, const Motion *b) const
+            {
+                return si_->distance(a->state, b->state);
+            }
+
         public:
-            PKOMO(const base::SpaceInformationPtr &si);
+            PKOMO(const base::SpaceInformationPtr &si, std::string filename);
             virtual ~PKOMO() override;
 
 			base::PlannerStatus solve(const base::PlannerTerminationCondition &ptc) override;

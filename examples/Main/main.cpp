@@ -122,11 +122,6 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 	komo.run_prepare(0);
 
 	C_Dimension = C.getJointStateDimension();
-	// std::cout << "C_Dimension: " << C_Dimension << std::endl;
-	// return;
-
-	// This must chnage from example to example
-	uint stepsPerPhase_ = 30;
 
 	//Construct the state space we are planning in
 	auto space(std::make_shared<ob::RealVectorStateSpace>(C_Dimension));
@@ -146,11 +141,6 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 	ss.setStateValidityChecker([&checker](const ob::State *state) {
 		return checker.check(state);
 	});
-
-	// ss.getSpaceInformation()->setValidStateSamplerAllocator(allocObstacleBasedVSS);
-	// ss.getSpaceInformation()->setValidStateSamplerAllocator(allocGaussianVSS);
-	// ss.getSpaceInformation()->setValidStateSamplerAllocator(allocMinimumClearanceVSS);
-	// ss.getSpaceInformation()->setValidStateSamplerAllocator(allocMaximizeClearanceVSS);
 
     // create a start state
     ob::ScopedState<> start(space);
@@ -201,10 +191,6 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
     // Set the start and goal states
     ss.setStartAndGoalStates(start, goal);
 
-	//set Optimization Objective
-	// ompl::base::OptimizationObjectivePtr opt_ = std::make_shared<ompl::base::PathLengthSquaredOptimizationObjective>(ss.getSpaceInformation());
-	// ss.setOptimizationObjective(opt_);
-
 	if(benchmark)
 	{
 		// First we create a benchmark class:
@@ -249,7 +235,7 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 			komo_->verbose = 0;
 			komo_->setModel(C, true);
 			
-			komo_->setTiming(1., stepsPerPhase_, 1., 2);
+			komo_->setTiming(1., 20, 1., 2);
 			// komo_->add_qControlObjective({}, 1, 2.);
 			komo_->add_qControlObjective({}, 1, 1.);
 
@@ -306,7 +292,7 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 			ss.setPlanner(planner);
 		}
 		else if(planner_ == "PKOMO"){
-			auto planner(std::make_shared<og::PKOMO>(si));
+			auto planner(std::make_shared<og::PKOMO>(si, filename));
 			ss.setPlanner(planner);
 		}
 		else{
@@ -315,12 +301,10 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 			komo_->verbose = 0;
 			komo_->setModel(C, true);
 			
-			komo_->setTiming(1., stepsPerPhase_, 5., 2);
+			komo_->setTiming(1., 20, 5., 2);
 			komo_->add_qControlObjective({}, 1, 2.);
 
 			komo_->addObjective({1.}, FS_qItself, {}, OT_eq, {10}, goal_, 0);
-			komo_->addObjective({1.}, FS_qItself, {}, OT_sos, {1}, {}, 0);
-			// komo_->addObjective({}, FS_accumulatedCollisions, {}, OT_eq, {1.});
 			komo_->add_collision(true);
 
 			if(planner_ == "KOMO"){
