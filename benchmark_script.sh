@@ -10,6 +10,7 @@ cd ../visualize
 
 # Set model here
 # MODEL="../examples/Models/1_kuka_shelf.g"
+# MODEL="../examples/Models/2_Two_Pandas.g"
 # MODEL="../examples/Models/3_TwoMobileManipulators.g"
 MODEL="../examples/Models/4_kuka_box.g"
 # MODEL="../examples/Models/5_disc_obstacle.g"

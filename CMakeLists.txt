@@ -137,6 +137,10 @@ target_link_libraries( t_example rai )
 add_executable(t_komo ./examples/only_KOMO/main.cpp)
 target_link_libraries( t_komo rai )
 
+# Main executable
+add_executable(t_main ./examples/Main/main.cpp)
+target_link_libraries( t_main ompl rai Path)
+
 # try_path executable
 add_executable(t_path ./examples/Test_KOMO/main.cpp)
 target_link_libraries( t_path rai )

@@ -1,13 +1,14 @@
 #include <iostream>
-#include <functional>
+
+// Basic Requirements
+#include <ompl/config.h>
+#include <ompl/geometric/SimpleSetup.h>
 #include <ompl/base/SpaceInformation.h>
 #include <ompl/base/ProblemDefinition.h>
 #include <ompl/base/spaces/RealVectorStateSpace.h>
-#include <ompl/multilevel/planners/multimodal/LocalMinimaSpanners.h>
-#include <ompl/geometric/SimpleSetup.h>
 #include <ompl/tools/benchmark/Benchmark.h>
-#include <ompl/base/objectives/PathLengthSquaredOptimizationObjective.h>
 
+// Samplers
 #include <ompl/base/samplers/ObstacleBasedValidStateSampler.h>
 #include <ompl/base/samplers/informed/PathLengthDirectInfSampler.h>
 #include <ompl/base/samplers/InformedStateSampler.h>
@@ -18,6 +19,7 @@
 // Planners
 #include <path/PathOptimizerKOMO.h>
 #include <path/Planner_KOMO.h>
+#include <path/PKOMO.h>
 #include <ompl/geometric/planners/rrt/RRTstar.h>
 #include <ompl/geometric/planners/fmt/FMT.h>
 #include <ompl/geometric/planners/rrt/LBTRRT.h>
@@ -26,12 +28,9 @@
 #include <ompl/geometric/planners/informedtrees/ABITstar.h>
 #include <ompl/geometric/PathSimplifier.h>
 
-#include <ompl/config.h>
-
+// KOMO
 #include <KOMO/komo.h>
 #include <Kin/viewer.h>
-
-#include <chrono>
 
 #define PI 3.1412
 
@@ -39,7 +38,6 @@ unsigned int C_Dimension;
 
 namespace ob = ompl::base;
 namespace og = ompl::geometric;
-namespace om = ompl::multilevel;
 
 struct ValidityCheckWithKOMO {
 	KOMO::Conv_KOMO_SparseNonfactored &nlp;
@@ -99,10 +97,6 @@ void VisualizePath(arrA configs, std::string filename = ""){
     komo.setTiming(1., configs.N, 5., 2);
 	komo.add_qControlObjective({}, 1, 1.);
 
-    // komo.addObjective({1.}, FS_qItself, {}, OT_eq, {10}, configs(configs.N-1), 0);
-    // komo.addObjective({}, FS_accumulatedCollisions, {}, OT_eq, {1.});
-    // komo.add_collision(true);
-
     //use configs to initialize with waypoints
 	komo.initWithWaypoints(configs, configs.N, false);
     komo.run_prepare(0);
@@ -115,7 +109,7 @@ void VisualizePath(arrA configs, std::string filename = ""){
 	Trajectory ++;
 }
 
-void benchmark(std::string filename = "../examples/Models/2D_arm.g", std::string planner_ = "PathOptimizerKOMO", bool benchmark = false)
+void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::string planner_ = "BITstar", bool benchmark = false)
 {
 	// set state validity checking based on KOMO
 	rai::Configuration C;
@@ -244,13 +238,11 @@ void benchmark(std::string filename = "../examples/Models/2D_arm.g", std::string
 			auto planner1(std::make_shared<og::LBTRRT>(si));
 			b.addPlanner(planner1);
 		}
-		if (planner_ == "PathSimplifier"){
-			auto planner(std::make_shared<om::LocalMinimaSpanners>(siVec));
-			og::PathOptimizerPtr optimizer = std::make_shared<og::PathSimplifier>(si);
-			planner->setOptimizer(optimizer);
-			b.addPlanner(planner);
-		}
-		if (planner_ == "PathOptimizerKOMO" || "KOMO")
+		// if (planner_ == "PKOMO"){
+		// 	auto planner1(std::make_shared<PKOMO>(si));
+		// 	b.addPlanner(planner1);
+		// }
+		if (planner_ == "KOMO")
 		{
 			//build the KOMO object here:
 			auto komo_(std::make_shared<KOMO>());
@@ -265,12 +257,6 @@ void benchmark(std::string filename = "../examples/Models/2D_arm.g", std::string
 			// komo_->addObjective({}, FS_qItself, {}, OT_sos, {1.}, {}, 1);
 			komo_->add_collision(true);
 
-			if (planner_ == "PathOptimizerKOMO"){
-				auto planner(std::make_shared<om::LocalMinimaSpanners>(siVec));
-				og::PathOptimizerPtr optimizer = std::make_shared<og::PathOptimizerKOMO>(si,komo_);
-				planner->setOptimizer(optimizer);
-				b.addPlanner(planner);
-			}
 			if (planner_ == "KOMO"){
 				auto planner(std::make_shared<og::Planner_KOMO>(si,komo_));
 				b.addPlanner(planner);
@@ -294,9 +280,6 @@ void benchmark(std::string filename = "../examples/Models/2D_arm.g", std::string
 
 	else{
 		auto si = ss.getSpaceInformation();
-		std::vector<ob::SpaceInformationPtr> siVec;
-		siVec.push_back(si);
-		auto planner1 = std::make_shared<om::LocalMinimaSpanners>(siVec);
 
 		if(planner_ == "RRTstar"){
 			auto planner(std::make_shared<og::RRTstar>(si));
@@ -322,10 +305,9 @@ void benchmark(std::string filename = "../examples/Models/2D_arm.g", std::string
 			auto planner(std::make_shared<og::LBTRRT>(si));
 			ss.setPlanner(planner);
 		}
-		else if (planner_ == "PathSimplifier"){
-			og::PathOptimizerPtr optimizer = std::make_shared<og::PathSimplifier>(si);
-			planner1->setOptimizer(optimizer);
-			ss.setPlanner(planner1);
+		else if(planner_ == "PKOMO"){
+			auto planner(std::make_shared<og::PKOMO>(si));
+			ss.setPlanner(planner);
 		}
 		else{
 			//build the KOMO object here:
@@ -341,12 +323,7 @@ void benchmark(std::string filename = "../examples/Models/2D_arm.g", std::string
 			// komo_->addObjective({}, FS_accumulatedCollisions, {}, OT_eq, {1.});
 			komo_->add_collision(true);
 
-			if (planner_ == "PathOptimizerKOMO"){
-				og::PathOptimizerPtr optimizer = std::make_shared<og::PathOptimizerKOMO>(si,komo_);
-				planner1->setOptimizer(optimizer);
-				ss.setPlanner(planner1);
-			}
-			else if(planner_ == "KOMO"){
+			if(planner_ == "KOMO"){
 				auto planner(std::make_shared<og::Planner_KOMO>(si, komo_));
 				ss.setPlanner(planner);
 			}
@@ -355,8 +332,6 @@ void benchmark(std::string filename = "../examples/Models/2D_arm.g", std::string
 		ss.setup();
 
 		// attempt to solve the problem
-
-		auto startTime = std::chrono::system_clock::now();
 		ob::PlannerStatus solved = ss.solve(20.0);
 
 		if (solved == ob::PlannerStatus::StatusType::APPROXIMATE_SOLUTION)
@@ -369,63 +344,23 @@ void benchmark(std::string filename = "../examples/Models/2D_arm.g", std::string
 			std::cout << "No solution found: Invalid " << std::endl;
 			return;
 		}
-
-		auto endTime = std::chrono::system_clock::now();
 	
-		if(planner_ == "PathOptimizerKOMO" || planner_ == "PathSimplifier"){ //This code is for visualization of the paths from PathOptimizer
-			auto localMinimaTree = planner1->getLocalMinimaTree();
-			int NumberOfMinima =  (int)localMinimaTree->getNumberOfMinima();
-			int NumberOfLevels =  (int)localMinimaTree->getNumberOfLevel();
-
-		// ofstream myfile;
-		// myfile.open ("PathOptimizerKOMO_035_times.txt", std::ios_base::app);
-		// myfile << std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime).count() << ","<< NumberOfMinima <<"\n";
-		// myfile.close();
-		
-		// return;
-			for (int i=0; i<NumberOfLevels; i++){
-				for (int j=0; j<NumberOfMinima; j++){
-					std::cout << "\nNew path[" << i << j+1 << "] \n" << std::endl;
-					auto path = std::dynamic_pointer_cast<ompl::geometric::PathGeometric>(localMinimaTree->getPath(i,j)->asPathPtr());
-					//convert path to arrA
-					arrA configs;
-					for (auto state : (*path).getStates())
-					{
-						arr config;
-						std::vector<double> reals;
-						space->copyToReals(reals, state);
-						for (double r : reals){
-							config.append(r);
-						}
-						configs.append(config);
-					}
-					//Visualize in KOMO
-					std::ofstream myfile;
-					myfile.open ("7_configs.txt");
-					myfile << configs;
-					myfile.close();
-					VisualizePath(configs, filename);
-					std::dynamic_pointer_cast<ompl::geometric::PathGeometric>(localMinimaTree->getPath(i,j)->asPathPtr())->print(std::cout);
-				}
+		// This is for visualization of paths from other planners
+		auto path = ss.getSolutionPath();
+		arrA configs;
+		for (auto state : path.getStates())
+		{
+			arr config;
+			std::vector<double> reals;
+			space->copyToReals(reals, state);
+			for (double r : reals){
+				config.append(r);
 			}
+			configs.append(config);
 		}
+		//Visualize in KOMO
+		VisualizePath(configs, filename);
 
-		else{// This is for visualization of paths from other planners
-			auto path = ss.getSolutionPath();
-			arrA configs;
-			for (auto state : path.getStates())
-			{
-				arr config;
-				std::vector<double> reals;
-				space->copyToReals(reals, state);
-				for (double r : reals){
-					config.append(r);
-				}
-				configs.append(config);
-			}
-			//Visualize in KOMO
-			VisualizePath(configs, filename);
-		}
 	}
 }
 
@@ -441,9 +376,7 @@ int main(int argc, char ** argv)
 		std::string planner_ = argv[2];
 		std::string b = argv[3];
 		bool benchmark_ = (b == "true");
-		// for (int i = 0; i<50; i++){
 		benchmark(filename, planner_, benchmark_);
-		// }
 	}
 	return 0;
 }
