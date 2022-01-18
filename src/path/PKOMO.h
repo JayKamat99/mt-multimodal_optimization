@@ -30,12 +30,22 @@ namespace ompl
             arrA OptimalPath;
             void clear() override;
             double dist(arr p1,arr p2);
+            double costToGoal(std::vector<double> p1);
             bool compare(arrA path,arrA OptimalPath,double threshold);
             ompl::base::RealVectorStateSpace *RN = si_->getStateSpace()->as<ompl::base::RealVectorStateSpace>();
             int dim = RN->getDimension();
             const std::vector<double> &bl = RN->getBounds().low;
             const std::vector<double> &bh = RN->getBounds().high;
             std::default_random_engine generator;
+            std::vector<double> u;
+            std::vector<double> goal;
+            bool complete{false};
+
+            /**
+             * @brief This is the Active list of the states that can be explored
+             */
+            std::vector<std::vector<double>> Active_list;
+            std::vector<double> costToGoal_list;
 
             /**
              * @brief This is the function that is unique to our planner. 

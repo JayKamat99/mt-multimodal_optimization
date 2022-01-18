@@ -27,9 +27,20 @@ void ompl::geometric::PKOMO::clear()
 	Planner::clear();
 }
 
+double ompl::geometric::PKOMO::costToGoal(std::vector<double> p1)
+{
+    // This must return cost till state + dist to goal
+    double dist = 0;
+    for (int i=0; i<dim; i++){
+        double diff = p1[i]-goal[i];
+        dist = dist+diff*diff;
+    }
+    dist = sqrt(dist);
+    return dist; // This is not what we must return
+}
+
 double ompl::geometric::PKOMO::dist(arr p1,arr p2)
 {
-    this->dim = p1.N;
     double dist = 0;
     for (int i=0; i<dim; i++){
         double diff = p1(i)-p2(i);
@@ -63,13 +74,11 @@ bool ompl::geometric::PKOMO::compare(arrA path,arrA OptimalPath,double threshold
 void ompl::geometric::PKOMO::generate_randomUnitVector()
 {
     std::normal_distribution<double> normal_distribution(0,1);
-    std::uniform_real_distribution<double> uniform_distribution(0,1); // TODO: put this in your poisson distribution code
 
-    // generate a random vector u
-    double u[dim] = {};
+    u.clear();
     double length = 0;
     for (int i=0; i<dim; i++){
-        u[i] = normal_distribution(this->generator);
+        u.push_back(normal_distribution(this->generator));
         length = length + u[i]*u[i];
     }
 
@@ -81,21 +90,12 @@ void ompl::geometric::PKOMO::generate_randomUnitVector()
         u[i] = u[i]/length;
         normal_length = normal_length + u[i]*u[i];
     }
-
-    // TODO: return statement
 }
 
 arrA ompl::geometric::PKOMO::bestPoissonPath(double delta)
 {
-    /**
-     * @brief Pseudocode
-     * generate_grid();
-     * auto start = pdef_.getStartState(0);
-     * auto goal = pdef_.getGoal();
-     * generate random feasible points near from start
-     * calculate cost for each point
-     * 
-     */
+    // Init checks
+    checkValidity();
 
     // generate grid
     int grid_cells = 0;
@@ -105,10 +105,33 @@ arrA ompl::geometric::PKOMO::bestPoissonPath(double delta)
     double grid_array[grid_cells];
     for (int i=0; i<grid_cells; i++){grid_array[i]=-1;}
 
-    // ompl::base::Goal Goal = pdef_->getGoal().get();
+    // get Start State, convert it to vector<double> and pass it to the active list
+    base::State *start_s = pdef_->getStartState(0);
+    std::vector<double> start;
+    si_->getStateSpace()->copyToReals(start, start_s);
+    Active_list.push_back(start);
+    // costToGoal_list.push_back(costToGoal(start));
 
+    // while (!complete) // while path to goal not found repeat
+    // {
+        int k=0;
+        // while (k<30)
+        // {
+            // Sample a new random state
+            generate_randomUnitVector();
+            std::uniform_real_distribution<double> uniform_distribution(delta,2*delta);
+            double r = uniform_distribution(this->generator);
+            for (int i=0; i<dim; i++){
+                u[i] = u[i]*r;
+            }
+            // add to best motion and check for feasibility{not close to other samples + valid}
+            // if valid make this a child of the previous motion.
+            // Check which grid this point is 
+        // }
+    // }
 
     
+    // return path;
     return {{0,0},{0,1},{0,2}};
 }
 
@@ -119,10 +142,8 @@ ompl::base::PlannerStatus ompl::geometric::PKOMO::solve(const base::PlannerTermi
     double threshold = 5;
     bool isValid = false;
 
-    // Define Goal and convert it to state
-    ompl::base::Goal *goal = pdef_->getGoal().get();
+    // Define Goal and convert it to state and arr
     auto goal_s = pdef_->getGoal()->as<ompl::base::GoalState>()->getState();
-
     arr goal_;
     std::vector<double> reals;
     si_->getStateSpace()->copyToReals(reals, goal_s);
@@ -145,6 +166,7 @@ ompl::base::PlannerStatus ompl::geometric::PKOMO::solve(const base::PlannerTermi
         komo.setTiming(1., 10*path.N, 5., 2);
         komo.add_qControlObjective({}, 1, 1.);
         komo.addObjective({1.}, FS_qItself, {}, OT_eq, {10}, goal_, 0);
+		komo.add_collision(true); // TODO: Is there a better function for checking collision?
 
         //use configs to initialize with waypoints
         // komo.initWithWaypoints(path, path.N, false);
@@ -152,6 +174,7 @@ ompl::base::PlannerStatus ompl::geometric::PKOMO::solve(const base::PlannerTermi
         komo.optimize();
         komo.plotTrajectory();
 
+        // Viewer for debug purposes only.
         rai::ConfigurationViewer V;
         V.setPath(C, komo.x, "result", true);
         V.playVideo(true, 1.);

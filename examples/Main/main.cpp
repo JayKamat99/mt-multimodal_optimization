@@ -224,10 +224,10 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 			auto planner1(std::make_shared<og::LBTRRT>(si));
 			b.addPlanner(planner1);
 		}
-		// if (planner_ == "PKOMO"){
-		// 	auto planner1(std::make_shared<PKOMO>(si));
-		// 	b.addPlanner(planner1);
-		// }
+		if (planner_ == "PKOMO"){
+			auto planner1(std::make_shared<og::PKOMO>(si,filename));
+			b.addPlanner(planner1);
+		}
 		if (planner_ == "KOMO")
 		{
 			//build the KOMO object here:
