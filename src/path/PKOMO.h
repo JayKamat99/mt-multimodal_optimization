@@ -21,30 +21,50 @@ namespace ompl
         {
         protected:
             void freeMemory();
+
 			double bestCost = std::numeric_limits<double>::infinity();
+
 			std::string bestCostProperty()
             {
                 return std::to_string(bestCost);
             }
+
             std::string filename_;
+
             arrA OptimalPath;
+
             void clear() override;
+
             double dist(arr p1,arr p2);
+
             double costToGoal(std::vector<double> p1);
+
             bool compare(arrA path,arrA OptimalPath,double threshold);
+
             ompl::base::RealVectorStateSpace *RN = si_->getStateSpace()->as<ompl::base::RealVectorStateSpace>();
+
             int dim = RN->getDimension();
+
             const std::vector<double> &bl = RN->getBounds().low;
+
             const std::vector<double> &bh = RN->getBounds().high;
+
             std::default_random_engine generator;
+
             std::vector<double> u;
+            
             std::vector<double> goal;
+            
             bool complete{false};
 
-            /**
-             * @brief This is the Active list of the states that can be explored
-             */
-            std::vector<std::vector<double>> Active_list;
+            /** \brief State sampler */
+            base::StateSamplerPtr sampler_;
+
+            // /**
+            //  * @brief This is the Active list of the states that can be explored
+            //  */
+            // std::vector<std::vector<double>> activeList;
+            
             std::vector<double> costToGoal_list;
 
             /**
@@ -53,9 +73,10 @@ namespace ompl
              * and generating the least cost path using A*. A valid path is then to be converted to arrA and returned.
              * 
              * @param delta defines the sparsity of the poisson sampling.
-             * @return arrA 
+             * @return PathGeometricPtr 
              */
-            arrA bestPoissonPath(double delta);
+            PathGeometricPtr bestPoissonPath(double delta);
+            // arrA bestPoissonPath(double delta);
 
             /**
              * @brief This function uses the Bos-Muller transform method for generating a uniform random unit vector.             * 
@@ -65,7 +86,6 @@ namespace ompl
             void generate_grid(double delta);
 
             /** \brief Representation of a motion
-
                 This only contains pointers to parent motions as we
                 only need to go backwards in the tree. */
             class Motion
@@ -85,6 +105,10 @@ namespace ompl
 
                 /** \brief The parent motion in the exploration tree */
                 Motion *parent{nullptr};
+
+                base::Cost costToMotion;
+
+                base::Cost costHeuristic;
             };
 
             /** \brief Compute distance between motions (actually distance between contained states) */
@@ -93,12 +117,15 @@ namespace ompl
                 return si_->distance(a->state, b->state);
             }
 
+            /** @brief An ordered list of active state arranged in decending order of cost heuristic*/
+            std::vector<Motion*> activeList;
+
         public:
             PKOMO(const base::SpaceInformationPtr &si, std::string filename);
+
             virtual ~PKOMO() override;
 
 			base::PlannerStatus solve(const base::PlannerTerminationCondition &ptc) override;
-			// std::string filename;
         };  
     } // namespace  geometric
 } //namespace ompl
