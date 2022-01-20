@@ -16,29 +16,15 @@ ompl::geometric::PKOMO::~PKOMO()
 {
     Planner::clear();
 	freeMemory();
-    // lastGoalMotion_ = nullptr;
 }
 
 void ompl::geometric::PKOMO::freeMemory()
 {
-	// lastGoalMotion_ = nullptr;
 }
 
 void ompl::geometric::PKOMO::clear()
 {
 	Planner::clear();
-}
-
-double ompl::geometric::PKOMO::costToGoal(std::vector<double> p1)
-{
-    // This must return cost till state + dist to goal
-    double dist = 0;
-    for (int i=0; i<dim; i++){
-        double diff = p1[i]-goal[i];
-        dist = dist+diff*diff;
-    }
-    dist = sqrt(dist);
-    return dist; // This is not what we must return
 }
 
 double ompl::geometric::PKOMO::dist(arr p1,arr p2)
@@ -73,30 +59,11 @@ bool ompl::geometric::PKOMO::compare(arrA path,arrA OptimalPath,double threshold
     }
 }
 
-void ompl::geometric::PKOMO::generate_randomUnitVector()
-{
-    std::normal_distribution<double> normal_distribution(0,1);
-
-    u.clear();
-    double length = 0;
-    for (int i=0; i<dim; i++){
-        u.push_back(normal_distribution(this->generator));
-        length = length + u[i]*u[i];
-    }
-
-    length = sqrt(length);
-
-    // Normalize vector u
-    double normal_length = 0;
-    for (int i=0; i<dim; i++){
-        u[i] = u[i]/length;
-        normal_length = normal_length + u[i]*u[i];
-    }
-}
-
 ompl::geometric::PathGeometricPtr ompl::geometric::PKOMO::bestPoissonPath(double delta) //TODO: change the output type
 {
     ompl::base::State *goal_s = pdef_->getGoal()->as<ompl::base::GoalState>()->getState();
+    auto *goal = new Motion(si_);
+    si_->copyState(goal->state, goal_s);
 
     ompl::base::State *start_s = pdef_->getStartState(0);
     auto *start = new Motion(si_);
@@ -189,11 +156,11 @@ ompl::geometric::PathGeometricPtr ompl::geometric::PKOMO::bestPoissonPath(double
 
                 if(!stateValid) { failedAttempts++; continue; }
 
-
-                // TODO: How do I have dim number of for loops????
+                // TODO: How do I have dim number of for loops???? Replace this with recursion!!!!
                 if (dim == 7) // This is a very bad way of doing it but how do I generalize to dim dimensions?
                 {
                     long long cellCheck;
+                    double min_dist = 2*delta;
                     for(int index_6 = -gridLim; index_6 <= gridLim; index_6++){
                         for(int index_5 = -gridLim; index_5 <= gridLim; index_5++){
                             for(int index_4 = -gridLim; index_4 <= gridLim; index_4++){
@@ -204,10 +171,14 @@ ompl::geometric::PathGeometricPtr ompl::geometric::PKOMO::bestPoissonPath(double
                                                 cellCheck = gridCell + index_6*prod[6]+index_5*prod[5]+index_4*prod[4]
                                                     +index_3*prod[3]+index_2*prod[2]+index_1*prod[1]+index_0*prod[0];
                                                 if (gridArray[cellCheck]){
+                                                    double dist = distanceFunction(gridArray[cellCheck], rmotion);
                                                     if (distanceFunction(gridArray[cellCheck], rmotion) < delta){
                                                         stateValid = false;
-                                                        rmotion->~Motion();
+                                                        delete rmotion;
                                                     }
+                                                    if (dist < min_dist)
+                                                    min_dist = dist;
+                                                    rmotion->parent = gridArray[cellCheck];
                                                 }
                                                 if (!stateValid) {break;}
                                             }
@@ -227,12 +198,13 @@ ompl::geometric::PathGeometricPtr ompl::geometric::PKOMO::bestPoissonPath(double
 
                 if(!stateValid) { failedAttempts++; continue; }
 
-                /* get to the gridCell;
-                if null then for every grid near that state check if a gridCell exists
-                if yes then check the distance between the 2 states. 
-                if the distance between the 2 states is less than delta{stateValid = false; break;}
-                if (stateValid == true){gridArray[gridCell] = motionptrVal}
-                */
+                gridArray[gridCell] = rmotion;
+
+                /* Try connecting to goal */
+                if(distanceFunction(rmotion, goal) < 2*delta){
+                    solution = goal;
+                    solution->parent = rmotion;
+                }
             }
 
             // If yes, connect the new state to the nearest motion
@@ -252,6 +224,7 @@ ompl::geometric::PathGeometricPtr ompl::geometric::PKOMO::bestPoissonPath(double
         std::vector<Motion *> mpath;
         while (solution != nullptr)
         {
+            auto solution1 = solution;
             mpath.push_back(solution);
             solution = solution->parent;
         }
@@ -262,55 +235,9 @@ ompl::geometric::PathGeometricPtr ompl::geometric::PKOMO::bestPoissonPath(double
             path->append(mpath[i]->state);
         OMPL_INFORM("Initial guess found!");
         return path;
-        // pdef_->addSolutionPath(path, approximate, approxdif, getName());
     }
-
     return nullptr;
-
 }
-
-// arrA ompl::geometric::PKOMO::bestPoissonPath(double delta)
-// {
-//     // Init checks
-//     checkValidity();
-
-//     // generate grid
-//     int grid_cells = 0;
-//     for (int i=0; i<dim; i++){
-//         grid_cells += (bh.at(i)-bl.at(i))*sqrt(dim)/delta + 1;
-//     }
-//     double grid_array[grid_cells];
-//     for (int i=0; i<grid_cells; i++){grid_array[i]=-1;}
-
-//     // get Start State, convert it to vector<double> and pass it to the active list
-//     base::State *start_s = pdef_->getStartState(0);
-//     std::vector<double> start;
-//     si_->getStateSpace()->copyToReals(start, start_s);
-//     activeList.push_back(start);
-//     // costToGoal_list.push_back(costToGoal(start));
-
-//     while (!complete) // while path to goal not found repeat
-//     {
-//         int k=0;
-//         while (k<30)
-//         {
-//             // Sample a new random state
-//             generate_randomUnitVector();
-//             std::uniform_real_distribution<double> uniform_distribution(delta,2*delta);
-//             double r = uniform_distribution(this->generator);
-//             for (int i=0; i<dim; i++){
-//                 u[i] = u[i]*r;
-//             }
-//             // add to best motion and check for feasibility{not close to other samples + valid}
-//             // if valid make this a child of the previous motion.
-//             // Check which grid this point is ...
-//         }
-//     }
-
-    
-//     // return path;
-//     return {{0,0},{0,1},{0,2}};
-// }
 
 ompl::base::PlannerStatus ompl::geometric::PKOMO::solve(const base::PlannerTerminationCondition &ptc)
 {
@@ -348,6 +275,8 @@ ompl::base::PlannerStatus ompl::geometric::PKOMO::solve(const base::PlannerTermi
 
 	while (!ptc){
         auto path = bestPoissonPath(delta);
+        path->print(std::cout);
+        delta = delta/2;
 
         // Optimize the path using KOMO
         // TODO: Outsourec the KOMO code from some other file so that you can then push your planner to ompl.
