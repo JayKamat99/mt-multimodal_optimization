@@ -20,6 +20,10 @@ ompl::geometric::PKOMO::~PKOMO()
 
 void ompl::geometric::PKOMO::freeMemory()
 {
+    for (int i=0; i<motionList.size(); i++)
+        delete motionList[i];
+    motionList.clear();
+    activeList.clear();
 }
 
 void ompl::geometric::PKOMO::clear()
@@ -63,10 +67,12 @@ ompl::geometric::PathGeometricPtr ompl::geometric::PKOMO::bestPoissonPath(double
 {
     ompl::base::State *goal_s = pdef_->getGoal()->as<ompl::base::GoalState>()->getState();
     auto *goal = new Motion(si_);
+    motionList.push_back(goal);
     si_->copyState(goal->state, goal_s);
 
     ompl::base::State *start_s = pdef_->getStartState(0);
     auto *start = new Motion(si_);
+    motionList.push_back(start);
     si_->copyState(start->state, start_s);
     activeList.push_back(start);
 
@@ -114,6 +120,7 @@ ompl::geometric::PathGeometricPtr ompl::geometric::PKOMO::bestPoissonPath(double
         {
             /* Get new sample */
             auto *rmotion = new Motion(si_);
+            motionList.push_back(rmotion);
             base::State *rstate = rmotion->state;
             sampler_->sampleShell(rstate, bestState, delta, 2*delta);
 
@@ -174,7 +181,6 @@ ompl::geometric::PathGeometricPtr ompl::geometric::PKOMO::bestPoissonPath(double
                                                     double dist = distanceFunction(gridArray[cellCheck], rmotion);
                                                     if (distanceFunction(gridArray[cellCheck], rmotion) < delta){
                                                         stateValid = false;
-                                                        delete rmotion;
                                                     }
                                                     if (dist < min_dist)
                                                     min_dist = dist;
@@ -276,29 +282,43 @@ ompl::base::PlannerStatus ompl::geometric::PKOMO::solve(const base::PlannerTermi
 	while (!ptc){
         auto path = bestPoissonPath(delta);
         path->print(std::cout);
-        delta = delta/2;
+
+        /* Convert path to arrA */
+        arrA configs;
+        //To copy the path to arrA Configs from states.
+        const base::StateSpace *space(si_->getStateSpace().get());
+        for (auto state : path->getStates())
+            {
+                arr config;
+                std::vector<double> reals;
+                space->copyToReals(reals, state);
+                for (double r : reals){
+                    config.append(r);
+                }
+                configs.append(config);
+        }
 
         // Optimize the path using KOMO
         // TODO: Outsourec the KOMO code from some other file so that you can then push your planner to ompl.
-        // KOMO komo;
-        // komo.verbose = 0;
-        // komo.setModel(C, true);
+        KOMO komo;
+        komo.verbose = 0;
+        komo.setModel(C, true);
         
-        // komo.setTiming(1., 10*path.N, 5., 2);
-        // komo.add_qControlObjective({}, 1, 1.);
+        komo.setTiming(1., 10*configs.N, 5., 2);
+        komo.add_qControlObjective({}, 1, 1.);
         // komo.addObjective({1.}, FS_qItself, {}, OT_eq, {10}, goal_, 0);
 		// komo.add_collision(true); // TODO: Is there a better function for checking collision?
 
         // //use configs to initialize with waypoints
-        // // komo.initWithWaypoints(path, path.N, false);
-        // komo.run_prepare(0);
+        komo.initWithWaypoints(configs, configs.N, false);
+        komo.run_prepare(0);
         // komo.optimize();
-        // komo.plotTrajectory();
+        komo.plotTrajectory();
 
         // Viewer for debug purposes only.
-        // rai::ConfigurationViewer V;
-        // V.setPath(C, komo.x, "result", true);
-        // V.playVideo(true, 1.);
+        rai::ConfigurationViewer V;
+        V.setPath(C, komo.x, "result", true);
+        V.playVideo(true, 1.);
 
         // bool similar = compare(path,OptimalPath,threshold);
         // if (similar){
@@ -306,6 +326,8 @@ ompl::base::PlannerStatus ompl::geometric::PKOMO::solve(const base::PlannerTermi
         // }
 
         // pdef_->addSolutionPath(ompl::geometric::PathGeometric Path);
+        freeMemory();
+        delta = delta/2;
 	}
 
 	if (isValid) return base::PlannerStatus::EXACT_SOLUTION;

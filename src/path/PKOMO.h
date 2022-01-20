@@ -102,6 +102,11 @@ namespace ompl
             /** @brief An ordered list of active state arranged in decending order of cost heuristic*/
             std::vector<Motion*> activeList;
 
+            /** @brief The sole purpose of this list is to document the pointers of all motions generated
+             * so that we can delete all of them later */
+            std::vector<Motion*> motionList;
+
+
         public:
             PKOMO(const base::SpaceInformationPtr &si, std::string filename);
 
