@@ -109,22 +109,32 @@ ompl::geometric::PathGeometricPtr ompl::geometric::PKOMO::bestPoissonPath(double
     }
 
     /* Build an array to store the pointers to the motions */
-    int gridCells = 0; //Number of grid cells required
+    unsigned long long gridCells = 1; //Number of grid cells required
     double gridCellSize = delta/sqrt(dim);
     int numElements[dim];
     for (int i=0; i<dim; i++){
         numElements[i] = (bh.at(i)-bl.at(i))/gridCellSize + 1;
-        gridCells += numElements[i];
+        gridCells = gridCells*numElements[i];
     }
-    /** @brief An array to store the pointers to the motions */
-    geometric::PKOMO::Motion* gridArray[gridCells] = {};
 
-    // int stateIndex[dim];
-    // for (int i=0; i<dim; i++){
-    //     auto currentState = start->state->as<base::RealVectorStateSpace::StateType>();
-    //     stateIndex[i] = ((*currentState)[i] - bl.at(i))/gridCellSize + 1;
-    //     std::cout << (*currentState)[i] << "index[" << i << "] : "<< stateIndex[i] << std::endl;
-    // }
+    /** @brief A vector to store the pointers to the motions */
+    std::vector<geometric::PKOMO::Motion*> gridArray(gridCells, nullptr); 
+
+    int stateIndex[dim];
+    unsigned long long gridCell = 0;
+    unsigned long long prod[dim];
+    for (int i=0; i<dim; i++){
+        auto currentState = start->state->as<base::RealVectorStateSpace::StateType>();
+        stateIndex[i] = ((*currentState)[i] - bl.at(i))/gridCellSize + 1;
+        // std::cout << (*currentState)[i] << "index[" << i << "] : "<< stateIndex[i] << std::endl;
+        prod[i] = 1;
+        for (int j=0; j<i; j++){ prod[i] = prod[i]*numElements[j]; }
+        gridCell += (stateIndex[i] - 1)*prod[i];
+    }
+    gridCell++;
+
+    /* Assign grid cell to start motion */
+    gridArray[gridCell] = start;
     
     Motion *solution = nullptr;
 
@@ -136,7 +146,8 @@ ompl::geometric::PathGeometricPtr ompl::geometric::PKOMO::bestPoissonPath(double
         while (failedAttempts < 30)
         {
             /* Get new sample */
-            base::State *rstate = si_->allocState();
+            auto *rmotion = new Motion(si_);
+            base::State *rstate = rmotion->state;
             sampler_->sampleShell(rstate, bestState, delta, 2*delta);
 
             /* Check if the new sample is feasible
@@ -148,21 +159,73 @@ ompl::geometric::PathGeometricPtr ompl::geometric::PKOMO::bestPoissonPath(double
             {
                 /* Get the gridCell number */
                 stateValid = true;
-                int stateIndex[dim];
                 long long gridCell = 0;
+                long long prod[dim];
                 for (int i=0; i<dim; i++){
                     auto currentState = rstate->as<base::RealVectorStateSpace::StateType>();
                     stateIndex[i] = ((*currentState)[i] - bl.at(i))/gridCellSize + 1;
                     // std::cout << (*currentState)[i] << "index[" << i << "] : "<< stateIndex[i] << std::endl;
-                    long long prod = 1;
-                    for (int j=0; j<i; j++){ prod = prod*numElements[j]; }
-                    gridCell += (stateIndex[i] - 1)*prod;
+                    prod[i] = 1;
+                    for (int j=0; j<i; j++){ prod[i] = prod[i]*numElements[j]; }
+                    gridCell += (stateIndex[i] - 1)*prod[i];
                 }
                 gridCell = gridCell+1;
                 // std::cout << gridCell<< std::endl;
 
                 /* Check if all gridCells beside it are either empty or point to a state sufficiently away */
+                int gridLim = sqrt(dim) + 1;
 
+                // long long checkings = std::pow(2*gridLim + 1, dim); // this is the number of cells we need to check = (2*gridLim+1)^dim
+                // /* Create an array of the cells you need to check */
+                // long long cellsToCheck[checkings];
+
+                /* Check if the state is not on the boundary */ //TODO: Make code robust on boundaries
+                for (int i=0; i<dim; i++){
+                    if ((stateIndex[i] < gridLim) || (stateIndex[i] > numElements[i] - gridLim)){
+                        stateValid = false;
+                        break;
+                    }
+                }
+
+                if(!stateValid) { failedAttempts++; continue; }
+
+
+                // TODO: How do I have dim number of for loops????
+                if (dim == 7) // This is a very bad way of doing it but how do I generalize to dim dimensions?
+                {
+                    long long cellCheck;
+                    for(int index_6 = -gridLim; index_6 <= gridLim; index_6++){
+                        for(int index_5 = -gridLim; index_5 <= gridLim; index_5++){
+                            for(int index_4 = -gridLim; index_4 <= gridLim; index_4++){
+                                for(int index_3 = -gridLim; index_3 <= gridLim; index_3++){
+                                    for(int index_2 = -gridLim; index_2 <= gridLim; index_2++){
+                                        for(int index_1 = -gridLim; index_1 <= gridLim; index_1++){
+                                            for(int index_0 = -gridLim; index_0 <= gridLim; index_0++){
+                                                cellCheck = gridCell + index_6*prod[6]+index_5*prod[5]+index_4*prod[4]
+                                                    +index_3*prod[3]+index_2*prod[2]+index_1*prod[1]+index_0*prod[0];
+                                                if (gridArray[cellCheck]){
+                                                    if (distanceFunction(gridArray[cellCheck], rmotion) < delta){
+                                                        stateValid = false;
+                                                        rmotion->~Motion();
+                                                    }
+                                                }
+                                                if (!stateValid) {break;}
+                                            }
+                                            if (!stateValid) {break;}
+                                        }
+                                        if (!stateValid) {break;}
+                                    }
+                                    if (!stateValid) {break;}
+                                }
+                                if (!stateValid) {break;}
+                            }
+                            if (!stateValid) {break;}
+                        }
+                        if (!stateValid) {break;}
+                    }
+                }
+
+                if(!stateValid) { failedAttempts++; continue; }
 
                 /* get to the gridCell;
                 if null then for every grid near that state check if a gridCell exists
@@ -266,7 +329,7 @@ ompl::base::PlannerStatus ompl::geometric::PKOMO::solve(const base::PlannerTermi
     }
 
     // variables
-    double delta = 0.1;
+    double delta = 1;
     double threshold = 2*delta;
     bool isValid = false;
 
