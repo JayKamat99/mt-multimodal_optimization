@@ -46,9 +46,26 @@ namespace ompl
             const std::vector<double> &bl = RN->getBounds().low;
 
             const std::vector<double> &bh = RN->getBounds().high;
+
+            int gridLim;
+
+            std::vector<unsigned long long> prod;
+
+            unsigned long long cellCheck;
+
+            double min_dist;
+
+            unsigned long long gridCell;
+
+            double delta;
+
+            bool stateValid{false};
             
             /** \brief State sampler */
             base::StateSamplerPtr sampler_;
+
+            /** \brief Objective we're optimizing */
+            base::OptimizationObjectivePtr opt_;
 
             /**
              * @brief This is the function that is unique to our planner. 
@@ -88,7 +105,8 @@ namespace ompl
                 /** \brief The parent motion in the exploration tree */
                 Motion *parent{nullptr};
 
-                base::Cost costToMotion;
+                /** \brief The cost up to this motion */
+                base::Cost cost;
 
                 base::Cost costHeuristic;
             };
@@ -106,6 +124,7 @@ namespace ompl
              * so that we can delete all of them later */
             std::vector<Motion*> motionList;
 
+            void runNextNestedFor(std::vector<int> counters, int index, Motion* rmotion, std::vector<Motion*> *gridArray);
 
         public:
             PKOMO(const base::SpaceInformationPtr &si, std::string filename);
@@ -113,6 +132,8 @@ namespace ompl
             virtual ~PKOMO() override;
 
 			base::PlannerStatus solve(const base::PlannerTerminationCondition &ptc) override;
+
+            void setup() override;
         };  
     } // namespace  geometric
 } //namespace ompl

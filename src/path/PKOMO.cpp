@@ -31,6 +31,23 @@ void ompl::geometric::PKOMO::clear()
 	Planner::clear();
 }
 
+void ompl::geometric::PKOMO::setup()
+{
+    Planner::setup();
+    if (pdef_->hasOptimizationObjective())
+        opt_ = pdef_->getOptimizationObjective();
+    else
+    {
+        OMPL_INFORM("%s: No optimization objective specified. Defaulting to optimizing path length for the allowed "
+                    "planning time.",
+                    getName().c_str());
+        opt_ = std::make_shared<base::PathLengthOptimizationObjective>(si_);
+
+        // Store the new objective in the problem def'n
+        pdef_->setOptimizationObjective(opt_);
+    }
+}
+
 double ompl::geometric::PKOMO::dist(arr p1,arr p2)
 {
     double dist = 0;
@@ -63,6 +80,29 @@ bool ompl::geometric::PKOMO::compare(arrA path,arrA OptimalPath,double threshold
     }
 }
 
+// void ompl::geometric::PKOMO::runNextNestedFor(std::vector<int> counters, int index, Motion* rmotion, std::vector<Motion*> *gridArray)
+// {
+//     for(counters[index] = -gridLim; counters[index] <= gridLim; ++counters[index]){
+//         if (index==0){
+//             cellCheck = gridCell + counters[6]*prod[6]+counters[5]*prod[5]+counters[4]*prod[4]
+//                 +counters[3]*prod[3]+counters[2]*prod[2]+counters[1]*prod[1]+counters[0]*prod[0];
+//             if (*gridArray[cellCheck]){
+//                 double dist = distanceFunction(*gridArray[cellCheck], rmotion);
+//                 if (distanceFunction(*gridArray[cellCheck], rmotion) < delta){
+//                     stateValid = false;
+//                 }
+//                 if (dist < min_dist)
+//                 min_dist = dist;
+//                 rmotion->parent = *gridArray[cellCheck];
+//             }
+//         }
+//         if (!stateValid) {break;}
+//         if (index!=0){
+//             runNextNestedFor(counters, index-1, rmotion, &gridArray);
+//         }
+//     }
+// }
+
 ompl::geometric::PathGeometricPtr ompl::geometric::PKOMO::bestPoissonPath(double delta) //TODO: change the output type
 {
     ompl::base::State *goal_s = pdef_->getGoal()->as<ompl::base::GoalState>()->getState();
@@ -74,6 +114,7 @@ ompl::geometric::PathGeometricPtr ompl::geometric::PKOMO::bestPoissonPath(double
     auto *start = new Motion(si_);
     motionList.push_back(start);
     si_->copyState(start->state, start_s);
+    start->cost = opt_->motionCost(start->state, start->state);
     activeList.push_back(start);
 
     if (activeList.size() == 0)
@@ -94,13 +135,13 @@ ompl::geometric::PathGeometricPtr ompl::geometric::PKOMO::bestPoissonPath(double
     std::vector<geometric::PKOMO::Motion*> gridArray(gridCells, nullptr); 
 
     int stateIndex[dim];
-    unsigned long long gridCell = 0;
-    unsigned long long prod[dim];
+    gridCell = 0;
+    prod.clear();
     for (int i=0; i<dim; i++){
         auto currentState = start->state->as<base::RealVectorStateSpace::StateType>();
         stateIndex[i] = ((*currentState)[i] - bl.at(i))/gridCellSize + 1;
         // std::cout << (*currentState)[i] << "index[" << i << "] : "<< stateIndex[i] << std::endl;
-        prod[i] = 1;
+        prod.push_back(1);
         for (int j=0; j<i; j++){ prod[i] = prod[i]*numElements[j]; }
         gridCell += (stateIndex[i] - 1)*prod[i];
     }
@@ -133,13 +174,13 @@ ompl::geometric::PathGeometricPtr ompl::geometric::PKOMO::bestPoissonPath(double
             {
                 /* Get the gridCell number */
                 stateValid = true;
-                long long gridCell = 0;
-                long long prod[dim];
+                gridCell = 0;
+                prod.clear();
                 for (int i=0; i<dim; i++){
                     auto currentState = rstate->as<base::RealVectorStateSpace::StateType>();
                     stateIndex[i] = ((*currentState)[i] - bl.at(i))/gridCellSize + 1;
                     // std::cout << (*currentState)[i] << "index[" << i << "] : "<< stateIndex[i] << std::endl;
-                    prod[i] = 1;
+                    prod.push_back(1);
                     for (int j=0; j<i; j++){ prod[i] = prod[i]*numElements[j]; }
                     gridCell += (stateIndex[i] - 1)*prod[i];
                 }
@@ -147,7 +188,7 @@ ompl::geometric::PathGeometricPtr ompl::geometric::PKOMO::bestPoissonPath(double
                 // std::cout << gridCell<< std::endl;
 
                 /* Check if all gridCells beside it are either empty or point to a state sufficiently away */
-                int gridLim = sqrt(dim) + 1;
+                gridLim = sqrt(dim) + 1;
 
                 // long long checkings = std::pow(2*gridLim + 1, dim); // this is the number of cells we need to check = (2*gridLim+1)^dim
                 // /* Create an array of the cells you need to check */
@@ -163,10 +204,13 @@ ompl::geometric::PathGeometricPtr ompl::geometric::PKOMO::bestPoissonPath(double
 
                 if(!stateValid) { failedAttempts++; continue; }
 
+                // min_dist = 2*delta;
+                // std::vector<int> counters(dim);
+                // runNextNestedFor(counters, dim-1, rmotion, &gridArray);
+
                 // TODO: How do I have dim number of for loops???? Replace this with recursion!!!!
                 if (dim == 7) // This is a very bad way of doing it but how do I generalize to dim dimensions?
                 {
-                    long long cellCheck;
                     double min_dist = 2*delta;
                     for(int index_6 = -gridLim; index_6 <= gridLim; index_6++){
                         for(int index_5 = -gridLim; index_5 <= gridLim; index_5++){
@@ -205,6 +249,18 @@ ompl::geometric::PathGeometricPtr ompl::geometric::PKOMO::bestPoissonPath(double
                 if(!stateValid) { failedAttempts++; continue; }
 
                 gridArray[gridCell] = rmotion;
+                base::Cost incCost = opt_->motionCost(rmotion->state, rmotion->parent->state);
+                rmotion->cost = opt_->combineCosts(rmotion->parent->cost, incCost);
+                base::Cost costToGoal = opt_->motionCost(rmotion->state, goal->state);
+                rmotion->costHeuristic = opt_->combineCosts(rmotion->cost, costToGoal);
+                for (int i = activeList.size()-2; i>=0; --i){
+                    if (activeList.at(i)->costHeuristic.value()>rmotion->costHeuristic.value()){
+                        activeList.insert(activeList.begin()+i+1, rmotion);
+                    }
+                    else if (i==0){
+                        activeList.insert(activeList.begin(), rmotion);
+                    }
+                }
 
                 /* Try connecting to goal */
                 if(distanceFunction(rmotion, goal) < 2*delta){
@@ -262,7 +318,7 @@ ompl::base::PlannerStatus ompl::geometric::PKOMO::solve(const base::PlannerTermi
     }
 
     // variables
-    double delta = 1;
+    delta = 1;
     double threshold = 2*delta;
     bool isValid = false;
 
