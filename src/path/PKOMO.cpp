@@ -21,7 +21,7 @@ ompl::geometric::PKOMO::~PKOMO()
 void ompl::geometric::PKOMO::freeMemory()
 {
     for (int i=0; i<motionList.size(); i++)
-        delete motionList[i];
+        delete motionList.at(i);
     motionList.clear();
     activeList.clear();
 }
@@ -80,34 +80,36 @@ bool ompl::geometric::PKOMO::compare(arrA path,arrA OptimalPath,double threshold
     }
 }
 
-// void ompl::geometric::PKOMO::runNextNestedFor(std::vector<int> counters, int index, Motion* rmotion, std::vector<Motion*> *gridArray)
-// {
-//     for(counters[index] = -gridLim; counters[index] <= gridLim; ++counters[index]){
-//         if (index==0){
-//             cellCheck = gridCell + counters[6]*prod[6]+counters[5]*prod[5]+counters[4]*prod[4]
-//                 +counters[3]*prod[3]+counters[2]*prod[2]+counters[1]*prod[1]+counters[0]*prod[0];
-//             if (*gridArray[cellCheck]){
-//                 double dist = distanceFunction(*gridArray[cellCheck], rmotion);
-//                 if (distanceFunction(*gridArray[cellCheck], rmotion) < delta){
-//                     stateValid = false;
-//                 }
-//                 if (dist < min_dist)
-//                 min_dist = dist;
-//                 rmotion->parent = *gridArray[cellCheck];
-//             }
-//         }
-//         if (!stateValid) {break;}
-//         if (index!=0){
-//             runNextNestedFor(counters, index-1, rmotion, &gridArray);
-//         }
-//     }
-// }
+void ompl::geometric::PKOMO::runNextNestedFor(std::vector<int> counters, int index, Motion* rmotion, 
+                std::shared_ptr<std::vector<Motion *>> gridArray)
+{
+    for(counters[index] = -gridLim; counters[index] <= gridLim; ++counters[index]){
+        if (index==0){
+            cellCheck = gridCell;
+            for (int i=0; i<counters.size(); ++i){
+                cellCheck += counters[i]*prod[i];
+            }
+            if ((*gridArray)[cellCheck]){
+                double dist = distanceFunction((*gridArray)[cellCheck], rmotion);
+                if (distanceFunction((*gridArray)[cellCheck], rmotion) < delta){
+                    stateValid = false;
+                }
+                if (dist < min_dist)
+                min_dist = dist;
+                rmotion->parent = (*gridArray)[cellCheck];
+            }
+        }
+        if (!stateValid) {break;}
+        if (index!=0){
+            runNextNestedFor(counters, index-1, rmotion, gridArray);
+        }
+    }
+}
 
-ompl::geometric::PathGeometricPtr ompl::geometric::PKOMO::bestPoissonPath(double delta) //TODO: change the output type
+ompl::geometric::PathGeometricPtr ompl::geometric::PKOMO::bestPoissonPath_grid(double delta) //TODO: change the output type
 {
     ompl::base::State *goal_s = pdef_->getGoal()->as<ompl::base::GoalState>()->getState();
     auto *goal = new Motion(si_);
-    motionList.push_back(goal);
     si_->copyState(goal->state, goal_s);
 
     ompl::base::State *start_s = pdef_->getStartState(0);
@@ -127,41 +129,40 @@ ompl::geometric::PathGeometricPtr ompl::geometric::PKOMO::bestPoissonPath(double
     double gridCellSize = delta/sqrt(dim);
     int numElements[dim];
     for (int i=0; i<dim; i++){
-        numElements[i] = (bh.at(i)-bl.at(i))/gridCellSize + 1;
+        numElements[i] = ceil((bh.at(i)-bl.at(i))/gridCellSize);
         gridCells = gridCells*numElements[i];
     }
 
     /** @brief A vector to store the pointers to the motions */
-    std::vector<geometric::PKOMO::Motion*> gridArray(gridCells, nullptr); 
+    // std::vector<geometric::PKOMO::Motion*> gridArray(gridCells, nullptr); 
+    auto gridArray = std::make_shared<std::vector<geometric::PKOMO::Motion*>>(gridCells, nullptr); 
 
     int stateIndex[dim];
     gridCell = 0;
     prod.clear();
     for (int i=0; i<dim; i++){
         auto currentState = start->state->as<base::RealVectorStateSpace::StateType>();
-        stateIndex[i] = ((*currentState)[i] - bl.at(i))/gridCellSize + 1;
+        stateIndex[i] = ceil(((*currentState)[i] - bl.at(i))/gridCellSize);
         // std::cout << (*currentState)[i] << "index[" << i << "] : "<< stateIndex[i] << std::endl;
         prod.push_back(1);
         for (int j=0; j<i; j++){ prod[i] = prod[i]*numElements[j]; }
         gridCell += (stateIndex[i] - 1)*prod[i];
     }
-    gridCell++;
 
     /* Assign grid cell to start motion */
-    gridArray[gridCell] = start;
+    (*gridArray)[gridCell] = start;
     
     Motion *solution = nullptr;
 
     while (activeList.size()>0)
     {
         // choose best motion from activeList
-        auto bestState = activeList[activeList.size()-1]->state;
+        auto bestState = activeList.back()->state;
         int failedAttempts = 0;
-        while (failedAttempts < 30)
+        while (failedAttempts < 3)
         {
             /* Get new sample */
             auto *rmotion = new Motion(si_);
-            motionList.push_back(rmotion);
             base::State *rstate = rmotion->state;
             sampler_->sampleShell(rstate, bestState, delta, 2*delta);
 
@@ -169,7 +170,7 @@ ompl::geometric::PathGeometricPtr ompl::geometric::PKOMO::bestPoissonPath(double
                 1) State is valid
                 2) Check if the states in the gridpoints around are more than delta distance away 
             */
-            bool stateValid{false};
+            stateValid = false;
             if(si_->isValid(rstate)) // TODO: Does this check if the sample is within our bounds?
             {
                 /* Get the gridCell number */
@@ -178,14 +179,12 @@ ompl::geometric::PathGeometricPtr ompl::geometric::PKOMO::bestPoissonPath(double
                 prod.clear();
                 for (int i=0; i<dim; i++){
                     auto currentState = rstate->as<base::RealVectorStateSpace::StateType>();
-                    stateIndex[i] = ((*currentState)[i] - bl.at(i))/gridCellSize + 1;
+                    stateIndex[i] = ceil(((*currentState)[i] - bl.at(i))/gridCellSize);
                     // std::cout << (*currentState)[i] << "index[" << i << "] : "<< stateIndex[i] << std::endl;
                     prod.push_back(1);
                     for (int j=0; j<i; j++){ prod[i] = prod[i]*numElements[j]; }
                     gridCell += (stateIndex[i] - 1)*prod[i];
                 }
-                gridCell = gridCell+1;
-                // std::cout << gridCell<< std::endl;
 
                 /* Check if all gridCells beside it are either empty or point to a state sufficiently away */
                 gridLim = sqrt(dim) + 1;
@@ -202,59 +201,23 @@ ompl::geometric::PathGeometricPtr ompl::geometric::PKOMO::bestPoissonPath(double
                     }
                 }
 
-                if(!stateValid) { failedAttempts++; continue; }
+                if(!stateValid) { failedAttempts++; delete rmotion; continue; }
 
-                // min_dist = 2*delta;
-                // std::vector<int> counters(dim);
-                // runNextNestedFor(counters, dim-1, rmotion, &gridArray);
+                min_dist = 2*delta;
+                std::vector<int> counters(dim);
+                runNextNestedFor(counters, dim-1, rmotion, gridArray);
 
-                // TODO: How do I have dim number of for loops???? Replace this with recursion!!!!
-                if (dim == 7) // This is a very bad way of doing it but how do I generalize to dim dimensions?
-                {
-                    double min_dist = 2*delta;
-                    for(int index_6 = -gridLim; index_6 <= gridLim; index_6++){
-                        for(int index_5 = -gridLim; index_5 <= gridLim; index_5++){
-                            for(int index_4 = -gridLim; index_4 <= gridLim; index_4++){
-                                for(int index_3 = -gridLim; index_3 <= gridLim; index_3++){
-                                    for(int index_2 = -gridLim; index_2 <= gridLim; index_2++){
-                                        for(int index_1 = -gridLim; index_1 <= gridLim; index_1++){
-                                            for(int index_0 = -gridLim; index_0 <= gridLim; index_0++){
-                                                cellCheck = gridCell + index_6*prod[6]+index_5*prod[5]+index_4*prod[4]
-                                                    +index_3*prod[3]+index_2*prod[2]+index_1*prod[1]+index_0*prod[0];
-                                                if (gridArray[cellCheck]){
-                                                    double dist = distanceFunction(gridArray[cellCheck], rmotion);
-                                                    if (distanceFunction(gridArray[cellCheck], rmotion) < delta){
-                                                        stateValid = false;
-                                                    }
-                                                    if (dist < min_dist)
-                                                    min_dist = dist;
-                                                    rmotion->parent = gridArray[cellCheck];
-                                                }
-                                                if (!stateValid) {break;}
-                                            }
-                                            if (!stateValid) {break;}
-                                        }
-                                        if (!stateValid) {break;}
-                                    }
-                                    if (!stateValid) {break;}
-                                }
-                                if (!stateValid) {break;}
-                            }
-                            if (!stateValid) {break;}
-                        }
-                        if (!stateValid) {break;}
-                    }
-                }
+                if(!stateValid) { failedAttempts++; delete rmotion; continue; }
 
-                if(!stateValid) { failedAttempts++; continue; }
-
-                gridArray[gridCell] = rmotion;
+                (*gridArray)[gridCell] = rmotion;
+                motionList.push_back(rmotion);
                 base::Cost incCost = opt_->motionCost(rmotion->state, rmotion->parent->state);
                 rmotion->cost = opt_->combineCosts(rmotion->parent->cost, incCost);
                 base::Cost costToGoal = opt_->motionCost(rmotion->state, goal->state);
                 rmotion->costHeuristic = opt_->combineCosts(rmotion->cost, costToGoal);
-                for (int i = activeList.size()-2; i>=0; --i){
+                for (int i = activeList.size()-1; i>=0; --i){
                     if (activeList.at(i)->costHeuristic.value()>rmotion->costHeuristic.value()){
+                        if (i == activeList.size()-1) { activeList.insert(activeList.begin()+i, rmotion); }
                         activeList.insert(activeList.begin()+i+1, rmotion);
                     }
                     else if (i==0){
@@ -266,18 +229,13 @@ ompl::geometric::PathGeometricPtr ompl::geometric::PKOMO::bestPoissonPath(double
                 if(distanceFunction(rmotion, goal) < 2*delta){
                     solution = goal;
                     solution->parent = rmotion;
+                    break;
                 }
             }
-
-            // If yes, connect the new state to the nearest motion
-            // check for distance to goal and update heuristic.
-            // if (distance to goal < 2*delta)
-            // Add goal as a motion too and return path!!!!
-            // pathFound = true;
-            // else faliure++
-            failedAttempts++;
+            if(!stateValid) { failedAttempts++; delete rmotion; continue; }
         }
         activeList.pop_back();
+        if (solution != nullptr) {break;}
     }
 
     if (solution != nullptr)
@@ -296,6 +254,124 @@ ompl::geometric::PathGeometricPtr ompl::geometric::PKOMO::bestPoissonPath(double
         for (int i = mpath.size() - 1; i >= 0; --i)
             path->append(mpath[i]->state);
         OMPL_INFORM("Initial guess found!");
+        return path;
+    }
+    delete goal;
+    return nullptr;
+}
+
+ompl::geometric::PathGeometricPtr ompl::geometric::PKOMO::bestPoissonPath(double delta)
+{
+    /* Create Goal motion */
+    ompl::base::State *goal_s = pdef_->getGoal()->as<ompl::base::GoalState>()->getState();
+    auto *goal = new Motion(si_);
+    si_->copyState(goal->state, goal_s);
+
+    /* Create Start Motion */
+    ompl::base::State *start_s = pdef_->getStartState(0);
+    RN->printState(start_s, std::cout);
+    RN->printState(goal_s, std::cout);
+    auto *start = new Motion(si_);
+    motionList.push_back(start);
+    si_->copyState(start->state, start_s);
+    start->cost = opt_->motionCost(start->state, start->state);
+    activeList.push_back(start);
+
+    if (activeList.size() == 0)
+    {
+        OMPL_ERROR("%s: There are no valid initial states!", getName().c_str());
+    } 
+    
+    Motion *solution = nullptr;
+
+    while (activeList.size()>0)
+    {
+        // choose best motion from activeList
+        auto bestState = activeList.back()->state;
+        int failedAttempts = 0;
+        std::cout << "size: " << activeList.size() << std::endl; 
+        while (failedAttempts < 3)
+        {
+            /* Get new sample */
+            auto *rmotion = new Motion(si_);
+            base::State *rstate = rmotion->state;
+            sampler_->sampleShell(rstate, bestState, delta, 1.2*delta);
+
+            /* Check if the new sample is feasible
+                1) State is valid
+                2) Check if the relevant states in the active list more than delta distance away 
+            */
+            stateValid = false;
+            if(si_->isValid(rstate)) // TODO: Does this check if the sample is within our bounds?
+            {
+                stateValid = true;
+
+                /* Assert that the distance from any node in the motionList is atleast delta */
+                double d_min = 2*delta;
+                for (auto ir = motionList.rbegin(); ir != motionList.rend(); ++ir){
+                    double d = distanceFunction(*ir, rmotion);
+                    if (d < delta){
+                        stateValid = false;
+                        break;
+                    }
+                    if (d>4*delta){  // This function is random as of now. Not sure if correct
+                        break;
+                    }
+                    if (d < d_min){
+                        d_min = d;
+                        rmotion->parent = *ir;
+                    }
+                }
+
+                if(!stateValid) { failedAttempts++; delete rmotion; continue; }
+
+                motionList.push_back(rmotion);
+                /* Update costs of rmotion and put it in activeList */
+                base::Cost incCost = opt_->motionCost(rmotion->state, rmotion->parent->state);
+                rmotion->cost = opt_->combineCosts(rmotion->parent->cost, incCost);
+                base::Cost costToGoal = opt_->motionCost(rmotion->state, goal->state);
+                rmotion->costHeuristic = opt_->combineCosts(rmotion->cost, costToGoal);
+                for (int i = activeList.size()-1; i>=0; --i){
+                    if (activeList.at(i)->costHeuristic.value()>rmotion->costHeuristic.value()){
+                        if (i == activeList.size()-1) { activeList.insert(activeList.begin()+i, rmotion); }
+                        activeList.insert(activeList.begin()+i+1, rmotion);
+                    }
+                    else if (i==0){
+                        activeList.insert(activeList.begin(), rmotion);
+                    }
+                }
+
+                /* Try connecting to goal */
+                if(distanceFunction(rmotion, goal) < 2*delta){
+                    OMPL_INFORM("Initial guess found!");
+                    solution = goal;
+                    solution->parent = rmotion;
+                    motionList.push_back(goal);
+                    break;
+                }
+            }
+            if(!stateValid) { failedAttempts++; delete rmotion; continue; }
+        }
+        if (solution != nullptr) { break; }
+        activeList.pop_back();
+    }
+    if (activeList.size() == 0) { delete goal; }
+
+    if (solution != nullptr)
+    {
+        /* construct the solution path */
+        std::vector<Motion *> mpath;
+        while (solution != nullptr)
+        {
+            auto solution1 = solution;
+            mpath.push_back(solution);
+            solution = solution->parent;
+        }
+
+        /* set the solution path */
+        auto path(std::make_shared<PathGeometric>(si_));
+        for (int i = mpath.size() - 1; i >= 0; --i)
+            path->append(mpath[i]->state);
         return path;
     }
     return nullptr;
@@ -336,7 +412,8 @@ ompl::base::PlannerStatus ompl::geometric::PKOMO::solve(const base::PlannerTermi
 	C.addFile(filename_.c_str());
 
 	while (!ptc){
-        auto path = bestPoissonPath(delta);
+        // auto path = bestPoissonPath(delta);
+        auto path = bestPoissonPath_grid(delta);
         path->print(std::cout);
 
         /* Convert path to arrA */
@@ -383,7 +460,7 @@ ompl::base::PlannerStatus ompl::geometric::PKOMO::solve(const base::PlannerTermi
 
         // pdef_->addSolutionPath(ompl::geometric::PathGeometric Path);
         freeMemory();
-        delta = delta/2;
+        // delta = delta/2;
 	}
 
 	if (isValid) return base::PlannerStatus::EXACT_SOLUTION;

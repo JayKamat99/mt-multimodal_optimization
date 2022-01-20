@@ -76,6 +76,7 @@ namespace ompl
              * @return PathGeometricPtr 
              */
             PathGeometricPtr bestPoissonPath(double delta);
+            PathGeometricPtr bestPoissonPath_grid(double delta);
 
             /**
              * @brief This function uses the Bos-Muller transform method for generating a uniform random unit vector.             * 
@@ -124,7 +125,7 @@ namespace ompl
              * so that we can delete all of them later */
             std::vector<Motion*> motionList;
 
-            void runNextNestedFor(std::vector<int> counters, int index, Motion* rmotion, std::vector<Motion*> *gridArray);
+            void runNextNestedFor(std::vector<int> counters, int index, Motion* rmotion, std::shared_ptr<std::vector<Motion *>> gridArray);
 
         public:
             PKOMO(const base::SpaceInformationPtr &si, std::string filename);
