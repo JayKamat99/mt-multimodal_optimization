@@ -10,6 +10,8 @@
 #include <Core/graph.h>
 #include <limits>
 #include <random>
+#include <list>
+#include <iterator>
 
 namespace ompl
 {
@@ -30,6 +32,8 @@ namespace ompl
             }
 
             std::string filename_;
+
+            bool flag{false};
 
             arrA OptimalPath;
 
@@ -60,7 +64,7 @@ namespace ompl
             double delta;
 
             bool stateValid{false};
-            
+
             /** \brief State sampler */
             base::StateSamplerPtr sampler_;
 
@@ -77,6 +81,7 @@ namespace ompl
              */
             PathGeometricPtr bestPoissonPath(double delta);
             PathGeometricPtr bestPoissonPath_grid(double delta);
+            PathGeometricPtr bestPoissonPath_list(double delta);
 
             /**
              * @brief This function uses the Bos-Muller transform method for generating a uniform random unit vector.             * 
@@ -125,7 +130,11 @@ namespace ompl
              * so that we can delete all of them later */
             std::vector<Motion*> motionList;
 
+            std::list<std::pair<unsigned long long, Motion*>> gridList;
+            std::list<std::pair<unsigned long long, Motion*>>::iterator it;
+
             void runNextNestedFor(std::vector<int> counters, int index, Motion* rmotion, std::shared_ptr<std::vector<Motion *>> gridArray);
+            void runNextNestedFor_list(std::vector<int> counters, int index, Motion* rmotion);
 
         public:
             PKOMO(const base::SpaceInformationPtr &si, std::string filename);
