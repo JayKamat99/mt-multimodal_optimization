@@ -186,7 +186,7 @@ ompl::geometric::PathGeometricPtr ompl::geometric::PKOMO::bestPoissonPath_list(d
     }
 
     /* Try connecting start to goal */
-    if(distanceFunction(start, goal) < 2*delta){
+    if(distanceFunction(start, goal) < 1.2*delta){
         solution = goal;
         solution->parent = start;
     }
@@ -293,7 +293,7 @@ ompl::geometric::PathGeometricPtr ompl::geometric::PKOMO::bestPoissonPath_list(d
                 }
 
                 /* Try connecting to goal */
-                if(distanceFunction(rmotion, goal) < 2*delta){
+                if(distanceFunction(rmotion, goal) < 1.2*delta){
                     solution = goal;
                     solution->parent = rmotion;
                     break;
@@ -389,7 +389,7 @@ ompl::geometric::PathGeometricPtr ompl::geometric::PKOMO::bestPoissonPath_grid(d
             /* Get new sample */
             auto *rmotion = new Motion(si_);
             base::State *rstate = rmotion->state;
-            sampler_->sampleShell(rstate, bestState, delta, 2*delta);
+            sampler_->sampleShell(rstate, bestState, delta, 1.2*delta);
 
             /* Check if the new sample is feasible
                 1) State is valid
@@ -428,7 +428,7 @@ ompl::geometric::PathGeometricPtr ompl::geometric::PKOMO::bestPoissonPath_grid(d
 
                 if(!stateValid) { failedAttempts++; delete rmotion; continue; }
 
-                min_dist = 2*delta;
+                min_dist = 1.2*delta;
                 std::vector<int> counters(dim);
                 runNextNestedFor(counters, dim-1, rmotion, gridArray);
 
@@ -451,7 +451,7 @@ ompl::geometric::PathGeometricPtr ompl::geometric::PKOMO::bestPoissonPath_grid(d
                 }
 
                 /* Try connecting to goal */
-                if(distanceFunction(rmotion, goal) < 2*delta){
+                if(distanceFunction(rmotion, goal) < 1.2*delta){
                     solution = goal;
                     solution->parent = rmotion;
                     break;
@@ -532,7 +532,7 @@ ompl::geometric::PathGeometricPtr ompl::geometric::PKOMO::bestPoissonPath(double
                 stateValid = true;
 
                 /* Assert that the distance from any node in the motionList is atleast delta */
-                double d_min = 2*delta;
+                double d_min = 1.2*delta;
                 for (auto ir = motionList.rbegin(); ir != motionList.rend(); ++ir){
                     double d = distanceFunction(*ir, rmotion);
                     if (d < delta){
@@ -567,7 +567,7 @@ ompl::geometric::PathGeometricPtr ompl::geometric::PKOMO::bestPoissonPath(double
                 }
 
                 /* Try connecting to goal */
-                if(distanceFunction(rmotion, goal) < 2*delta){
+                if(distanceFunction(rmotion, goal) < 1.2*delta){
                     OMPL_INFORM("Initial guess found!");
                     solution = goal;
                     solution->parent = rmotion;
@@ -665,19 +665,38 @@ ompl::base::PlannerStatus ompl::geometric::PKOMO::solve(const base::PlannerTermi
         
         komo.setTiming(1., 10*configs.N, 5., 2);
         komo.add_qControlObjective({}, 1, 1.);
-        // komo.addObjective({1.}, FS_qItself, {}, OT_eq, {10}, goal_, 0);
-		// komo.add_collision(true); // TODO: Is there a better function for checking collision?
+        komo.addObjective({1.}, FS_qItself, {}, OT_eq, {10}, goal_, 0);
+		komo.add_collision(true); // TODO: Is there a better function for checking collision?
 
         // //use configs to initialize with waypoints
         komo.initWithWaypoints(configs, configs.N, false);
         komo.run_prepare(0);
-        // komo.optimize();
+        komo.optimize();
         komo.plotTrajectory();
 
         // Viewer for debug purposes only.
-        rai::ConfigurationViewer V;
-        V.setPath(C, komo.x, "result", true);
-        V.playVideo(true, 1.);
+        // rai::ConfigurationViewer V;
+        // V.setPath(C, komo.x, "result", true);
+        // V.playVideo(true, 1.);
+
+        /* Define a path */
+        std::vector<const base::State*> states;
+        for (int i=0; i<configs.N; i++)
+        {
+            std::vector<double> reals;
+            for (double r : configs(i)){
+                reals.push_back(r);
+            }
+            base::State* state = si_->allocState();
+            space->copyFromReals(state, reals);
+            states.push_back(state);
+        }
+
+        geometric::PathGeometricPtr opti_path = std::make_shared<geometric::PathGeometric>(si_, states);
+        // base::PlannerSolution psol = base::PlannerSolution::PlannerSolution(opti_path);
+        pdef_->addSolutionPath(opti_path); //TODO: Check for path validity
+        isValid = true;
+        break;
 
         // bool similar = compare(path,OptimalPath,threshold);
         // if (similar){
