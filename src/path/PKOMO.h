@@ -4,6 +4,7 @@
 #include <ompl/geometric/planners/PlannerIncludes.h>
 #include <ompl/base/spaces/RealVectorStateSpace.h>
 #include <ompl/base/spaces/RealVectorBounds.h>
+#include <ompl/datastructures/NearestNeighbors.h>
 #include <ompl/base/State.h>
 #include <KOMO/komo.h>
 #include <Kin/viewer.h>
@@ -78,7 +79,7 @@ namespace ompl
              * @param delta defines the sparsity of the poisson sampling.
              * @return PathGeometricPtr 
              */
-            PathGeometricPtr bestPoissonPath_list(double delta);
+            PathGeometricPtr bestPoissonPath_list(double delta, const base::PlannerTerminationCondition &ptc);
 
             /** \brief Representation of a motion
                 This only contains pointers to parent motions as we
@@ -123,6 +124,8 @@ namespace ompl
                 return si_->distance(a->state, b->state);
             }
 
+            /** \brief A nearest-neighbors datastructure containing the tree of motions */
+            std::shared_ptr<NearestNeighbors<Motion *>> nn_;
 
             /** @brief The sole purpose of this list is to document the pointers of all motions generated
              * so that we can delete all of them later */
