@@ -12,6 +12,7 @@
 #include <random>
 #include <list>
 #include <iterator>
+#include <queue>
 
 namespace ompl
 {
@@ -35,13 +36,11 @@ namespace ompl
 
             bool flag{false};
 
-            arrA OptimalPath;
+            bool isValid{false};
+
+            bool stateValid{false};
 
             void clear() override;
-
-            double dist(arr p1,arr p2);
-
-            bool compare(arrA path,arrA OptimalPath,double threshold);
 
             ompl::base::RealVectorStateSpace *RN = si_->getStateSpace()->as<ompl::base::RealVectorStateSpace>();
 
@@ -57,13 +56,13 @@ namespace ompl
 
             unsigned long long cellCheck;
 
-            double min_dist;
+            double min_cost;
 
             unsigned long long gridCell;
 
             double delta;
 
-            bool stateValid{false};
+            double threshold;
 
             /** \brief State sampler */
             base::StateSamplerPtr sampler_;
@@ -79,16 +78,7 @@ namespace ompl
              * @param delta defines the sparsity of the poisson sampling.
              * @return PathGeometricPtr 
              */
-            PathGeometricPtr bestPoissonPath(double delta);
-            PathGeometricPtr bestPoissonPath_grid(double delta);
             PathGeometricPtr bestPoissonPath_list(double delta);
-
-            /**
-             * @brief This function uses the Bos-Muller transform method for generating a uniform random unit vector.             * 
-             */
-            void generate_randomUnitVector();
-
-            void generate_grid(double delta);
 
             /** \brief Representation of a motion
                 This only contains pointers to parent motions as we
@@ -104,6 +94,16 @@ namespace ompl
                 }
 
                 ~Motion() = default;
+
+                double getCostHeuristic() const
+                {
+                    return this->costHeuristic.value();
+                }
+
+                double getCost() const
+                {
+                    return this->cost.value();
+                }
 
                 /** \brief The state contained by the motion */
                 base::State *state{nullptr};
@@ -123,8 +123,6 @@ namespace ompl
                 return si_->distance(a->state, b->state);
             }
 
-            /** @brief An ordered list of active state arranged in decending order of cost heuristic*/
-            std::vector<Motion*> activeList;
 
             /** @brief The sole purpose of this list is to document the pointers of all motions generated
              * so that we can delete all of them later */
@@ -133,9 +131,24 @@ namespace ompl
             std::list<std::pair<unsigned long long, Motion*>> gridList;
             std::list<std::pair<unsigned long long, Motion*>>::iterator it;
 
-            void runNextNestedFor(std::vector<int> counters, int index, Motion* rmotion, std::shared_ptr<std::vector<Motion *>> gridArray);
             void runNextNestedFor_list(std::vector<int> counters, int index, Motion* rmotion);
 
+            struct CmpMotionPtrs
+            {
+                // ">" operator: smallest value is top in queue
+                // "<" operator: largest value is top in queue (default)
+                bool operator()(const Motion *lhs, const Motion *rhs) const
+                {
+                    return lhs->getCostHeuristic() < rhs->getCostHeuristic();
+                }
+            };
+            /** \brief \brief Priority queue of Objects */
+            typedef std::priority_queue<Motion*, std::vector<Motion*>, CmpMotionPtrs>
+                MotionPriorityQueue;
+
+            /** @brief An ordered list of active state arranged in decending order of cost heuristic*/
+            MotionPriorityQueue activeList;
+            // std::vector<Motion*> activeList;
         public:
             PKOMO(const base::SpaceInformationPtr &si, std::string filename);
 
