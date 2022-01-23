@@ -151,7 +151,9 @@ namespace ompl
 
             /** @brief An ordered list of active state arranged in decending order of cost heuristic*/
             MotionPriorityQueue activeList;
-            // std::vector<Motion*> activeList;
+
+            /** @brief Best Path foind till now */
+            geometric::PathGeometricPtr opti_path;
         public:
             PKOMO(const base::SpaceInformationPtr &si, std::string filename);
 

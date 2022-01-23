@@ -45,6 +45,7 @@ void ompl::geometric::PKOMO::clear()
 {
     std::cout << "clear called" << std::endl;
 	Planner::clear();
+    freeMemory();
 }
 
 void ompl::geometric::PKOMO::setup()
@@ -206,7 +207,7 @@ ompl::base::PlannerStatus ompl::geometric::PKOMO::solve(const base::PlannerTermi
     }
 
     // variables
-    delta = 0.5;
+    delta = 1;
     threshold = outerRadius;
     isValid = false;
 
@@ -218,6 +219,8 @@ ompl::base::PlannerStatus ompl::geometric::PKOMO::solve(const base::PlannerTermi
     for (int i = 0; i < reals.size(); i++){
         goal_.append(reals[i]);
     }
+
+    const base::ReportIntermediateSolutionFn intermediateSolutionCallback = pdef_->getIntermediateSolutionCallback();
 
     // Setup Configuration
     rai::Configuration C;
@@ -278,16 +281,20 @@ ompl::base::PlannerStatus ompl::geometric::PKOMO::solve(const base::PlannerTermi
             states.push_back(state);
         }
 
-        // TODO validity check
-        geometric::PathGeometricPtr opti_path = std::make_shared<geometric::PathGeometric>(si_, states);
-        pdef_->addSolutionPath(opti_path); //TODO: Check for path validity
+        opti_path = std::make_shared<geometric::PathGeometric>(si_, states);
+        if (/* opti_path->check() */ 1){
         OMPL_INFORM("%s: SolutionPath found with %d states", getName(), configs.N);
+        bestCost = opti_path->cost(opt_).value();
+        // intermediateSolutionCallback(this, states, opti_path->cost(opt_));
         isValid = true;
+        }
 
         freeMemory();
-        // break;
         delta = delta/2;
 	}
-	if (isValid) return base::PlannerStatus::EXACT_SOLUTION;
+	if (isValid){
+    pdef_->addSolutionPath(opti_path);
+    return base::PlannerStatus::EXACT_SOLUTION;
+    }
 	else return base::PlannerStatus::TIMEOUT;
 }

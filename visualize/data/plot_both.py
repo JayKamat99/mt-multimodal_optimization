@@ -70,7 +70,7 @@ def plot():
     handles = []
     # rrtconnect_tb = data["info"]["rrtconnect_tb"]
     # for i in range(len(rrtconnect_tb)):
-    handles.append(Line2D([], [], color=ibm_blue, marker='', label='MOMO'))
+    handles.append(Line2D([], [], color=ibm_blue, marker='', label='PKOMO'))
     handles.append(Line2D([], [], color=ibm_red, marker='', label='KOMO'))
     handles.append(Line2D([], [], color=ibm_yellow, marker='', label='RRT*'))
     handles.append(Line2D([], [], color=ibm_violet, marker='', label='BIT*'))

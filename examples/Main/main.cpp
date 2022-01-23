@@ -227,6 +227,7 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 		if (planner_ == "PKOMO"){
 			auto planner1(std::make_shared<og::PKOMO>(si,filename));
 			b.addPlanner(planner1);
+			std::cout << "planner added to benchmark" << std::endl;
 		}
 		if (planner_ == "KOMO")
 		{
@@ -316,7 +317,7 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 		ss.setup();
 
 		// attempt to solve the problem
-		ob::PlannerStatus solved = ss.solve(20.0);
+		ob::PlannerStatus solved = ss.solve(10.0);
 
 		if (solved == ob::PlannerStatus::StatusType::APPROXIMATE_SOLUTION)
 			std::cout << "Found solution: APPROXIMATE_SOLUTION" << std::endl;
