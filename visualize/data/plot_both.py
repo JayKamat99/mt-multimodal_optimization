@@ -6,6 +6,8 @@ from plot_success_rate import store_info, store_success_data, plot_success
 from plot_points import store_points
 from plot_optimization import store_optimization_data, plot_optimization
 
+import sys
+
 # colors
 ibm_blue = '#648FFF'
 ibm_violet = '#785EF0'
@@ -27,7 +29,8 @@ color_dict = {
 linestyles = ['solid', 'dashed', 'dotted']
 markerstyles = ['.', 'x', 'v']
 
-filepath = 'Benchmarks/benchmark'
+# filepath = 'Benchmarks/benchmark'
+filepath = 'Benchmarks/'+sys.argv[1]+'/benchmark'
 
 info = {
         "min_time": {
@@ -80,13 +83,17 @@ def plot():
     #     handles.append(Line2D([], [], color='black', marker=markerstyles[i], ls='', label=rrtconnect_tb[i]))
     axs[1].legend(handles=handles, loc='upper left')
 
-
-    plt.show()
-    # plt.savefig('n8_bounded.pdf', format='pdf', dpi=300, bbox_inches='tight')
+    plt.savefig('Benchmarks/'+sys.argv[1]+'/'+sys.argv[1]+'.png')
+    # plt.show()
+    # plt.savefig('benchmark.pdf', format='pdf', dpi=300, bbox_inches='tight')
 
 
 
 if __name__ == '__main__':
+    
+    # Arguments passed
+    print("\nName of file:", sys.argv[1])
+
     run()
 
 

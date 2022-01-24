@@ -253,7 +253,7 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 		ompl::tools::Benchmark::Request req;
 		req.maxTime = 10.0;
 		req.maxMem = 100.0;
-		req.runCount = 10;
+		req.runCount = 5;
 		req.displayProgress = true;
 		b.benchmark(req);
 

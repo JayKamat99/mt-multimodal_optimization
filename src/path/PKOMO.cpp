@@ -38,7 +38,7 @@ void ompl::geometric::PKOMO::freeMemory()
         nn_->clear();
     while (!activeList.empty())
         activeList.pop();
-    std::cout << nn_->size() << activeList.empty() << std::endl;
+    // std::cout << nn_->size() << activeList.empty() << std::endl;
 }
 
 void ompl::geometric::PKOMO::clear()
@@ -108,7 +108,7 @@ ompl::geometric::PathGeometricPtr ompl::geometric::PKOMO::bestPoissonPath_list(d
     
     while (activeList.size()>0 && solution==nullptr && !ptc)
     {
-        std::cout << "OMPLINFORM: activeList.size = " << activeList.size() << std::endl;
+        // std::cout << "OMPLINFORM: activeList.size = " << activeList.size() << std::endl;
         // choose best motion from activeList
         auto bestState = activeList.top()->state;
         activeList.pop();
