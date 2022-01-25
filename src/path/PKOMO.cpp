@@ -255,7 +255,7 @@ ompl::base::PlannerStatus ompl::geometric::PKOMO::solve(const base::PlannerTermi
         komo.verbose = 0;
         komo.setModel(C, true);
         
-        komo.setTiming(1., configs.N, 5., 2);
+        komo.setTiming(1., 5*configs.N, 5., 2);
         komo.add_qControlObjective({}, 1, 1.);
         komo.addObjective({1.}, FS_qItself, {}, OT_eq, {10}, goal_, 0);
 		komo.add_collision(true); // TODO: Is there a better function for checking collision?
@@ -263,6 +263,7 @@ ompl::base::PlannerStatus ompl::geometric::PKOMO::solve(const base::PlannerTermi
         // //use configs to initialize with waypoints
         komo.initWithWaypoints(configs, configs.N, false);
         komo.run_prepare(0);
+        // komo.animateOptimization = 2;
         komo.optimize();
         komo.plotTrajectory();
 
@@ -282,7 +283,7 @@ ompl::base::PlannerStatus ompl::geometric::PKOMO::solve(const base::PlannerTermi
         }
 
         opti_path = std::make_shared<geometric::PathGeometric>(si_, states);
-        if (/* opti_path->check() */ 1){
+        if (opti_path->check()){
         OMPL_INFORM("%s: SolutionPath found with %d states", getName(), configs.N);
         bestCost = opti_path->cost(opt_).value();
         // intermediateSolutionCallback(this, states, opti_path->cost(opt_));
