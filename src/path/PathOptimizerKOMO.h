@@ -28,6 +28,8 @@ namespace ompl
             virtual ~PathOptimizerKOMO() = default;
 
             bool optimize(PathGeometric &path) override;
+
+            PathGeometricPtr optimize_path(PathGeometricPtr &path) override;
         };  
     } // namespace  geometric
 } //namespace ompl

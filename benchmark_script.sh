@@ -23,8 +23,11 @@ do
 # ../build/t_main "../examples/Models/$MODEL.g" "PathOptimizerKOMO" "true" # run the executable
 # python3 ../ompl/scripts/ompl_benchmark_statistics.py data/Benchmarks/benchmark_PathOptimizerKOMO.log -d data/$MODEL/Benchmarks/benchmark_multimodal.db # make the database file out of the log file
 
-../build/t_main "../examples/Models/$MODEL.g" "PKOMO" "true" # run the executable
-python3 ../ompl/scripts/ompl_benchmark_statistics.py data/Benchmarks/benchmark_PKOMO.log -d data/Benchmarks/$MODEL/benchmark_multimodal.db # make the database file out of the log file
+# ../build/t_main "../examples/Models/$MODEL.g" "PKOMO" "true" # run the executable
+# python3 ../ompl/scripts/ompl_benchmark_statistics.py data/Benchmarks/benchmark_PKOMO.log -d data/Benchmarks/$MODEL/benchmark_multimodal.db # make the database file out of the log file
+
+../build/t_main "../examples/Models/$MODEL.g" "BITKOMO" "true" # run the executable
+python3 ../ompl/scripts/ompl_benchmark_statistics.py data/Benchmarks/benchmark_BITKOMO.log -d data/Benchmarks/$MODEL/benchmark_multimodal.db # make the database file out of the log file
 
 ../build/t_main "../examples/Models/$MODEL.g" "KOMO" "true" # run the executable
 python3 ../ompl/scripts/ompl_benchmark_statistics.py data/Benchmarks/benchmark_KOMO.log -d data/Benchmarks/$MODEL/benchmark_KOMO.db # make the database file out of the log file

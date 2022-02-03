@@ -20,12 +20,14 @@
 #include <path/PathOptimizerKOMO.h>
 #include <path/Planner_KOMO.h>
 #include <path/PKOMO.h>
+#include <path/BITKOMO.h>
 #include <ompl/geometric/planners/rrt/RRTstar.h>
 #include <ompl/geometric/planners/fmt/FMT.h>
 #include <ompl/geometric/planners/rrt/LBTRRT.h>
 #include <ompl/geometric/planners/informedtrees/BITstar.h>
 #include <ompl/geometric/planners/informedtrees/AITstar.h>
 #include <ompl/geometric/planners/informedtrees/ABITstar.h>
+// #include <ompl/geometric/planners/informedtrees/BITKOMO.h>
 #include <ompl/geometric/PathSimplifier.h>
 
 // KOMO
@@ -227,9 +229,8 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 		if (planner_ == "PKOMO"){
 			auto planner1(std::make_shared<og::PKOMO>(si,filename));
 			b.addPlanner(planner1);
-			std::cout << "planner added to benchmark" << std::endl;
 		}
-		if (planner_ == "KOMO")
+		if (planner_ == "KOMO" || planner_ == "BITKOMO")
 		{
 			//build the KOMO object here:
 			auto komo_(std::make_shared<KOMO>());
@@ -248,10 +249,16 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 				auto planner(std::make_shared<og::Planner_KOMO>(si,komo_));
 				b.addPlanner(planner);
 			}
+			else if (planner_ == "BITKOMO"){
+				auto planner(std::make_shared<og::BITKOMO>(si));
+				og::PathOptimizerPtr optimizer = std::make_shared<og::PathOptimizerKOMO>(si,komo_);
+				planner->setOptimizer(optimizer);
+				b.addPlanner(planner);
+			}
 		}
 
 		ompl::tools::Benchmark::Request req;
-		req.maxTime = 10.0;
+		req.maxTime = 30.0;
 		req.maxMem = 100.0;
 		req.runCount = 5;
 		req.displayProgress = true;
@@ -302,14 +309,20 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 			komo_->verbose = 0;
 			komo_->setModel(C, true);
 			
-			komo_->setTiming(1., 20, 5., 2);
+			komo_->setTiming(1., 20, 1., 2);
 			komo_->add_qControlObjective({}, 1, 2.);
 
-			komo_->addObjective({1.}, FS_qItself, {}, OT_eq, {10}, goal_, 0);
+			komo_->addObjective({1.}, FS_qItself, {}, OT_eq, {1000}, goal_, 0);
 			komo_->add_collision(true);
 
 			if(planner_ == "KOMO"){
 				auto planner(std::make_shared<og::Planner_KOMO>(si, komo_));
+				ss.setPlanner(planner);
+			}
+			else if(planner_ == "BITKOMO"){
+				auto planner(std::make_shared<og::BITKOMO>(si));
+				og::PathOptimizerPtr optimizer = std::make_shared<og::PathOptimizerKOMO>(si,komo_);
+				planner->setOptimizer(optimizer);
 				ss.setPlanner(planner);
 			}
 		}

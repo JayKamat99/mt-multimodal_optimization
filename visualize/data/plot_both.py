@@ -38,10 +38,10 @@ info = {
             "optimization": 0.001
         },
         "max_time": {
-            "success": 10,
-            "optimization": 10
+            "success": 30,
+            "optimization": 30
         },
-        "max_cost": 40,
+        "max_cost": 20,
         "ci_left": 39,
         "ci_right": 59,
         # "rrtconnect_tb": [1, 2, 4],
@@ -73,7 +73,7 @@ def plot():
     handles = []
     # rrtconnect_tb = data["info"]["rrtconnect_tb"]
     # for i in range(len(rrtconnect_tb)):
-    handles.append(Line2D([], [], color=ibm_blue, marker='', label='PKOMO'))
+    handles.append(Line2D([], [], color=ibm_blue, marker='', label='BITKOMO'))
     handles.append(Line2D([], [], color=ibm_red, marker='', label='KOMO'))
     handles.append(Line2D([], [], color=ibm_yellow, marker='', label='RRT*'))
     handles.append(Line2D([], [], color=ibm_violet, marker='', label='BIT*'))
@@ -83,7 +83,7 @@ def plot():
     #     handles.append(Line2D([], [], color='black', marker=markerstyles[i], ls='', label=rrtconnect_tb[i]))
     axs[1].legend(handles=handles, loc='upper left')
 
-    plt.savefig('Benchmarks/'+sys.argv[1]+'/'+sys.argv[1]+'.png')
+    plt.savefig('Benchmarks/'+sys.argv[1]+'/'+sys.argv[1]+'_new.png')
     # plt.show()
     # plt.savefig('benchmark.pdf', format='pdf', dpi=300, bbox_inches='tight')
 

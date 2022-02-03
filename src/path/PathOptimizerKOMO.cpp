@@ -71,3 +71,57 @@ bool ompl::geometric::PathOptimizerKOMO::optimize(PathGeometric &path)
     setPathCost(R.get<double>("sos"));
     return isValid;
 }
+
+ompl::geometric::PathGeometricPtr ompl::geometric::PathOptimizerKOMO::optimize_path(PathGeometricPtr &path)
+{
+    // std::cout << "OptimizingPath" << std::endl;
+    /* Convert path to arrA */
+    arrA configs;
+    const base::StateSpace *space(si_->getStateSpace().get());
+    for (auto state : path->getStates())
+        {
+            arr config;
+            std::vector<double> reals;
+            space->copyToReals(reals, state);
+            for (double r : reals){
+                config.append(r);
+            }
+            configs.append(config);
+    }
+
+    // Are the steps per phase we have initialized enough?
+    if (configs.N > komo_->stepsPerPhase)
+    {
+        OMPL_ERROR("path has too many way points. Increase steps per phase");        
+        return nullptr;
+    }
+    // use configs to initialize with waypoints
+    komo_->initWithWaypoints(configs, configs.N, false);
+    komo_->run_prepare(0);
+    komo_->animateOptimization = 0;
+    komo_->optimize(0);
+
+    configs = komo_->getPath_q();
+
+    /* Define arrA as path */
+    std::vector<const base::State*> states;
+    for (int i=0; i<configs.N; i++)
+    {
+        std::vector<double> reals;
+        for (double r : configs(i)){
+            reals.push_back(r);
+        }
+        base::State* state = si_->allocState();
+        space->copyFromReals(state, reals);
+        states.push_back(state);
+    }
+
+    // std::cout << "PathOptimized" << std::endl;
+
+    geometric::PathGeometricPtr opti_path = std::make_shared<geometric::PathGeometric>(si_, states);
+    if (opti_path->check())
+    {
+        return opti_path;
+    }
+    else return nullptr;
+}
