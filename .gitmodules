@@ -7,3 +7,6 @@
 [submodule "rai-robotModels"]
 	path = rai-robotModels
 	url = git@github.com:JayKamat99/rai-robotModels.git
+[submodule "ompl_benchmark_plotter"]
+	path = ompl_benchmark_plotter
+	url = git@github.com:aorthey/ompl_benchmark_plotter.git

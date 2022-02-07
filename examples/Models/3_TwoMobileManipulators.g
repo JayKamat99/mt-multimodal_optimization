@@ -5,6 +5,13 @@ Include: 'panda_mobile.g'
 Prefix: "r_"
 Include: 'panda_mobile.g'
 
+# Fix the joints
+Edit l_panda_finger_joint1     { joint:rigid }
+Edit l_panda_finger_joint2     { joint:rigid }
+
+Edit r_panda_finger_joint1     { joint:rigid }
+Edit r_panda_finger_joint2     { joint:rigid }
+
 Edit l_base{ X:<t(.5 0 0) d(90 0 0 1)> }
 Edit r_base{ X:<t(-.5 0 0) d(-90 0 0 1)> }
 

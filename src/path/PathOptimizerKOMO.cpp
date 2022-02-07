@@ -89,6 +89,21 @@ ompl::geometric::PathGeometricPtr ompl::geometric::PathOptimizerKOMO::optimize_p
             configs.append(config);
     }
 
+    // // Read from file
+    // std::ifstream myfile;
+    // myfile.open("../debug/2d_debug.txt");
+    // myfile >> configs;
+    // myfile.close();
+
+
+    // std::cout << "configs: " << configs << std::endl;
+
+    // // Save it to some file.
+    // std::ofstream myfile;
+    // myfile.open("../debug/2d_debug.txt");
+    // myfile << configs;
+    // myfile.close();
+
     // Are the steps per phase we have initialized enough?
     if (configs.N > komo_->stepsPerPhase)
     {
@@ -98,7 +113,7 @@ ompl::geometric::PathGeometricPtr ompl::geometric::PathOptimizerKOMO::optimize_p
     // use configs to initialize with waypoints
     komo_->initWithWaypoints(configs, configs.N, false);
     komo_->run_prepare(0);
-    komo_->animateOptimization = 0;
+    komo_->animateOptimization = 1;
     komo_->optimize(0);
 
     configs = komo_->getPath_q();
