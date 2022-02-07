@@ -237,11 +237,9 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 			komo_->setModel(C, true);
 			
 			komo_->setTiming(1., 20, 1., 2);
-			// komo_->add_qControlObjective({}, 1, 2.);
 			komo_->add_qControlObjective({}, 1, 1.);
 
 			komo_->addObjective({1.}, FS_qItself, {}, OT_eq, {1000}, goal_, 0);
-			// komo_->addObjective({}, FS_qItself, {}, OT_sos, {1.}, {}, 1);
 			komo_->add_collision(true);
 
 			if (planner_ == "KOMO"){
@@ -309,7 +307,7 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 			komo_->setModel(C, true);
 			
 			komo_->setTiming(1., 20, 1., 2);
-			komo_->add_qControlObjective({}, 1, 2.);
+			komo_->add_qControlObjective({}, 1, 1.);
 
 			komo_->addObjective({1.}, FS_qItself, {}, OT_eq, {1000}, goal_, 0);
 			komo_->add_collision(true);

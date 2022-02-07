@@ -73,6 +73,7 @@ void optimize(std::string filename){
     // Load the configuration
     rai::Configuration C;
     C.addFile(filename.c_str());
+    C_Dimension = C.getJointStateDimension();
     cout <<"configuration space dim=" <<C_Dimension <<endl;
     std::string file;
     arr goal_;
@@ -91,7 +92,7 @@ void optimize(std::string filename){
         goal_ = {0.7,0,0};
     }
     else if (filename == "../examples/Models/1_kuka_shelf.g"){
-        file = "../debug/2d_debug.txt";
+        file = "../debug/initPath.txt";
 		goal_ = {1.05248, -0.982536, -1.70613, -0.816571, -0.0301295, 0.0453272, 0.000650022};
     }
 
@@ -122,9 +123,9 @@ void optimize(std::string filename){
 
     KOMO komo;
     komo.setModel(C, true);
-    komo.setTiming(1., 20 /* configs.N */, 1, 2);
-    komo.add_qControlObjective({}, 2, 1.);
-    komo.addObjective({1.}, FS_qItself, {}, OT_eq, {10}, goal_, 0);
+    komo.setTiming(1., 20, 1., 2);
+    komo.add_qControlObjective({}, 1, 1.);
+    komo.addObjective({1.}, FS_qItself, {}, OT_eq, {1000}, goal_, 0);
     komo.add_collision(true);
     
     komo.initWithWaypoints(configs, configs.N, false);
