@@ -103,7 +103,9 @@ void VisualizePath(arrA configs, std::string filename = ""){
 	komo.initWithWaypoints(configs, configs.N, false);
     komo.run_prepare(0);
 	komo.plotTrajectory();
-	std::string SaveToPath = std::string("z.vid/DisplayTrajectory_") + std::to_string(Trajectory) + "/";
+	filename.erase(0,19);
+	filename.erase(filename.length()-2);
+	std::string SaveToPath = std::string("../visualize/videos/") + filename + "/";
 
 	rai::ConfigurationViewer V;
 	V.setPath(C, komo.x, "result", true);
@@ -237,10 +239,13 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 			komo_->setModel(C, true);
 			
 			komo_->setTiming(1., 20, 1., 2);
-			komo_->add_qControlObjective({}, 1, 1.);
+			komo_->add_qControlObjective({}, 1, 2.);
 
-			komo_->addObjective({1.}, FS_qItself, {}, OT_eq, {1000}, goal_, 0);
-			komo_->add_collision(true);
+			komo_->addObjective({1.}, FS_qItself, {}, OT_eq, {100}, goal_, 0);
+			if (filename == "../examples/Models/7_disc_rooms.g")
+				komo_->add_collision(true, 0.05);
+			else
+				komo_->add_collision(true, 0.02);
 
 			if (planner_ == "KOMO"){
 				auto planner(std::make_shared<og::Planner_KOMO>(si,komo_));
@@ -255,9 +260,9 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 		}
 
 		ompl::tools::Benchmark::Request req;
-		req.maxTime = 20.0;
+		req.maxTime = 30.0;
 		req.maxMem = 100.0;
-		req.runCount = 5;
+		req.runCount = 10;
 		req.displayProgress = true;
 		b.benchmark(req);
 
@@ -265,7 +270,10 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 		
 		// This will generate a .log file
 		std::ostringstream oss;
-		oss << "data/Benchmarks/benchmark_" << planner_ << ".log";
+		std::string filename_s(filename);
+		filename_s.erase(0,19);
+		filename_s.erase(filename_s.length()-2);
+		oss << "data/Benchmarks/" << filename_s << "/logs/benchmark_" << planner_ << ".log";
 		b.saveResultsToFile(oss.str().c_str());
 	}
 
@@ -307,10 +315,13 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 			komo_->setModel(C, true);
 			
 			komo_->setTiming(1., 20, 1., 2);
-			komo_->add_qControlObjective({}, 1, 1.);
+			komo_->add_qControlObjective({}, 1, 2);
 
-			komo_->addObjective({1.}, FS_qItself, {}, OT_eq, {1000}, goal_, 0);
-			komo_->add_collision(true);
+			komo_->addObjective({1.}, FS_qItself, {}, OT_eq, {100}, goal_, 0);
+			if (filename == "../examples/Models/7_disc_rooms.g")
+				komo_->add_collision(true, 0.05);
+			else
+				komo_->add_collision(true, 0.02);
 
 			if(planner_ == "KOMO"){
 				auto planner(std::make_shared<og::Planner_KOMO>(si, komo_));

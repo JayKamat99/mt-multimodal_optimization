@@ -113,7 +113,7 @@ ompl::geometric::PathGeometricPtr ompl::geometric::PathOptimizerKOMO::optimize_p
     // use configs to initialize with waypoints
     komo_->initWithWaypoints(configs, configs.N, false);
     komo_->run_prepare(0);
-    komo_->animateOptimization = 1;
+    komo_->animateOptimization = 0;
     komo_->optimize(0);
 
     configs = komo_->getPath_q();

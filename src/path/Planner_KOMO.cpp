@@ -1,7 +1,7 @@
 #include <path/Planner_KOMO.h>
 #include <thread>
 
-ompl::geometric::Planner_KOMO::Planner_KOMO(const base::SpaceInformationPtr &si, std::shared_ptr<KOMO> komo_) : base::Planner(si, "Planner_KOMO"), komo_(std::move(komo_))
+ompl::geometric::Planner_KOMO::Planner_KOMO(const base::SpaceInformationPtr &si, std::shared_ptr<KOMO> komo_) : base::Planner(si, "KOMO"), komo_(std::move(komo_))
 {
 	// std::cout << "Planner_KOMO object created" << std::endl;
 	addPlannerProgressProperty("best cost REAL", [this] { return bestCostProperty(); });
@@ -18,6 +18,7 @@ void ompl::geometric::Planner_KOMO::setup()
 		Planner::pdef_->setOptimizationObjective(
 			std::make_shared<base::PathLengthOptimizationObjective>(Planner::si_));
 	}
+	bestCost = std::numeric_limits<double>::infinity();
 	startConfig = komo_->getConfiguration_q(0);
 }
 
@@ -28,6 +29,7 @@ ompl::geometric::Planner_KOMO::~Planner_KOMO()
 
 void ompl::geometric::Planner_KOMO::freeMemory()
 {
+	bestCost = std::numeric_limits<double>::infinity();
 	// std::cout << "Memory has been freed" << std::endl;
 }
 
@@ -41,11 +43,17 @@ void ompl::geometric::Planner_KOMO::clear()
 ompl::base::PlannerStatus ompl::geometric::Planner_KOMO::solve(const base::PlannerTerminationCondition &ptc)
 {
     bool isValid = false;
+	// std::cout << "Starting KOMO, bestCost = " << bestCost << std::endl;
 	while (!ptc){
 		komo_->initWithConstant(startConfig);
 		komo_->run_prepare(0);
 		komo_->animateOptimization = 0;
 		komo_->optimize();
+		rai::Graph R = komo_->getReport();
+		double eq_constraint = R.get<double>("eq");
+		// std::cout << "eq: " << eq_constraint << std::endl;
+		if (eq_constraint > 50) // To kill solutions that do not respect the equality constraint
+			continue;
 
 		// rai::Graph R = komo_->getReport(false);
 		// double constraint_violation = R.get<double>("eq") + R.get<double>("ineq");
@@ -77,6 +85,7 @@ ompl::base::PlannerStatus ompl::geometric::Planner_KOMO::solve(const base::Plann
 			// intermediateSolutionCallback(this, states, opti_path->cost(opt_));
 			isValid = true;
 		}
+		// else std::cout << "in collision" << std::endl;
 
 		if (isValid && cost<bestCost){
 			this->bestCost = cost;
@@ -95,10 +104,13 @@ ompl::base::PlannerStatus ompl::geometric::Planner_KOMO::solve(const base::Plann
 				path->append(state);
 			}
 		}
-		std::cout << bestCost << std::endl;
+		// std::cout << bestCost << std::endl;
 	}
 
 	pdef_->addSolutionPath(path, false, 0.0, getName());
-	if (isValid) return base::PlannerStatus::EXACT_SOLUTION;
+	if (isValid) {
+		// std::cout << "Exact solution" << std::endl;
+		return base::PlannerStatus::EXACT_SOLUTION;
+	}
 	else return base::PlannerStatus::INFEASIBLE;
 }

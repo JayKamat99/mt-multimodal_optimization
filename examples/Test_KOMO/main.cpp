@@ -124,8 +124,8 @@ void optimize(std::string filename){
     KOMO komo;
     komo.setModel(C, true);
     komo.setTiming(1., 20, 1., 2);
-    komo.add_qControlObjective({}, 1, 1.);
-    komo.addObjective({1.}, FS_qItself, {}, OT_eq, {1000}, goal_, 0);
+    komo.add_qControlObjective({}, 1, 2.);
+    komo.addObjective({1.}, FS_qItself, {}, OT_eq, {100}, goal_, 0);
     komo.add_collision(true);
     
     komo.initWithWaypoints(configs, configs.N, false);
