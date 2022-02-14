@@ -35,7 +35,8 @@ int main(int argc, char** argv)
 	C.addFile(filename);
 	filename_s.erase(0,19);
 	filename_s.erase(filename_s.length()-2);
-	// C.watch(true);
+	C.watch(true);
+	return 0;
 
     KOMO komo;
     komo.verbose = 0;

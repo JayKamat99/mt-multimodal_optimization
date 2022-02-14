@@ -2,14 +2,14 @@
 #include <Kin/viewer.h>
 #include <fstream>
 
-void plan(const char* filename = "../examples/Models/2D_arm.g"){
+void plan(std::string filename = "../examples/Models/2D_arm.g"){
     // filename = "../examples/Models/2_Two_Pandas.g";
     // filename = "../examples/Models/4_kuka_box.g";
     // filename = "../examples/Models/5_disc_obstacle.g";
-    filename = "../examples/Models/3_TwoMobileManipulators.g";
+    // filename = "../examples/Models/3_TwoMobileManipulators.g";
     // Load the configuration
     rai::Configuration C;
-    C.addFile(filename);
+    C.addFile(filename.c_str());
     cout <<"configuration space dim=" <<C.getJointStateDimension() <<endl;
 
     KOMO komo;
@@ -17,15 +17,33 @@ void plan(const char* filename = "../examples/Models/2D_arm.g"){
     komo.setTiming(1., 10, 5., 2);
     komo.add_qControlObjective({}, 2, 1.);
 
-    // komo.addObjective({1.}, FS_positionDiff, {"l_panda_hand_joint", "r_panda_link0"}, OT_sos, {1e1});
-    // komo.addObjective({1.}, FS_positionDiff, {"r_panda_hand_joint", "l_panda_link0"}, OT_sos, {1e1});
-    // komo.addObjective({1.}, FS_positionDiff, {">tool0_joint", "target"}, OT_sos, {1e1});
-    // komo.addObjective({1.}, FS_positionDiff, {"bot", "target"}, OT_sos, {1e1});
-    komo.addObjective({1.}, FS_positionDiff, {"l_panda_hand_joint", "r_target"}, OT_sos, {1e1});
-    komo.addObjective({1.}, FS_positionDiff, {"r_panda_hand_joint", "l_target"}, OT_sos, {1e1});
-    komo.addObjective({.98,1.}, FS_qItself, {}, OT_sos, {1e1}, {}, 1);  //small velocity in that time frame
+    if (filename == "../examples/Models/1_kuka_shelf.g"){
+        komo.addObjective({1.}, FS_positionDiff, {">tool0_joint", "target"}, OT_sos, {10});
+	}
+	else if (filename == "../examples/Models/2_Two_Pandas.g"){
+        komo.addObjective({1.}, FS_positionDiff, {"l_panda_hand_joint", "r_panda_link0"}, OT_sos, {1e1});
+        komo.addObjective({1.}, FS_positionDiff, {"r_panda_hand_joint", "l_panda_link0"}, OT_sos, {1e1});
+	}
+	else if (filename == "../examples/Models/3_TwoMobileManipulators.g"){
+        komo.addObjective({1.}, FS_positionDiff, {"l_panda_hand_joint", "r_target"}, OT_sos, {1e1});
+        komo.addObjective({1.}, FS_positionDiff, {"r_panda_hand_joint", "l_target"}, OT_sos, {1e1});
+	}	
+	else if (filename == "../examples/Models/4_kuka_box.g"){
+        komo.addObjective({1.}, FS_positionDiff, {">tool0_joint", "target"}, OT_sos, {1e1});
+	}
+	else if (filename == "../examples/Models/5_disc_obstacle.g"){
+        komo.addObjective({1.}, FS_positionDiff, {"bot", "target"}, OT_sos, {1e1});
+	}
+	else if (filename == "../examples/Models/6_rectangle_opening.g"){
+        komo.addObjective({1.}, FS_positionDiff, {"bot", "target"}, OT_sos, {1e1});
+	}
+	else if (filename == "../examples/Models/7_disc_rooms.g"){
+        komo.addObjective({1.}, FS_positionDiff, {"bot", "target"}, OT_sos, {1e1});
+	}
+
+    // komo.addObjective({.98,1.}, FS_qItself, {}, OT_sos, {1e1}, {}, 1);  //small velocity in that time frame
     // komo.addObjective({}, FS_accumulatedCollisions, {}, OT_eq, {1.});
-    // komo.add_collision(true);
+    komo.add_collision(true);
 
     // komo.animateOptimization = 1;
     // komo.initWithWaypoints({{1,1},{2,2}} , 2, false); //false-> it's linear interpolation and not sine
@@ -58,7 +76,8 @@ void plan(const char* filename = "../examples/Models/2D_arm.g"){
 
 int main(int argc, char ** argv)
 {
-  	rai::initCmdLine(argc,argv);
-    plan();
-	return 0;
+    rai::initCmdLine(argc,argv);
+    std::string filename(argv[1]);
+    plan(filename);
+    return 0;
 }

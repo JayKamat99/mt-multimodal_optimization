@@ -147,9 +147,11 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 	});
 
     // create a start state
+	arr start_;
     ob::ScopedState<> start(space);
 	for (unsigned int i=0; i<C.getJointStateDimension(); i++){
 		start[i] = komo.getConfiguration_q(0).elem(i);
+		start_.append(start[i]);
 	}
 
 	std::cout << start << std::endl;
@@ -157,7 +159,12 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 	// goal state will change from example to example
 	ob::ScopedState<> goal(space);
 	if (filename == "../examples/Models/1_kuka_shelf.g"){
-		goal = {1.05248, -0.982536, -1.70613, -0.816571, -0.0301295, 0.0453272, 0.000650022};
+		// goal = {1.05248, -0.982536, -1.70613, -0.816571, -0.0301295, 0.0453272, 0.000650022};
+
+		C.setJointState({0.718274, -0.388218, -1.83428, -0.971166, -0.322495, 0.284864, 0.00191594});
+		// C.watch(true);
+		start = {0.718274, -0.388218, -1.83428, -0.971166, -0.322495, 0.284864, 0.00191594};
+		goal = {0.560603, -1.05486, -1.71583, -1.68994, -0.051403, 0.266908, 0.000754904};
 	}
 	else if (filename == "../examples/Models/2_Two_Pandas.g"){
 		goal =  {-0.24272, 1.2727, 0.131396, -1.10928, -0.795822, 3.0705, 0.00170469, -0.248182, 1.29032, 0.143824, -1.09332, -0.813384, 3.08292, -0.0161561};
@@ -241,6 +248,12 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 			komo_->setTiming(1., 20, 1., 2);
 			komo_->add_qControlObjective({}, 1, 2.);
 
+			// arrA Goal_;
+			// Goal_.append(goal_);
+			// komo_->initWithWaypoints(Goal_, 20, false);
+			// // komo_->initWithConstant(goal_);
+
+
 			komo_->addObjective({1.}, FS_qItself, {}, OT_eq, {100}, goal_, 0);
 			if (filename == "../examples/Models/7_disc_rooms.g")
 				komo_->add_collision(true, 0.05);
@@ -260,7 +273,7 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 		}
 
 		ompl::tools::Benchmark::Request req;
-		req.maxTime = 30.0;
+		req.maxTime = 60.0;
 		req.maxMem = 100.0;
 		req.runCount = 10;
 		req.displayProgress = true;
@@ -316,6 +329,12 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 			
 			komo_->setTiming(1., 20, 1., 2);
 			komo_->add_qControlObjective({}, 1, 2);
+
+			// arrA Goal_;
+			// Goal_.append(start_);
+			// Goal_.append(goal_);
+			// komo_->initWithWaypoints(Goal_, 20, true);
+			// // komo_->initWithConstant(goal_);
 
 			komo_->addObjective({1.}, FS_qItself, {}, OT_eq, {100}, goal_, 0);
 			if (filename == "../examples/Models/7_disc_rooms.g")
