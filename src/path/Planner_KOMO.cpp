@@ -103,13 +103,14 @@ ompl::base::PlannerStatus ompl::geometric::Planner_KOMO::solve(const base::Plann
 				space->copyFromReals(state, reals);
 				path->append(state);
 			}
+			break;
 		}
 		// std::cout << bestCost << std::endl;
 	}
 
 	pdef_->addSolutionPath(path, false, 0.0, getName());
 	if (isValid) {
-		// std::cout << "Exact solution" << std::endl;
+		std::cout << "Exact solution" << std::endl;
 		return base::PlannerStatus::EXACT_SOLUTION;
 	}
 	else return base::PlannerStatus::INFEASIBLE;

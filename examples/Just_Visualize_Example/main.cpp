@@ -11,7 +11,9 @@ int main(int argc, char** argv)
 	std::cout << "start: " << start << std::endl;
 	arr goal;
 	if (filename_s == "../examples/Models/1_kuka_shelf.g"){
-		goal = {1.05248, -0.982536, -1.70613, -0.816571, -0.0301295, 0.0453272, 0.000650022};
+		start = {0.718274, -0.388218, -1.83428, -0.971166, -0.322495, 0.284864, 0.00191594};
+		goal = {0.560603, -1.05486, -1.71583, -1.68994, -0.051403, 0.266908, 0.000754904};
+		// goal = {1.05248, -0.982536, -1.70613, -0.816571, -0.0301295, 0.0453272, 0.000650022};
 	}
 	else if (filename_s == "../examples/Models/2_Two_Pandas.g"){
 		goal =  {-0.24272, 1.2727, 0.131396, -1.10928, -0.795822, 3.0705, 0.00170469, -0.248182, 1.29032, 0.143824, -1.09332, -0.813384, 3.08292, -0.0161561};
@@ -31,12 +33,16 @@ int main(int argc, char** argv)
 	else if (filename_s == "../examples/Models/7_disc_rooms.g"){
 		goal = {0.7,0,0};
 	}
-	C.setJointState(goal);
+	// C.setJointState(goal);
 	C.addFile(filename);
 	filename_s.erase(0,19);
 	filename_s.erase(filename_s.length()-2);
-	C.watch(true);
-	return 0;
+	arr stateSet;
+	stateSet.append(start);
+	stateSet.append(goal);
+	C.setJointState(stateSet);
+	// C.watch(true);
+	// return 0;
 
     KOMO komo;
     komo.verbose = 0;

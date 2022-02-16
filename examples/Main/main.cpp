@@ -273,9 +273,9 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 		}
 
 		ompl::tools::Benchmark::Request req;
-		req.maxTime = 60.0;
+		req.maxTime = 120.0;
 		req.maxMem = 100.0;
-		req.runCount = 10;
+		req.runCount = 5;
 		req.displayProgress = true;
 		b.benchmark(req);
 
@@ -287,6 +287,7 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 		filename_s.erase(0,19);
 		filename_s.erase(filename_s.length()-2);
 		oss << "data/Benchmarks/" << filename_s << "/logs/benchmark_" << planner_ << ".log";
+		// oss << "data/Benchmarks/test" << filename_s << "/logs/benchmark_" << planner_ << ".log";
 		b.saveResultsToFile(oss.str().c_str());
 	}
 
@@ -357,7 +358,7 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 		ss.setup();
 
 		// attempt to solve the problem
-		ob::PlannerStatus solved = ss.solve(10.0);
+		ob::PlannerStatus solved = ss.solve(180.0);
 
 		if (solved == ob::PlannerStatus::StatusType::APPROXIMATE_SOLUTION)
 			std::cout << "Found solution: APPROXIMATE_SOLUTION" << std::endl;
