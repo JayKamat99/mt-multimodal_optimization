@@ -1,5 +1,6 @@
 #include <path/Planner_KOMO.h>
 #include <thread>
+#include <chrono>
 
 ompl::geometric::Planner_KOMO::Planner_KOMO(const base::SpaceInformationPtr &si, std::shared_ptr<KOMO> komo_) : base::Planner(si, "KOMO"), komo_(std::move(komo_))
 {
@@ -111,6 +112,8 @@ ompl::base::PlannerStatus ompl::geometric::Planner_KOMO::solve(const base::Plann
 	pdef_->addSolutionPath(path, false, 0.0, getName());
 	if (isValid) {
 		std::cout << "Exact solution" << std::endl;
+		// Pause for a 10th of a second
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		return base::PlannerStatus::EXACT_SOLUTION;
 	}
 	else return base::PlannerStatus::INFEASIBLE;
