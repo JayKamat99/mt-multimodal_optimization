@@ -46,6 +46,8 @@ ompl::base::PlannerStatus ompl::geometric::Planner_KOMO::solve(const base::Plann
     bool isValid = false;
 	// std::cout << "Starting KOMO, bestCost = " << bestCost << std::endl;
 	while (!ptc){
+		static int iteration(0);
+		iteration++;
 		komo_->initWithConstant(startConfig);
 		komo_->run_prepare(0);
 		komo_->animateOptimization = 0;
@@ -104,6 +106,7 @@ ompl::base::PlannerStatus ompl::geometric::Planner_KOMO::solve(const base::Plann
 				space->copyFromReals(state, reals);
 				path->append(state);
 			}
+			std::cout << "Iteration: " << iteration << std::endl;
 			break;
 		}
 		// std::cout << bestCost << std::endl;

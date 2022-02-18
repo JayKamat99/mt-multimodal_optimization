@@ -133,6 +133,13 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 	ob::RealVectorBounds bounds(C_Dimension);
 	bounds.setLow(-PI);
 	bounds.setHigh(PI);
+	if (filename == "../examples/Models/3_TwoMobileManipulators.g"){ // Special bounds for this example
+		bounds.setLow(0, -1.3); bounds.setLow(1, -0.8);
+		bounds.setHigh(0, 1.3); bounds.setHigh(1, 0.8);
+		bounds.setLow(10, -1.3); bounds.setLow(11, -0.8);
+		bounds.setHigh(10, 1.3); bounds.setHigh(11, 0.8);
+	}
+
 	space->setBounds(bounds);
 
 	//create simple setup
