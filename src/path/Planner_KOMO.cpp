@@ -21,6 +21,7 @@ void ompl::geometric::Planner_KOMO::setup()
 	}
 	bestCost = std::numeric_limits<double>::infinity();
 	startConfig = komo_->getConfiguration_q(0);
+	goal_ = komo_->getConfiguration_q(1);
 }
 
 ompl::geometric::Planner_KOMO::~Planner_KOMO()
@@ -48,7 +49,8 @@ ompl::base::PlannerStatus ompl::geometric::Planner_KOMO::solve(const base::Plann
 	while (!ptc){
 		static int iteration(0);
 		iteration++;
-		komo_->initWithConstant(startConfig);
+		// komo_->initWithConstant(startConfig);
+		komo_->initWithWaypoints({goal_}, 1, false);
 		komo_->run_prepare(0);
 		komo_->animateOptimization = 0;
 		komo_->optimize();

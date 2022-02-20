@@ -74,7 +74,8 @@ bool ompl::geometric::PathOptimizerKOMO::optimize(PathGeometric &path)
 
 ompl::geometric::PathGeometricPtr ompl::geometric::PathOptimizerKOMO::optimize_path(PathGeometricPtr &path)
 {
-    // std::cout << "OptimizingPath" << std::endl;
+    std::cout << "OptimizingPath" << std::endl;
+    // I am getting the path as PathGeometricPtr; however, KOMO  needs it in form of arrA. So, let's convert!
     /* Convert path to arrA */
     arrA configs;
     const base::StateSpace *space(si_->getStateSpace().get());
@@ -96,7 +97,7 @@ ompl::geometric::PathGeometricPtr ompl::geometric::PathOptimizerKOMO::optimize_p
     // myfile.close();
 
 
-    // std::cout << "configs: " << configs << std::endl;
+    std::cout << "configs: " << configs << std::endl;
 
     // // Save it to some file.
     // std::ofstream myfile;
@@ -104,20 +105,31 @@ ompl::geometric::PathGeometricPtr ompl::geometric::PathOptimizerKOMO::optimize_p
     // myfile << configs;
     // myfile.close();
 
-    // Are the steps per phase we have initialized enough?
+    // Are the steps per phase we have initialized enough? If not, I am sorry, you did not supply the right discretization factor. You need to take care about it next time.
     if (configs.N > komo_->stepsPerPhase)
     {
-        OMPL_ERROR("path has too many way points. Increase steps per phase");        
+        OMPL_ERROR("path has too many way points. %d to be precise. Increase steps per phase", configs.N);        
         return nullptr;
     }
-    // use configs to initialize with waypoints
+    // Now, that we have gotten the path in the right form use it to initialize KOMO (with waypoints) and optimize
     komo_->initWithWaypoints(configs, configs.N, false);
     komo_->run_prepare(0);
-    komo_->animateOptimization = 0;
+    komo_->animateOptimization = 0; // Make this 1 if you want to see how the path evolves over time.
     komo_->optimize(0);
-
     configs = komo_->getPath_q();
 
+    // Wait! Don't get excited because the optimization is completed. You need to do a few checks to be sure that you have a feasible solution. 
+    // Have I reached the goal? Or atleast close enough?
+    rai::Graph R = komo_->getReport();
+    double eq_constraint = R.get<double>("eq");
+    // std::cout << "eq: " << eq_constraint << std::endl;
+    if (eq_constraint > 50) // I am sorry but our solution does not respect the equality constraint
+    {
+        return nullptr;
+    }
+    // No else, we simply continue. Path respectes the equality constratint  
+
+    // Now, check of the path is feasible, i.e. collision free. But before that you need to convert it back to PathGeometric
     /* Define arrA as path */
     std::vector<const base::State*> states;
     for (int i=0; i<configs.N; i++)
@@ -130,13 +142,15 @@ ompl::geometric::PathGeometricPtr ompl::geometric::PathOptimizerKOMO::optimize_p
         space->copyFromReals(state, reals);
         states.push_back(state);
     }
-
-    // std::cout << "PathOptimized" << std::endl;
-
     geometric::PathGeometricPtr opti_path = std::make_shared<geometric::PathGeometric>(si_, states);
-    if (opti_path->check())
+
+    // Check if the path is in collision.
+    if (!opti_path->check())
     {
-        return opti_path;
+        return nullptr; // I am sorry you are in collision
     }
-    else return nullptr;
+    // No else continue further checks.
+
+    // Ahh! We are done with all checks! Here is the optimized path we found!
+    return opti_path;
 }

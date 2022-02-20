@@ -32,6 +32,8 @@ namespace ompl
 
             arr startConfig;
 
+            arr goal_;
+
         public:
             Planner_KOMO(const base::SpaceInformationPtr &si, std::shared_ptr<KOMO> komo_);
             virtual ~Planner_KOMO() override;
