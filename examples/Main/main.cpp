@@ -153,14 +153,17 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 		return checker.check(state);
 	});
 
-    // create a start state
+	// create start and goal states. These states might change from example to example
     ob::ScopedState<> start(space);
+	for (unsigned int i=0; i<C.getJointStateDimension(); i++){
+	start[i] = komo.getConfiguration_q(0).elem(i);
+	}
 
-	// goal state will change from example to example
 	ob::ScopedState<> goal(space);
+
 	if (filename == "../examples/Models/1_kuka_shelf.g"){
 		// goal = {1.05248, -0.982536, -1.70613, -0.816571, -0.0301295, 0.0453272, 0.000650022};
-
+		// This example has a different start state
 		C.setJointState({0.718274, -0.388218, -1.83428, -0.971166, -0.322495, 0.284864, 0.00191594});
 		start = {0.718274, -0.388218, -1.83428, -0.971166, -0.322495, 0.284864, 0.00191594};
 		goal = {0.560603, -1.05486, -1.71583, -1.68994, -0.051403, 0.266908, 0.000754904};
@@ -183,13 +186,16 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 	else if (filename == "../examples/Models/7_disc_rooms.g"){
 		goal = {0.7,0,0};
 	}
+	else if (filename == "../examples/Models/8_TwoMobileManipulators_hard.g"){
+		goal = {-0.555762, 0.000540429, 1.57074, 0.00188429, 0.764456, -0.000160723, -2.21317, -0.00321155, 2.28468, -0.000332939, 0.555647, -0.00012235, -1.57154, 0.00161455, 0.764632, -0.000429018, -2.21257, 0.00103216, 2.28374, 0.00102819};
+	}	
 	else{// Default goal
 		for (unsigned int i=0; i<C.getJointStateDimension(); i++){
 			if (i>3){continue;}
 			goal[i] = komo.getConfiguration_q(0).elem(i)+1.5;
 		}
 	}
-	
+
 	arr goal_;
 	for (unsigned int i=0; i<C.getJointStateDimension(); i++){
 		goal_.append(goal[i]);
@@ -247,9 +253,9 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 			komo_->setTiming(1., 20, 1., 2);
 			komo_->add_qControlObjective({}, 1, 2.);
 
-			arrA Goal_;
-			Goal_.append(goal_);
-			komo_->initWithWaypoints(Goal_, 1, false);
+			// arrA Goal_;
+			// Goal_.append(goal_);
+			// komo_->initWithWaypoints(Goal_, 1, false);
 
 			komo_->addObjective({1.}, FS_qItself, {}, OT_eq, {100}, goal_, 0);
 			if (filename == "../examples/Models/7_disc_rooms.g")
@@ -329,9 +335,9 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 			komo_->setTiming(1., 20, 1., 2);
 			komo_->add_qControlObjective({}, 1, 2);
 
-			arrA Goal_;
-			Goal_.append(goal_);
-			komo_->initWithWaypoints(Goal_, 1, false);
+			// arrA Goal_;
+			// Goal_.append(goal_);
+			// komo_->initWithWaypoints(Goal_, 1, false);
 
 			komo_->addObjective({1.}, FS_qItself, {}, OT_eq, {100}, goal_, 0);
 			if (filename == "../examples/Models/7_disc_rooms.g")

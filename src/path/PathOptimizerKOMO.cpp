@@ -74,10 +74,11 @@ bool ompl::geometric::PathOptimizerKOMO::optimize(PathGeometric &path)
 
 ompl::geometric::PathGeometricPtr ompl::geometric::PathOptimizerKOMO::optimize_path(PathGeometricPtr &path)
 {
-    std::cout << "OptimizingPath" << std::endl;
+    // std::cout << "OptimizingPath" << std::endl;
     // I am getting the path as PathGeometricPtr; however, KOMO  needs it in form of arrA. So, let's convert!
     /* Convert path to arrA */
     arrA configs;
+    opti_path = nullptr;
     const base::StateSpace *space(si_->getStateSpace().get());
     for (auto state : path->getStates())
         {
@@ -97,7 +98,7 @@ ompl::geometric::PathGeometricPtr ompl::geometric::PathOptimizerKOMO::optimize_p
     // myfile.close();
 
 
-    std::cout << "configs: " << configs << std::endl;
+    // std::cout << "configs: " << configs << std::endl;
 
     // // Save it to some file.
     // std::ofstream myfile;
@@ -142,7 +143,7 @@ ompl::geometric::PathGeometricPtr ompl::geometric::PathOptimizerKOMO::optimize_p
         space->copyFromReals(state, reals);
         states.push_back(state);
     }
-    geometric::PathGeometricPtr opti_path = std::make_shared<geometric::PathGeometric>(si_, states);
+    opti_path = std::make_shared<geometric::PathGeometric>(si_, states);
 
     // Check if the path is in collision.
     if (!opti_path->check())
@@ -152,5 +153,10 @@ ompl::geometric::PathGeometricPtr ompl::geometric::PathOptimizerKOMO::optimize_p
     // No else continue further checks.
 
     // Ahh! We are done with all checks! Here is the optimized path we found!
+    return opti_path;
+}
+
+ompl::geometric::PathGeometricPtr ompl::geometric::PathOptimizerKOMO::getPath() const
+{
     return opti_path;
 }

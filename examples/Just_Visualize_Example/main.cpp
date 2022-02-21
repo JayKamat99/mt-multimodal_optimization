@@ -33,6 +33,9 @@ int main(int argc, char** argv)
 	else if (filename_s == "../examples/Models/7_disc_rooms.g"){
 		goal = {0.7,0,0};
 	}
+	else if (filename_s == "../examples/Models/8_TwoMobileManipulators_hard.g"){
+		goal = {-0.555762, 0.000540429, 1.57074, 0.00188429, 0.764456, -0.000160723, -2.21317, -0.00321155, 2.28468, -0.000332939, 0.555647, -0.00012235, -1.57154, 0.00161455, 0.764632, -0.000429018, -2.21257, 0.00103216, 2.28374, 0.00102819};
+	}	
 	// C.setJointState(goal);
 	C.addFile(filename);
 	filename_s.erase(0,19);

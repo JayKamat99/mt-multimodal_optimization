@@ -21,6 +21,8 @@ namespace ompl
         {
         private:
             std::shared_ptr<KOMO> komo_;
+
+            PathGeometricPtr opti_path;
             
         public:
             // using PathOptimizer::PathOptimizer;
@@ -30,6 +32,8 @@ namespace ompl
             bool optimize(PathGeometric &path) override;
 
             PathGeometricPtr optimize_path(PathGeometricPtr &path) override;
+            
+            PathGeometricPtr getPath() const override;
         };  
     } // namespace  geometric
 } //namespace ompl

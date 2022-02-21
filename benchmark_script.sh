@@ -16,17 +16,16 @@ TIME=$date\_$time
 # MODEL="4_kuka_box"
 # MODEL="5_disc_obstacle"
 # MODEL="6_rectangle_opening"
-# MODEL="7_disc_rooms"
+MODEL="7_disc_rooms"
 
 # for MODEL in {"2_Two_Pandas","3_TwoMobileManipulators"}
 # for MODEL in {"1_kuka_shelf","4_kuka_box"}
 for MODEL in {"5_disc_obstacle","7_disc_rooms"}
 do
-    ../build/t_main "../examples/Models/$MODEL.g" "BITKOMO" "true" # run the 
-#     for PLANNER in {"BITKOMO","KOMO"}
-#     do
-#         ../build/t_main "../examples/Models/$MODEL.g" $PLANNER "true" # run the 
-#     done
+    for PLANNER in {"BITKOMO","BITstar"}
+    do
+        ../build/t_main "../examples/Models/$MODEL.g" $PLANNER "true" # run the 
+    done
     for PLANNER in {"BITKOMO","KOMO","RRTstar","BITstar","LBTRRT","FMT"}
     do 
         # ../build/t_main "../examples/Models/$MODEL.g" $PLANNER "true" # run the executable
