@@ -133,11 +133,23 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 	ob::RealVectorBounds bounds(C_Dimension);
 	bounds.setLow(-PI);
 	bounds.setHigh(PI);
-	if (filename == "../examples/Models/3_TwoMobileManipulators.g"){ // Special bounds for this example
+	if (filename == "../examples/Models/3_TwoMobileManipulators.g" || filename == "../examples/Models/8_TwoMobileManipulators_hard.g"){ // Special bounds for this example
 		bounds.setLow(0, -1.3); bounds.setLow(1, -0.8);
 		bounds.setHigh(0, 1.3); bounds.setHigh(1, 0.8);
 		bounds.setLow(10, -1.3); bounds.setLow(11, -0.8);
 		bounds.setHigh(10, 1.3); bounds.setHigh(11, 0.8);
+	}
+
+	if (filename == "../examples/Models/9_TwoMobileRobots_hard.g")
+	{
+		bounds.setLow(0, -1.3); bounds.setLow(1, -0.8);
+		bounds.setHigh(0, 1.3); bounds.setHigh(1, 0.8);
+		bounds.setLow(3, -1.3); bounds.setLow(4, -0.8);
+		bounds.setHigh(3, 1.3); bounds.setHigh(4, 0.8);
+	}
+	else if (filename == "../examples/Models/7_disc_rooms.g"){
+		bounds.setLow(0, -1); bounds.setLow(1, -1.5); bounds.setLow(2, -.05);
+		bounds.setHigh(0, 2); bounds.setHigh(1, 1.5); bounds.setHigh(2, .05);
 	}
 
 	space->setBounds(bounds);
@@ -188,7 +200,10 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 	}
 	else if (filename == "../examples/Models/8_TwoMobileManipulators_hard.g"){
 		goal = {-0.555762, 0.000540429, 1.57074, 0.00188429, 0.764456, -0.000160723, -2.21317, -0.00321155, 2.28468, -0.000332939, 0.555647, -0.00012235, -1.57154, 0.00161455, 0.764632, -0.000429018, -2.21257, 0.00103216, 2.28374, 0.00102819};
-	}	
+	}
+	else if (filename == "../examples/Models/9_TwoMobileRobots_hard.g"){
+		goal = {-0.555762, 0.000540429, 1.57074, 0.555647, -0.00012235, -1.57154};
+	}
 	else{// Default goal
 		for (unsigned int i=0; i<C.getJointStateDimension(); i++){
 			if (i>3){continue;}
@@ -261,7 +276,7 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 			if (filename == "../examples/Models/7_disc_rooms.g")
 				komo_->add_collision(true, 0.05);
 			else
-				komo_->add_collision(true, 0.02);
+				komo_->add_collision(true, 0.05);
 
 			if (planner_ == "KOMO"){
 				auto planner(std::make_shared<og::Planner_KOMO>(si,komo_));
@@ -276,9 +291,9 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 		}
 
 		ompl::tools::Benchmark::Request req;
-		req.maxTime = 30.0;
+		req.maxTime = 60.0;
 		req.maxMem = 100.0;
-		req.runCount = 5;
+		req.runCount = 100;
 		req.displayProgress = true;
 		b.benchmark(req);
 
@@ -343,7 +358,7 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 			if (filename == "../examples/Models/7_disc_rooms.g")
 				komo_->add_collision(true, 0.05);
 			else
-				komo_->add_collision(true, 0.02);
+				komo_->add_collision(true, 0.05);
 
 			if(planner_ == "KOMO"){
 				auto planner(std::make_shared<og::Planner_KOMO>(si, komo_));
@@ -360,7 +375,7 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 		ss.setup();
 
 		// attempt to solve the problem
-		ob::PlannerStatus solved = ss.solve(30.0);
+		ob::PlannerStatus solved = ss.solve(10.0);
 
 		if (solved == ob::PlannerStatus::StatusType::APPROXIMATE_SOLUTION)
 			std::cout << "Found solution: APPROXIMATE_SOLUTION" << std::endl;

@@ -113,8 +113,8 @@ ompl::geometric::PathGeometricPtr ompl::geometric::PathOptimizerKOMO::optimize_p
         return nullptr;
     }
     // Now, that we have gotten the path in the right form use it to initialize KOMO (with waypoints) and optimize
-    komo_->initWithWaypoints(configs, configs.N, false);
     komo_->run_prepare(0);
+    komo_->initWithWaypoints(configs, configs.N, false);
     komo_->animateOptimization = 0; // Make this 1 if you want to see how the path evolves over time.
     komo_->optimize(0);
     configs = komo_->getPath_q();
