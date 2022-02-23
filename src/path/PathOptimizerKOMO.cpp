@@ -91,32 +91,68 @@ ompl::geometric::PathGeometricPtr ompl::geometric::PathOptimizerKOMO::optimize_p
             configs.append(config);
     }
 
-    // // Read from file
-    // std::ifstream myfile;
-    // myfile.open("../debug/2d_debug.txt");
-    // myfile >> configs;
-    // myfile.close();
-
-
-    // std::cout << "configs: " << configs << std::endl;
-
-    // // Save it to some file.
-    // std::ofstream myfile;
-    // myfile.open("../debug/2d_debug.txt");
-    // myfile << configs;
-    // myfile.close();
-
     // Are the steps per phase we have initialized enough? If not, I am sorry, you did not supply the right discretization factor. You need to take care about it next time.
     if (configs.N > komo_->stepsPerPhase)
     {
         OMPL_ERROR("path has too many way points. %d to be precise. Increase steps per phase", configs.N);        
         return nullptr;
     }
-    // Now, that we have gotten the path in the right form use it to initialize KOMO (with waypoints) and optimize
+    // Now, that we have gotten the path in the right form use it to initialize KOMO (with waypoints)
     komo_->run_prepare(0);
     komo_->initWithWaypoints(configs, configs.N, false);
     komo_->animateOptimization = 0; // Make this 1 if you want to see how the path evolves over time.
+    bool flag_{false};
+    ompl::geometric::PathGeometricPtr partialOptiPath;
+
+    // Is our path in collision? If yes, try getting it out!
+    // if (!path->check())
+    if(0)
+    {
+        std::cout << "Path is not valid" << std::endl;
+        // Don't optimize fully but rather try only for 10 iterations
+        rai::setParameter<double>("opt/stopEvals",10);
+        // std::cout << "stopEvals:" << rai::getParameter<double>("opt/stopEvals") << std::endl;;
+        // static std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+        komo_->optimize(0);
+        // static std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+        // std::cout << "Partial Optimization time = " << std::chrono::duration_cast<std::chrono::milliseconds>(begin-end).count() << "[ms]" << std::endl;
+        rai::setParameter<double>("opt/stopEvals",1000);
+        // std::cout << "stopEvals:" << rai::getParameter<double>("opt/stopEvals") << std::endl;;
+        configs = komo_->getPath_q();
+
+        std::vector<const base::State*> states;
+        for (int i=0; i<configs.N; i++)
+        {
+            std::vector<double> reals;
+            for (double r : configs(i)){
+                reals.push_back(r);
+            }
+            base::State* state = si_->allocState();
+            space->copyFromReals(state, reals);
+            states.push_back(state);
+        }
+        partialOptiPath = std::make_shared<geometric::PathGeometric>(si_, states);
+
+        // Check again if the path is in collision. If yes, then we were unable to get it out and so return failure
+        if (!partialOptiPath->check())
+        {
+            std::cout << "Path is still not valid, sorry" << std::endl;
+            return nullptr; // I am sorry, we cannot help :(
+        }
+        else 
+        {
+            flag_ = true;
+            std::cout << "The path has successfully moved away from the obstacles!" << std::endl;
+        }
+    }
+    // No else,  we can continure with our planner
+
+    // Now, that we have a green signal, let us optimizer the path fully
+    komo_->run_prepare(0);
+    // static std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     komo_->optimize(0);
+    // static std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+    // std::cout << "Full Optimization time = " << std::chrono::duration_cast<std::chrono::milliseconds>(begin-end).count() << "[ms]" << std::endl;
     configs = komo_->getPath_q();
 
     // Wait! Don't get excited because the optimization is completed. You need to do a few checks to be sure that you have a feasible solution. 
@@ -148,7 +184,13 @@ ompl::geometric::PathGeometricPtr ompl::geometric::PathOptimizerKOMO::optimize_p
     // Check if the path is in collision.
     if (!opti_path->check())
     {
-        return nullptr; // I am sorry you are in collision
+        if (!flag_)
+            return nullptr; // I am sorry you are in collision
+        else
+        {
+            std::cout << "You still have a backup!" << std::endl;
+            return partialOptiPath; // Hey but I have a path for you!
+        }
     }
     // No else continue further checks.
 

@@ -139,15 +139,20 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 		bounds.setLow(10, -1.3); bounds.setLow(11, -0.8);
 		bounds.setHigh(10, 1.3); bounds.setHigh(11, 0.8);
 	}
-
-	if (filename == "../examples/Models/9_TwoMobileRobots_hard.g")
+	else if (filename == "../examples/Models/9_TwoMobileRobots_hard.g")
 	{
 		bounds.setLow(0, -1.3); bounds.setLow(1, -0.8);
 		bounds.setHigh(0, 1.3); bounds.setHigh(1, 0.8);
 		bounds.setLow(3, -1.3); bounds.setLow(4, -0.8);
 		bounds.setHigh(3, 1.3); bounds.setHigh(4, 0.8);
 	}
-	else if (filename == "../examples/Models/7_disc_rooms.g"){
+	else if (filename == "../examples/Models/10_MobileManipulator.g")
+	{
+		bounds.setLow(0, -1.3); bounds.setLow(1, -0.8);
+		bounds.setHigh(0, 1.3); bounds.setHigh(1, 0.8);
+	}
+	else if (filename == "../examples/Models/7_disc_rooms.g")
+	{
 		bounds.setLow(0, -1); bounds.setLow(1, -1.5); bounds.setLow(2, -.05);
 		bounds.setHigh(0, 2); bounds.setHigh(1, 1.5); bounds.setHigh(2, .05);
 	}
@@ -203,6 +208,9 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 	}
 	else if (filename == "../examples/Models/9_TwoMobileRobots_hard.g"){
 		goal = {-0.555762, 0.000540429, 1.57074, 0.555647, -0.00012235, -1.57154};
+	}
+	else if (filename == "../examples/Models/10_MobileManipulator.g"){
+		goal = {-0.555762, 0.000540429, 1.57074, 0.00188429, 0.764456, -0.000160723, -2.21317, -0.00321155, 2.28468, -0.000332939};
 	}
 	else{// Default goal
 		for (unsigned int i=0; i<C.getJointStateDimension(); i++){
@@ -288,12 +296,18 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 				planner->setOptimizer(optimizer);
 				b.addPlanner(planner);
 			}
+			else if (planner_ == "validBITKOMO"){
+				auto planner(std::make_shared<og::BITKOMO>(si,"validBITKOMO"));
+				og::PathOptimizerPtr optimizer = std::make_shared<og::PathOptimizerKOMO>(si,komo_);
+				planner->setOptimizer(optimizer);
+				b.addPlanner(planner);
+			}
 		}
 
 		ompl::tools::Benchmark::Request req;
-		req.maxTime = 60.0;
-		req.maxMem = 100.0;
-		req.runCount = 100;
+		req.maxTime = 10.0;
+		// req.maxMem = 100.0;
+		req.runCount = 50;
 		req.displayProgress = true;
 		b.benchmark(req);
 
@@ -370,12 +384,18 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 				planner->setOptimizer(optimizer);
 				ss.setPlanner(planner);
 			}
+			else if(planner_ == "validBITKOMO"){
+				auto planner(std::make_shared<og::BITKOMO>(si,"validBITKOMO"));
+				og::PathOptimizerPtr optimizer = std::make_shared<og::PathOptimizerKOMO>(si,komo_);
+				planner->setOptimizer(optimizer);
+				ss.setPlanner(planner);
+			}
 		}
 		
 		ss.setup();
 
 		// attempt to solve the problem
-		ob::PlannerStatus solved = ss.solve(10.0);
+		ob::PlannerStatus solved = ss.solve(30.0);
 
 		if (solved == ob::PlannerStatus::StatusType::APPROXIMATE_SOLUTION)
 			std::cout << "Found solution: APPROXIMATE_SOLUTION" << std::endl;
