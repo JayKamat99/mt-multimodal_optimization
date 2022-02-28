@@ -31,8 +31,6 @@ ompl::geometric::Planner_KOMO::~Planner_KOMO()
 
 void ompl::geometric::Planner_KOMO::freeMemory()
 {
-	bestCost = std::numeric_limits<double>::infinity();
-	// std::cout << "Memory has been freed" << std::endl;
 }
 
 void ompl::geometric::Planner_KOMO::clear()
@@ -40,6 +38,7 @@ void ompl::geometric::Planner_KOMO::clear()
 	// std::cout << "Clear called" << std::endl;
 	Planner::clear();
 	bestCost = std::numeric_limits<double>::infinity();
+	iteration = 0;
 }
 
 ompl::base::PlannerStatus ompl::geometric::Planner_KOMO::solve(const base::PlannerTerminationCondition &ptc)
@@ -47,17 +46,16 @@ ompl::base::PlannerStatus ompl::geometric::Planner_KOMO::solve(const base::Plann
     bool isValid = false;
 	// std::cout << "Starting KOMO, bestCost = " << bestCost << std::endl;
 	while (!ptc){
-		static int iteration(0);
 		iteration++;
-		// komo_->initWithConstant(startConfig);
-		komo_->initWithWaypoints({goal_}, 1, false);
+		komo_->initWithConstant(startConfig);
+		// komo_->initWithWaypoints({goal_}, 1, false);
 		komo_->run_prepare(0);
 		komo_->animateOptimization = 0;
 		komo_->optimize();
 		rai::Graph R = komo_->getReport();
 		double eq_constraint = R.get<double>("eq");
 		// std::cout << "eq: " << eq_constraint << std::endl;
-		if (eq_constraint > 50) // To kill solutions that do not respect the equality constraint
+		if (eq_constraint > 5) // To kill solutions that do not respect the equality constraint
 			continue;
 
 		// rai::Graph R = komo_->getReport(false);

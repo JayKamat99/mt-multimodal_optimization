@@ -16,6 +16,9 @@ namespace ompl
 
         class Planner_KOMO : public base::Planner
         {
+        private:
+            int iteration{0};
+
         protected:
             void freeMemory();
 			double bestCost = std::numeric_limits<double>::infinity();

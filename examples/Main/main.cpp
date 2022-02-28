@@ -207,7 +207,7 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 		goal = {-0.555762, 0.000540429, 1.57074, 0.00188429, 0.764456, -0.000160723, -2.21317, -0.00321155, 2.28468, -0.000332939, 0.555647, -0.00012235, -1.57154, 0.00161455, 0.764632, -0.000429018, -2.21257, 0.00103216, 2.28374, 0.00102819};
 	}
 	else if (filename == "../examples/Models/9_TwoMobileRobots_hard.g"){
-		goal = {-0.555762, 0.000540429, 1.57074, 0.555647, -0.00012235, -1.57154};
+		goal = {-0.755762, 0.000540429, 1.57074, 0.755647, -0.00012235, -1.57154};
 	}
 	else if (filename == "../examples/Models/10_MobileManipulator.g"){
 		goal = {-0.555762, 0.000540429, 1.57074, 0.00188429, 0.764456, -0.000160723, -2.21317, -0.00321155, 2.28468, -0.000332939};
@@ -242,31 +242,31 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 			auto planner1(std::make_shared<og::RRTstar>(si));
 			b.addPlanner(planner1);
 		}
-		if (planner_ == "BITstar"){
+		else if (planner_ == "BITstar"){
 			auto planner1(std::make_shared<og::BITstar>(si));
 			b.addPlanner(planner1);
 		}
-		if (planner_ == "ABITstar"){
+		else if (planner_ == "ABITstar"){
 			auto planner1(std::make_shared<og::ABITstar>(si));
 			b.addPlanner(planner1);
 		}
-		if (planner_ == "AITstar"){
+		else if (planner_ == "AITstar"){
 			auto planner1(std::make_shared<og::AITstar>(si));
 			b.addPlanner(planner1);
 		}
-		if (planner_ == "FMT"){
+		else if (planner_ == "FMT"){
 			auto planner1(std::make_shared<og::FMT>(si));
 			b.addPlanner(planner1);
 		}
-		if (planner_ == "LBTRRT"){
+		else if (planner_ == "LBTRRT"){
 			auto planner1(std::make_shared<og::LBTRRT>(si));
 			b.addPlanner(planner1);
 		}
-		if (planner_ == "PKOMO"){
+		else if (planner_ == "PKOMO"){
 			auto planner1(std::make_shared<og::PKOMO>(si,filename));
 			b.addPlanner(planner1);
 		}
-		if (planner_ == "KOMO" || planner_ == "BITKOMO")
+		else
 		{
 			//build the KOMO object here:
 			auto komo_(std::make_shared<KOMO>());
@@ -305,9 +305,9 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 		}
 
 		ompl::tools::Benchmark::Request req;
-		req.maxTime = 10.0;
+		req.maxTime = 180.0;
 		// req.maxMem = 100.0;
-		req.runCount = 50;
+		req.runCount = 10;
 		req.displayProgress = true;
 		b.benchmark(req);
 
@@ -395,7 +395,7 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 		ss.setup();
 
 		// attempt to solve the problem
-		ob::PlannerStatus solved = ss.solve(30.0);
+		ob::PlannerStatus solved = ss.solve(180.0);
 
 		if (solved == ob::PlannerStatus::StatusType::APPROXIMATE_SOLUTION)
 			std::cout << "Found solution: APPROXIMATE_SOLUTION" << std::endl;

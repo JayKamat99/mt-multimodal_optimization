@@ -36,16 +36,37 @@ int main(int argc, char** argv)
 	else if (filename_s == "../examples/Models/8_TwoMobileManipulators_hard.g"){
 		goal = {-0.555762, 0.000540429, 1.57074, 0.00188429, 0.764456, -0.000160723, -2.21317, -0.00321155, 2.28468, -0.000332939, 0.555647, -0.00012235, -1.57154, 0.00161455, 0.764632, -0.000429018, -2.21257, 0.00103216, 2.28374, 0.00102819};
 	}	
+	else if (filename_s == "../examples/Models/9_TwoMobileRobots_hard.g"){
+		std::cout << "do I reach here?" << std::endl;
+		goal = {-0.755762, 0.000540429, 1.57074, 0.755647, -0.00012235, -1.57154};
+	}
+	else if (filename_s == "../examples/Models/10_MobileManipulator.g"){
+		goal = {-0.555762, 0.000540429, 1.57074, 0.00188429, 0.764456, -0.000160723, -2.21317, -0.00321155, 2.28468, -0.000332939};
+	}
+	std::cout << goal << std::endl;
+	for(auto f: C.frames){
+		arr c = f->getShape().mesh().C;
+		std::cout << c.N << std::endl;
+		if (c.N ==3)
+		{
+			std::cout << f->getShape()._type != rai::ST_none << std::endl;
+			c.append(0.5);
+		}
+		f->setColor(c);
+		std::cout << "after" << c.N << std::endl;
+
+	}
+	std::cout << "I reach here" << std::endl;
 	// C.setJointState(goal);
-	C.addFile(filename);
-	filename_s.erase(0,19);
-	filename_s.erase(filename_s.length()-2);
-	arr stateSet;
-	stateSet.append(start);
-	stateSet.append(goal);
-	C.setJointState(stateSet);
-	// C.watch(true);
-	// return 0;
+	// C.addFile(filename);
+	// filename_s.erase(0,19);
+	// filename_s.erase(filename_s.length()-2);
+	// arr stateSet;
+	// stateSet.append(start);
+	// stateSet.append(goal);
+	// C.setJointState(stateSet);
+	C.watch(true);
+	return 0;
 
     KOMO komo;
     komo.verbose = 0;
