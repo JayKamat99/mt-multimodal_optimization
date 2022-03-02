@@ -44,27 +44,37 @@ int main(int argc, char** argv)
 		goal = {-0.555762, 0.000540429, 1.57074, 0.00188429, 0.764456, -0.000160723, -2.21317, -0.00321155, 2.28468, -0.000332939};
 	}
 	std::cout << goal << std::endl;
-	for(auto f: C.frames){
-		arr c = f->getShape().mesh().C;
-		std::cout << c.N << std::endl;
-		if (c.N ==3)
-		{
-			std::cout << f->getShape()._type != rai::ST_none << std::endl;
-			c.append(0.5);
-		}
-		f->setColor(c);
-		std::cout << "after" << c.N << std::endl;
+	// for(auto f: C.frames){
+	// 	arr c = f->getShape().mesh().C;
+	// 	std::cout << c.N << std::endl;
+	// 	if (c.N ==3)
+	// 	{
+	// 		std::cout << f->getShape()._type != rai::ST_none << std::endl;
+	// 		c.append(0.5);
+	// 	}
+	// 	f->setColor(c);
+	// 	std::cout << "after" << c.N << std::endl;
 
+	// }
+	for (auto f : C.frames) {
+		auto &ss = f->shape;
+		if (ss) {
+			arr c = f->getShape().mesh().C;
+			if (c.N == 3){
+				c.append(0.5);
+				f->setColor(c);
+			}
+		}
 	}
 	std::cout << "I reach here" << std::endl;
 	// C.setJointState(goal);
-	// C.addFile(filename);
-	// filename_s.erase(0,19);
-	// filename_s.erase(filename_s.length()-2);
-	// arr stateSet;
-	// stateSet.append(start);
-	// stateSet.append(goal);
-	// C.setJointState(stateSet);
+	C.addFile(filename);
+	filename_s.erase(0,19);
+	filename_s.erase(filename_s.length()-2);
+	arr stateSet;
+	stateSet.append(goal);
+	stateSet.append(start);
+	C.setJointState(stateSet);
 	C.watch(true);
 	return 0;
 

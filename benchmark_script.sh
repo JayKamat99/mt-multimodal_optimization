@@ -11,8 +11,8 @@ TIME=$date\_$time
 
 # Set model here
 # MODEL="1_kuka_shelf"
-# MODEL="2_Two_Pandas"
-MODEL="3_TwoMobileManipulators"
+MODEL="2_Two_Pandas"
+# MODEL="3_TwoMobileManipulators"
 # MODEL="4_kuka_box"
 # MODEL="5_disc_obstacle"
 # MODEL="6_rectangle_opening"
@@ -25,24 +25,24 @@ MODEL="3_TwoMobileManipulators"
 # for MODEL in {"1_kuka_shelf","4_kuka_box"}
 # # for MODEL in {"5_disc_obstacle","7_disc_rooms"}
 # do
-    # PLANNER="FMT"
-    # for PLANNER in {"BITstar","BITKOMO"}
-    # do
-    #     ../build/t_main "../examples/Models/$MODEL.g" $PLANNER "true"
-    #     python3 ../ompl/scripts/ompl_benchmark_statistics.py data/Benchmarks/$MODEL/logs/benchmark_$PLANNER.log -d data/Benchmarks/$MODEL/benchmark_$PLANNER.db # make the database file out of the log file
-
-    # done
-    for PLANNER in {"BITstar","BITKOMO","FMT"}
+    # PLANNER="LBTRRT"
+    for PLANNER in {"RRTstar","LBTRRT"}
     do
-        for i in {11..15}
-        do
-            ../build/t_main "../examples/Models/$MODEL.g" $PLANNER "true"
-            mv data/Benchmarks/$MODEL/logs/benchmark_$PLANNER.log data/Benchmarks/$MODEL/logs/benchmark_$PLANNER\_$i.log
-            # python3 ../ompl/scripts/ompl_benchmark_statistics.py data/Benchmarks/$MODEL/logs/benchmark_$PLANNER.log -d data/Benchmarks/$MODEL/benchmark_$PLANNER.db # make the database file out of the log file
-            cp -r data/Benchmarks/$MODEL data/Benchmarks/Records/$MODEL\_$TIME
-            echo "Planner: $PLANNER ; i: $i"
-        done
+        ../build/t_main "../examples/Models/$MODEL.g" $PLANNER "true"
+        python3 ../ompl/scripts/ompl_benchmark_statistics.py data/Benchmarks/$MODEL/logs/benchmark_$PLANNER.log -d data/Benchmarks/$MODEL/benchmark_$PLANNER.db # make the database file out of the log file
+        cp -r data/Benchmarks/$MODEL data/Benchmarks/Records/$MODEL\_$TIME
+
     done
+    # for PLANNER in {"BITstar","BITKOMO","FMT"}
+    # do
+    #     for i in {11..15}
+    #     do
+    #         ../build/t_main "../examples/Models/$MODEL.g" $PLANNER "true"
+    #         mv data/Benchmarks/$MODEL/logs/benchmark_$PLANNER.log data/Benchmarks/$MODEL/logs/benchmark_$PLANNER\_$i.log
+    #         # python3 ../ompl/scripts/ompl_benchmark_statistics.py data/Benchmarks/$MODEL/logs/benchmark_$PLANNER.log -d data/Benchmarks/$MODEL/benchmark_$PLANNER.db # make the database file out of the log file
+    #         echo "Planner: $PLANNER ; i: $i"
+    #     done
+    # done
     # for PLANNER in {"validBITKOMO","BITKOMO","KOMO","RRTstar","BITstar","LBTRRT","FMT"}
     # do 
     #     # ../build/t_main "../examples/Models/$MODEL.g" $PLANNER "true" # run the executable

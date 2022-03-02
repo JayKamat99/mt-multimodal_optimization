@@ -15,6 +15,16 @@ Edit r_panda_finger_joint2     { joint:rigid }
 Edit l_base{ X:<t(.5 0 0) d(90 0 0 1)> }
 Edit r_base{ X:<t(-.5 0 0) d(-90 0 0 1)> }
 
+Edit l_panda_link0_1{ color:[.9 .9 0] }
+Edit l_panda_link1_1{ color:[.9 .9 0] }
+Edit l_panda_link2_1{ color:[.9 .9 0] }
+Edit l_panda_link3_1{ color:[.9 .9 0] }
+Edit l_panda_link4_1{ color:[.9 .9 0] }
+Edit l_panda_link5_1{ color:[.9 .9 0] }
+Edit l_panda_link6_1{ color:[.9 .9 0] }
+Edit l_panda_link7_1{ color:[.9 .9 0] }
+Edit l_panda_hand_1{ color:[.9 .9 0] }
+
 l_target (World) {shape:sphere X:<t(1 0 0)> color:[1 0 0] size=[0.1] }
 r_target (World) {shape:sphere X:<t(-1 0 0)> color:[1 0 0] size=[0.1] }
 

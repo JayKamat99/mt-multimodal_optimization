@@ -27,3 +27,13 @@ Edit r_panda_finger_joint2     { joint:rigid }
 
 Edit l_panda_link0 (table) { Q:<t(-.5 0 .1) d(0 0 0 1)> }
 Edit r_panda_link0 (table) { Q:<t( .5 0 .1) d(180 0 0 1)> }
+
+Edit l_panda_link0_1{ color:[.9 .9 0] }
+Edit l_panda_link1_1{ color:[.9 .9 0] }
+Edit l_panda_link2_1{ color:[.9 .9 0] }
+Edit l_panda_link3_1{ color:[.9 .9 0] }
+Edit l_panda_link4_1{ color:[.9 .9 0] }
+Edit l_panda_link5_1{ color:[.9 .9 0] }
+Edit l_panda_link6_1{ color:[.9 .9 0] }
+Edit l_panda_link7_1{ color:[.9 .9 0] }
+Edit l_panda_hand_1{ color:[.9 .9 0] }
