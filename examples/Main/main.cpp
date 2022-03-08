@@ -306,7 +306,7 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 
 		ompl::tools::Benchmark::Request req;
 		req.maxTime = 10.0;
-		// req.maxMem = 100.0;
+		req.maxMem = 100.0;
 		req.runCount = 50;
 		req.displayProgress = true;
 		b.benchmark(req);
@@ -318,7 +318,7 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 		std::string filename_s(filename);
 		filename_s.erase(0,19);
 		filename_s.erase(filename_s.length()-2);
-		oss << "data/Benchmarks/" << filename_s << "/logs/benchmark_" << planner_ << ".log";
+		oss << "Benchmarks/" << filename_s << "/logs/benchmark_" << planner_ << ".log";
 		// oss << "data/Benchmarks/test" << filename_s << "/logs/benchmark_" << planner_ << ".log";
 		b.saveResultsToFile(oss.str().c_str());
 	}

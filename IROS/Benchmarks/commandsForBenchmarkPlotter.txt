@@ -1,0 +1,17 @@
+discRooms
+./ompl_benchmark_plotter.py ../IROS/Benchmarks/discRooms/benchmark_*.db -s --min-time 0.01 --max-time 10 --min-cost 2 --max-cost 5 --title-name "Disc to move to the other room" --output-file discRooms.pdf
+
+kukaShelf
+./ompl_benchmark_plotter.py ../IROS/Benchmarks/kukaShelf/benchmark_*.db -s --min-time 0.01 --max-time 10 --max-cost 15 --title-name "Kuka reaching onto the shelf" --output-file kukaShelf.pdf
+
+kukaBox
+./ompl_benchmark_plotter.py ../IROS/Benchmarks/kukaBox/benchmark_*.db -s --min-time 0.01 --max-time 10 --max-cost 15 --title-name "Kuka reaching into a box" --output-file kukaBox.pdf
+
+twoFixedPandas
+./ompl_benchmark_plotter.py ../IROS/Benchmarks/twoFixedPandas/benchmark_*.db -s --min-time 0.1 --max-time 10 --max-cost 20 --title-name "Two Fixed Pandas" --output-file twoPandas.pdf
+
+twoMobilePandas
+./ompl_benchmark_plotter.py ../IROS/Benchmarks/twoMobilePandas/benchmark_*.db -s --min-time 1 --max-time 180 --max-cost 50 --title-name "Two Mobile Pandas in a cluttered room" --output-file twoMobilePandas.pdf
+
+oneMobilePanda
+./ompl_benchmark_plotter.py ../IROS/Benchmarks/oneMobilePanda/benchmark_*.db -s --min-time 0.1 --max-time 30 --max-cost 40 --title-name "Mobile Panda around a huge obstacle" --output-file mobilePanda.pdf

@@ -1,5 +1,13 @@
-# mt-multimodal_optimization
-This is my masters thesis project. The aim of the project is to asymptotically enumerate all locally optimal solutions for a manipulation task and hence find the globally optimal solution. 
+# BITKOMO: Combining Sampling and Optimization for Fast Convergence in Optimal Motion Planning
+BITKOMO, an optimal motion planner, combines Batch Informed Trees (BIT*) and K-th Order Markov Optimizer (KOMO) for fast convergnce. This work is submitted to IROS 2022.
+This branch is created to for the readers of our paper to verify the results. 
+The benchmark files used for generating the plots can be found in "IROS/Benchmarks". Refer to the text file present in the same folder to reproduce the exact same plots.
+
+## Visualization
+Navigate to "ompl_benchmark_plotter" and run:
+```
+  ./ompl_benchmark_plotter.py pathToDatabaseFile.db -s
+```
 
 ## Quick Start
 
@@ -26,8 +34,4 @@ make -j4
 
 You are now ready to explore the execulables in the build folder. You might also want to check how our algorithm compares with other planners for that run `./benchmark_script.sh` in the root folder.
 
-## Visualization
-The database files will be stored in (visualize/data/Benchmarks) You may visualize them by running the python file plot_both.py in (visualize/data) using:
-```
-python3 plot_both.py
-```
+The database files will be stored in "IROS/Benchmarks". You might have to create the necessary folders.

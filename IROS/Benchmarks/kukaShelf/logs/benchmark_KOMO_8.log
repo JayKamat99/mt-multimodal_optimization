@@ -1,0 +1,130 @@
+OMPL version 1.5.2
+Experiment my experiment
+0 experiment properties
+Running on jay-Inspiron-5559
+Starting at 2022-02-25 06:32:55
+<<<|
+Properties of the state space 'RealVectorSpace0'
+  - signature: 2 1 7 
+  - dimension: 7
+  - extent: 16.6217
+  - sanity checks for state space passed
+  - probability of valid states: 0.449
+  - average length of a valid motion: 3.80582
+  - average number of samples drawn per second: sampleUniform()=4.68064e+06 sampleUniformNear()=5.83676e+06 sampleGaussian()=2.63389e+06
+Settings for the state space 'RealVectorSpace0'
+  - state validity check resolution: 1%
+  - valid segment count factor: 1
+  - state space:
+Real vector state space 'RealVectorSpace0' of dimension 7 with bounds: 
+  - min: -3.1412 -3.1412 -3.1412 -3.1412 -3.1412 -3.1412 -3.1412 
+  - max: 3.1412 3.1412 3.1412 3.1412 3.1412 3.1412 3.1412 
+
+Declared parameters:
+longest_valid_segment_fraction = 0.01
+projection.cellsize.0 = 0.0709472
+projection.cellsize.1 = 0.0679421
+projection.cellsize_factor = 0
+valid_segment_count_factor = 1
+Valid state sampler named uniform with parameters:
+nr_attempts = 100
+Start states:
+RealVectorState [0.718274 -0.388218 -1.83428 -0.971166 -0.322495 0.284864 0.00191594]
+Goal state, threshold = 2.22045e-16, memory address = 0x55e130e3d610, state = 
+RealVectorState [0.560603 -1.05486 -1.71583 -1.68994 -0.051403 0.266908 0.000754904]
+Optimization Objective: Path Length @0x55e1304ec260
+Optimization Threshold: 0
+Average state cost: 0
+There are 0 solutions
+
+Properties of benchmarked planners:
+Planner KOMO specs:
+Multithreaded:                 No
+Reports approximate solutions: No
+Can optimize solutions:        No
+Aware of the following parameters:
+|>>>
+<<<|
+Architecture:                    x86_64
+CPU op-mode(s):                  32-bit, 64-bit
+Byte Order:                      Little Endian
+Address sizes:                   39 bits physical, 48 bits virtual
+CPU(s):                          4
+On-line CPU(s) list:             0-3
+Thread(s) per core:              2
+Core(s) per socket:              2
+Socket(s):                       1
+NUMA node(s):                    1
+Vendor ID:                       GenuineIntel
+CPU family:                      6
+Model:                           78
+Model name:                      Intel(R) Core(TM) i5-6200U CPU @ 2.30GHz
+Stepping:                        3
+CPU MHz:                         2719.000
+CPU max MHz:                     2800.0000
+CPU min MHz:                     400.0000
+BogoMIPS:                        4800.00
+Virtualization:                  VT-x
+L1d cache:                       64 KiB
+L1i cache:                       64 KiB
+L2 cache:                        512 KiB
+L3 cache:                        3 MiB
+NUMA node0 CPU(s):               0-3
+Vulnerability Itlb multihit:     KVM: Mitigation: VMX disabled
+Vulnerability L1tf:              Mitigation; PTE Inversion; VMX conditional cache flushes, SMT vulnerable
+Vulnerability Mds:               Mitigation; Clear CPU buffers; SMT vulnerable
+Vulnerability Meltdown:          Mitigation; PTI
+Vulnerability Spec store bypass: Mitigation; Speculative Store Bypass disabled via prctl and seccomp
+Vulnerability Spectre v1:        Mitigation; usercopy/swapgs barriers and __user pointer sanitization
+Vulnerability Spectre v2:        Mitigation; Full generic retpoline, IBPB conditional, IBRS_FW, STIBP conditional, RSB filling
+Vulnerability Srbds:             Mitigation; Microcode
+Vulnerability Tsx async abort:   Not affected
+Flags:                           fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch cpuid_fault epb invpcid_single pti ssbd ibrs ibpb stibp tpr_shadow vnmi flexpriority ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid mpx rdseed adx smap clflushopt intel_pt xsaveopt xsavec xgetbv1 xsaves dtherm ida arat pln pts hwp hwp_notify hwp_act_window hwp_epp md_clear flush_l1d
+|>>>
+10869123012751819 is the random seed
+30 seconds per run
+4096 MB per run
+1 runs per planner
+10.1054 seconds spent to collect the data
+1 enum type
+status|Unknown status|Invalid start|Invalid goal|Unrecognized goal type|Timeout|Approximate solution|Exact solution|Crash|Unknown status|Unknown status
+1 planners
+geometric_KOMO
+5 common properties
+longest_valid_segment_fraction = 0.01
+projection.cellsize.0 = 0.0709472
+projection.cellsize.1 = 0.0679421
+projection.cellsize_factor = 0
+valid_segment_count_factor = 1
+23 properties for each run
+approximate solution BOOLEAN
+best cost REAL
+correct solution BOOLEAN
+correct solution strict BOOLEAN
+graph motions INTEGER
+graph states INTEGER
+memory REAL
+simplification time REAL
+simplified correct solution BOOLEAN
+simplified correct solution strict BOOLEAN
+simplified solution clearance REAL
+simplified solution length REAL
+simplified solution segments INTEGER
+simplified solution smoothness REAL
+solution clearance REAL
+solution difference REAL
+solution length REAL
+solution segments INTEGER
+solution smoothness REAL
+solved BOOLEAN
+status ENUM
+time REAL
+valid segment fraction REAL
+1 runs
+0; 3.098856; 1; 1; 0; 0; 46.8359; 0.0665491; 1; 0; 0; 2.74408; 5; 9.81916; 0; 0; 3.09886; 19; 66.4605; 1; 6; 9.85007; 0.947853; 
+2 progress properties for each run
+best cost REAL
+time REAL
+1 runs
+inf,0.05011,;inf,0.100259,;inf,0.150345,;inf,0.200465,;inf,0.250554,;inf,0.300678,;inf,0.350779,;inf,0.400869,;inf,0.450968,;inf,0.501061,;inf,0.551159,;inf,0.601301,;inf,0.651421,;inf,0.701528,;inf,0.751666,;inf,0.801785,;inf,0.851916,;inf,0.902047,;inf,0.952172,;inf,1.00232,;inf,1.05242,;inf,1.10252,;inf,1.1526,;inf,1.20272,;inf,1.25286,;inf,1.30301,;inf,1.35312,;inf,1.40325,;inf,1.45332,;inf,1.50341,;inf,1.5535,;inf,1.60361,;inf,1.65374,;inf,1.70385,;inf,1.75399,;inf,1.8041,;inf,1.85424,;inf,1.90435,;inf,1.95446,;inf,2.00458,;inf,2.05468,;inf,2.10478,;inf,2.15489,;inf,2.20502,;inf,2.25513,;inf,2.30526,;inf,2.35539,;inf,2.40555,;inf,2.45564,;inf,2.50577,;inf,2.5559,;inf,2.60599,;inf,2.65611,;inf,2.70619,;inf,2.75625,;inf,2.80638,;inf,2.85651,;inf,2.90664,;inf,2.95673,;inf,3.00686,;inf,3.05697,;inf,3.10707,;inf,3.15717,;inf,3.20726,;inf,3.25736,;inf,3.30746,;inf,3.35756,;inf,3.40766,;inf,3.45776,;inf,3.50785,;inf,3.55794,;inf,3.60804,;inf,3.65813,;inf,3.70823,;inf,3.75834,;inf,3.80843,;inf,3.85851,;inf,3.90861,;inf,3.95871,;inf,4.00881,;inf,4.05893,;inf,4.10903,;inf,4.15912,;inf,4.20923,;inf,4.25933,;inf,4.30942,;inf,4.35953,;inf,4.40962,;inf,4.45973,;inf,4.50982,;inf,4.55993,;inf,4.61004,;inf,4.66014,;inf,4.71024,;inf,4.76034,;inf,4.81045,;inf,4.86055,;inf,4.91065,;inf,4.9608,;inf,5.01091,;inf,5.061,;inf,5.11115,;inf,5.1614,;inf,5.2115,;inf,5.26161,;inf,5.31171,;inf,5.36181,;inf,5.41191,;inf,5.46204,;inf,5.51214,;inf,5.56227,;inf,5.61235,;inf,5.66423,;inf,5.71434,;inf,5.76443,;inf,5.81452,;inf,5.86462,;inf,5.91519,;inf,5.96531,;inf,6.01543,;inf,6.06551,;inf,6.11565,;inf,6.16578,;inf,6.21587,;inf,6.266,;inf,6.31612,;inf,6.36621,;inf,6.41631,;inf,6.4664,;inf,6.51655,;inf,6.56664,;inf,6.61674,;inf,6.66688,;inf,6.71698,;inf,6.76708,;inf,6.81718,;inf,6.86731,;inf,6.91742,;inf,6.96754,;inf,7.01768,;inf,7.06781,;inf,7.11792,;inf,7.16805,;inf,7.21813,;inf,7.26822,;inf,7.31835,;inf,7.36848,;inf,7.41857,;inf,7.46865,;inf,7.51877,;inf,7.56887,;inf,7.61902,;inf,7.66911,;inf,7.71925,;inf,7.76937,;inf,7.81948,;inf,7.8696,;inf,7.9197,;inf,7.96983,;inf,8.01991,;inf,8.06999,;inf,8.12012,;inf,8.17024,;inf,8.22034,;inf,8.27046,;inf,8.32057,;inf,8.37067,;inf,8.42077,;inf,8.4709,;inf,8.52103,;inf,8.57111,;inf,8.62121,;inf,8.67133,;inf,8.72146,;inf,8.77158,;inf,8.8217,;inf,8.87178,;inf,8.92188,;inf,8.97197,;inf,9.02209,;inf,9.07221,;inf,9.12231,;inf,9.17242,;inf,9.22253,;inf,9.27262,;inf,9.32275,;inf,9.37283,;inf,9.42292,;inf,9.47302,;inf,9.52315,;inf,9.57325,;inf,9.62334,;inf,9.67344,;inf,9.72354,;3.098856,9.77363,;3.098856,9.82379,;
+.

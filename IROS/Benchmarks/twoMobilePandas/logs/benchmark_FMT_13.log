@@ -1,0 +1,141 @@
+OMPL version 1.5.2
+Experiment my experiment
+0 experiment properties
+Running on jay-Inspiron-5559
+Starting at 2022-02-28 06:46:58
+<<<|
+Properties of the state space 'RealVectorSpace0'
+  - signature: 2 1 20 
+  - dimension: 20
+  - extent: 25.4978
+  - sanity checks for state space passed
+  - probability of valid states: 0.038
+  - average length of a valid motion: 1.60143
+  - average number of samples drawn per second: sampleUniform()=1.23492e+06 sampleUniformNear()=1.20177e+06 sampleGaussian()=618671
+Settings for the state space 'RealVectorSpace0'
+  - state validity check resolution: 1%
+  - valid segment count factor: 1
+  - state space:
+Real vector state space 'RealVectorSpace0' of dimension 20 with bounds: 
+  - min: -1.3 -0.8 -3.1412 -3.1412 -3.1412 -3.1412 -3.1412 -3.1412 -3.1412 -3.1412 -1.3 -0.8 -3.1412 -3.1412 -3.1412 -3.1412 -3.1412 -3.1412 -3.1412 -3.1412 
+  - max: 1.3 0.8 3.1412 3.1412 3.1412 3.1412 3.1412 3.1412 3.1412 3.1412 1.3 0.8 3.1412 3.1412 3.1412 3.1412 3.1412 3.1412 3.1412 3.1412 
+
+Declared parameters:
+longest_valid_segment_fraction = 0.01
+projection.cellsize.0 = 0.0722509
+projection.cellsize.1 = 0.0710454
+projection.cellsize.2 = 0.0896667
+projection.cellsize_factor = 0
+valid_segment_count_factor = 1
+Valid state sampler named uniform with parameters:
+nr_attempts = 100
+Start states:
+RealVectorState [0.5 0 1.5708 0 -1 0 -2 0 2 0 -0.5 0 -1.5708 0 -1 0 -2 0 2 0]
+Goal state, threshold = 2.22045e-16, memory address = 0x55a679c4a100, state = 
+RealVectorState [-0.555762 0.000540429 1.57074 0.00188429 0.764456 -0.000160723 -2.21317 -0.00321155 2.28468 -0.000332939 0.555647 -0.00012235 -1.57154 0.00161455 0.764632 -0.000429018 -2.21257 0.00103216 2.28374 0.00102819]
+Optimization Objective: Path Length @0x55a6785e0ea0
+Optimization Threshold: 0
+Average state cost: 0
+There are 0 solutions
+
+Properties of benchmarked planners:
+Planner FMT specs:
+Multithreaded:                 No
+Reports approximate solutions: No
+Can optimize solutions:        No
+Aware of the following parameters: cache_cc extended_fmt heuristics num_samples radius_multiplier use_k_nearest
+|>>>
+<<<|
+Architecture:                    x86_64
+CPU op-mode(s):                  32-bit, 64-bit
+Byte Order:                      Little Endian
+Address sizes:                   39 bits physical, 48 bits virtual
+CPU(s):                          4
+On-line CPU(s) list:             0-3
+Thread(s) per core:              2
+Core(s) per socket:              2
+Socket(s):                       1
+NUMA node(s):                    1
+Vendor ID:                       GenuineIntel
+CPU family:                      6
+Model:                           78
+Model name:                      Intel(R) Core(TM) i5-6200U CPU @ 2.30GHz
+Stepping:                        3
+CPU MHz:                         2495.068
+CPU max MHz:                     2800.0000
+CPU min MHz:                     400.0000
+BogoMIPS:                        4800.00
+Virtualization:                  VT-x
+L1d cache:                       64 KiB
+L1i cache:                       64 KiB
+L2 cache:                        512 KiB
+L3 cache:                        3 MiB
+NUMA node0 CPU(s):               0-3
+Vulnerability Itlb multihit:     KVM: Mitigation: VMX disabled
+Vulnerability L1tf:              Mitigation; PTE Inversion; VMX conditional cache flushes, SMT vulnerable
+Vulnerability Mds:               Mitigation; Clear CPU buffers; SMT vulnerable
+Vulnerability Meltdown:          Mitigation; PTI
+Vulnerability Spec store bypass: Mitigation; Speculative Store Bypass disabled via prctl and seccomp
+Vulnerability Spectre v1:        Mitigation; usercopy/swapgs barriers and __user pointer sanitization
+Vulnerability Spectre v2:        Mitigation; Full generic retpoline, IBPB conditional, IBRS_FW, STIBP conditional, RSB filling
+Vulnerability Srbds:             Mitigation; Microcode
+Vulnerability Tsx async abort:   Not affected
+Flags:                           fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch cpuid_fault epb invpcid_single pti ssbd ibrs ibpb stibp tpr_shadow vnmi flexpriority ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid mpx rdseed adx smap clflushopt intel_pt xsaveopt xsavec xgetbv1 xsaves dtherm ida arat pln pts hwp hwp_notify hwp_act_window hwp_epp md_clear flush_l1d
+|>>>
+10869383055050566 is the random seed
+180 seconds per run
+4096 MB per run
+10 runs per planner
+1681.28 seconds spent to collect the data
+1 enum type
+status|Unknown status|Invalid start|Invalid goal|Unrecognized goal type|Timeout|Approximate solution|Exact solution|Crash|Unknown status|Unknown status
+1 planners
+geometric_FMT
+12 common properties
+cache_cc = 1
+extended_fmt = 1
+heuristics = 0
+longest_valid_segment_fraction = 0.01
+num_samples = 1000
+projection.cellsize.0 = 0.0722509
+projection.cellsize.1 = 0.0710454
+projection.cellsize.2 = 0.0896667
+projection.cellsize_factor = 0
+radius_multiplier = 1.1
+use_k_nearest = 1
+valid_segment_count_factor = 1
+22 properties for each run
+approximate solution BOOLEAN
+correct solution BOOLEAN
+correct solution strict BOOLEAN
+graph motions INTEGER
+graph states INTEGER
+memory REAL
+simplification time REAL
+simplified correct solution BOOLEAN
+simplified correct solution strict BOOLEAN
+simplified solution clearance REAL
+simplified solution length REAL
+simplified solution segments INTEGER
+simplified solution smoothness REAL
+solution clearance REAL
+solution difference REAL
+solution length REAL
+solution segments INTEGER
+solution smoothness REAL
+solved BOOLEAN
+status ENUM
+time REAL
+valid segment fraction REAL
+10 runs
+0; 1; 1; 245; 1002; 75.8203; 0.612257; 1; 1; 0; 11.5759; 4; 1.50238; 0; 0; 19.0046; 3; 0.225866; 1; 6; 167.057; 0.013596; 
+; ; ; 225; 1002; 75.8203; ; ; ; ; ; ; ; ; ; ; ; ; 0; 4; 180.359; 0.0127147; 
+0; 1; 1; 248; 1002; 76.1992; 0.498575; 1; 1; 0; 13.6739; 4; 0.867021; 0; 0; 20.3772; 3; 0.191995; 1; 6; 174.635; 0.0129457; 
+0; 1; 1; 173; 1002; 76.1992; 0.143181; 1; 1; 0; 10.3314; 2; 0.246334; 0; 0; 10.3314; 2; 0.246334; 1; 6; 114.305; 0.0213976; 
+0; 1; 1; 261; 1002; 76.1992; 0.495489; 1; 0; 0; 7.92049; 3; 0.681725; 0; 0; 16.5097; 3; 0.267189; 1; 6; 160.241; 0.0153097; 
+; ; ; 248; 1002; 76.1992; ; ; ; ; ; ; ; ; ; ; ; ; 0; 4; 180.207; 0.011585; 
+0; 1; 1; 269; 1002; 76.1992; 0.839013; 1; 0; 0; 14.9187; 3; 0.358529; 0; 0; 21.0802; 3; 0.191194; 1; 6; 171.637; 0.0134165; 
+0; 1; 1; 240; 1002; 76.1992; 0.397838; 1; 1; 0; 15.2753; 3; 0.301783; 0; 0; 21.6836; 3; 0.162824; 1; 6; 179.484; 0.0113534; 
+0; 1; 1; 272; 1002; 76.1992; 0.336273; 1; 1; 0; 12.5782; 4; 0.777442; 0; 0; 19.3627; 3; 0.210295; 1; 6; 166.187; 0.0139752; 
+0; 1; 1; 306; 1002; 76.1992; 0.671856; 1; 0; 0; 15.4361; 4; 0.416171; 0; 0; 21.7562; 3; 0.146598; 1; 6; 175.697; 0.0148486; 
+.
