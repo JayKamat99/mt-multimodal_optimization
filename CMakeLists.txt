@@ -144,3 +144,7 @@ target_link_libraries( t_main ompl rai Path)
 # try_path executable
 add_executable(t_path ./examples/Test_KOMO/main.cpp)
 target_link_libraries( t_path rai ompl Path )
+
+# sequentialPlanning executable
+add_executable(t_sequential ./examples/SequentialPlanning/main.cpp)
+target_link_libraries( t_sequential rai ompl Path )
