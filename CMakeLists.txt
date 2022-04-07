@@ -148,3 +148,7 @@ target_link_libraries( t_path rai ompl Path )
 # sequentialPlanning executable
 add_executable(t_sequential ./examples/SequentialPlanning/main.cpp)
 target_link_libraries( t_sequential rai ompl Path )
+
+# goalRegion executable
+add_executable(t_goalRegion ./examples/goalRegionTest/main.cpp)
+target_link_libraries( t_goalRegion rai ompl Path )

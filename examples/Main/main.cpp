@@ -7,6 +7,7 @@
 #include <ompl/base/ProblemDefinition.h>
 #include <ompl/base/spaces/RealVectorStateSpace.h>
 #include <ompl/tools/benchmark/Benchmark.h>
+#include <ompl/base/goals/GoalLazySamples.h>
 
 // Samplers
 #include <ompl/base/samplers/ObstacleBasedValidStateSampler.h>
@@ -60,6 +61,87 @@ struct ValidityCheckWithKOMO {
 		return std::abs(phi(0)) < tol;
 	}
 };
+
+class MyGoalRegion : public ob::GoalRegion
+{
+public:
+
+    MyGoalRegion(const ob::SpaceInformationPtr &si) : ob::GoalRegion(si)
+    {
+        setThreshold(1e-4);
+    }
+
+    // If I can somehow calculate the distance between endeff and target I am done
+    double distanceGoal(const ob::State *state) const override
+    {
+        // goal region is given by states where x = y
+        double R1 = state->as<ob::RealVectorStateSpace::StateType>()->operator[](0);
+        double R2 = state->as<ob::RealVectorStateSpace::StateType>()->operator[](1);
+        double d = (R1 - R2)*(R1 - R2);
+        return d;
+    }
+
+};
+
+bool regionSampling(const ob::SpaceInformationPtr &si, const ob::ProblemDefinitionPtr &pd, const ob::GoalLazySamples *gls, ob::State *result, std::string filename)
+{
+    bool cont = false;
+
+    // Use Quim's method to get final config
+    // Check for collision, if collision-free cont = true
+
+    rai::Configuration C;
+    C.addFile(filename.c_str());
+
+    KOMO komo;
+    komo.setModel(C, true);
+    komo.setTiming(1., 1, 1., 1);
+	komo.addObjective(
+      {}, FS_qItself, {},
+      OT_sos); // this regularizes with respect to q = zeros, i.e. term q.T q
+
+    if (filename == "../examples/Models/1_kuka_shelf.g"){
+        komo.addObjective({}, FS_positionDiff, {">tool0_joint", "target"}, OT_eq, {10});
+	}
+
+    // komo.add_collision(true);
+	komo.addObjective(
+      {}, FS_accumulatedCollisions, {}, OT_eq,
+      {1.}); // add collisions between all bodies with keyword contact
+	
+	komo.optimize();
+    cont = true;
+
+	// check validity
+	auto nlp = std::make_shared<KOMO::Conv_KOMO_SparseNonfactored>(komo, false);
+
+	ObjectiveTypeA ot;
+	nlp->getFeatureTypes(ot);
+	arr phi;
+    arr config = komo.getConfiguration_q(0);
+	nlp->evaluate(phi, NoArr, config);
+	if (phi.first() > 0){
+		cont = false;
+	}
+
+    // convert arr to state
+    std::cout << config << std::endl;
+    std::vector<double> reals;
+    for (double r : config){
+        reals.push_back(r);
+    }
+    const ob::StateSpace *space(si->getStateSpace().get());
+    space->copyFromReals(result, reals);
+
+    if (cont)
+    {
+        std::cout << "Found goal state: " << std::endl;
+        si->printState(result);
+    }
+
+    // we continue sampling while we are able to find solutions, we have found not more than 2 previous solutions and we have not yet solved the problem
+    return cont && gls->maxSampleCount() < 3 && !pd->hasSolution();
+}
 
 ob::ValidStateSamplerPtr allocObstacleBasedVSS(const ob::SpaceInformation *si)
 {
@@ -395,7 +477,7 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 		ss.setup();
 
 		// attempt to solve the problem
-		ob::PlannerStatus solved = ss.solve(30.0);
+		ob::PlannerStatus solved = ss.solve(10.0);
 
 		if (solved == ob::PlannerStatus::StatusType::APPROXIMATE_SOLUTION)
 			std::cout << "Found solution: APPROXIMATE_SOLUTION" << std::endl;
@@ -427,12 +509,96 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 	}
 }
 
+void plan()
+{
+	std::string filename = "../examples/Models/1_kuka_shelf.g";
+	std::string planner_ = "BITstar";
+	// set state validity checking based on KOMO
+	rai::Configuration C;
+	C.addFile(filename.c_str());
+	std::cout << "filename : " << filename << std::endl;
+	KOMO komo;
+	komo.setModel(C, true);
+	komo.setTiming(1, 1, 1, 1);
+	komo.addObjective({}, FS_accumulatedCollisions, {}, OT_eq, { 1 });
+	komo.run_prepare(0);
+
+	C_Dimension = C.getJointStateDimension();
+
+	//Construct the state space we are planning in
+	auto space(std::make_shared<ob::RealVectorStateSpace>(C_Dimension));
+
+	ob::RealVectorBounds bounds(C_Dimension);
+	bounds.setLow(-PI);
+	bounds.setHigh(PI);
+	space->setBounds(bounds);
+
+	//create simple setup
+	og::SimpleSetup ss(space);
+
+    // set state validity checking for this space
+	auto nlp = std::make_shared<KOMO::Conv_KOMO_SparseNonfactored>(komo, false);
+	ValidityCheckWithKOMO checker(*nlp);
+
+	ss.setStateValidityChecker([&checker](const ob::State *state) {
+		return checker.check(state);
+	});
+
+	// create start and goal states. These states might change from example to example
+    ob::ScopedState<> start(space);
+	for (unsigned int i=0; i<C.getJointStateDimension(); i++){
+	start[i] = komo.getConfiguration_q(0).elem(i);
+	}
+
+	ss.setStartState(start);
+
+	// define our goal region
+    MyGoalRegion region(ss.getSpaceInformation());
+
+    // bind a sampling function that fills its argument with a sampled state
+    // and returns true while it can produce new samples we don't need to
+    // check if new samples are different from ones previously computed as
+    // this is pefromed automatically by GoalLazySamples
+    ob::GoalSamplingFn samplingFunction = [&ss, &region, filename](const ob::GoalLazySamples *gls, ob::State *result)
+        {
+            return regionSampling(ss.getSpaceInformation(), ss.getProblemDefinition(),
+                gls, result, filename);
+        };
+
+    // create an instance of GoalLazySamples:
+    auto goal(std::make_shared<ob::GoalLazySamples>(ss.getSpaceInformation(), samplingFunction));
+
+    // we set a goal that is sampleable, but it in fact corresponds to a region that is not sampleable by default
+    ss.setGoal(goal);
+
+	//Set the planner
+    ss.setPlanner(std::make_shared<ompl::geometric::BITstar>(ss.getSpaceInformation()));
+
+    // attempt to solve the problem
+    ob::PlannerStatus solved = ss.solve(10.0);
+
+    if (solved)
+    {
+        std::cout << "Found solution:" << std::endl;
+        // print the path to screen
+        ss.simplifySolution();
+        ss.getSolutionPath().print(std::cout);
+    }
+    else
+        std::cout << "No solution found" << std::endl;
+
+    // the region variable will now go out of scope. To make sure it is not used in the sampling function any more
+    // (i.e., the sampling thread was able to terminate), we make sure sampling has terminated
+    goal->as<ob::GoalLazySamples>()->stopSampling();
+}
+
 int main(int argc, char ** argv)
 {
   	rai::initCmdLine(argc,argv);
 	std::cout << "OMPL version: " << OMPL_VERSION << std::endl;
 	if (argc<2){
-		benchmark();
+		plan();
+		// benchmark();
 	}
 	else{
 		std::string filename = argv[1];
