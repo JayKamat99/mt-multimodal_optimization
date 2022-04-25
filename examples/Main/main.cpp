@@ -96,9 +96,11 @@ bool regionSampling(const ob::SpaceInformationPtr &si, const ob::ProblemDefiniti
     KOMO komo;
     komo.setModel(C, true);
     komo.setTiming(1., 1, 1., 1);
-	komo.addObjective(
-      {}, FS_qItself, {},
-      OT_sos); // this regularizes with respect to q = zeros, i.e. term q.T q
+	// komo.addObjective(
+    //   {}, FS_qItself, {},
+    //   OT_sos); // this regularizes with respect to q = zeros, i.e. term q.T q
+
+	// start with different configuration
 
     if (filename == "../examples/Models/1_kuka_shelf.g"){
         komo.addObjective({}, FS_positionDiff, {">tool0_joint", "target"}, OT_eq, {10});
@@ -110,6 +112,8 @@ bool regionSampling(const ob::SpaceInformationPtr &si, const ob::ProblemDefiniti
       {1.}); // add collisions between all bodies with keyword contact
 	
 	komo.optimize();
+	// komo.view();
+	// komo.view_play(3);
     cont = true;
 
 	// check validity
@@ -120,9 +124,10 @@ bool regionSampling(const ob::SpaceInformationPtr &si, const ob::ProblemDefiniti
 	arr phi;
     arr config = komo.getConfiguration_q(0);
 	nlp->evaluate(phi, NoArr, config);
-	if (phi.first() > 0){
-		cont = false;
-	}
+	// std::cout << std::abs(phi(0)) << std::endl;
+	// if (std::abs(phi(0)) > 0){
+	// 	cont = false;
+	// }
 
     // convert arr to state
     std::cout << config << std::endl;
@@ -512,7 +517,6 @@ void benchmark(std::string filename = "../examples/Models/1_kuka_shelf.g", std::
 void plan()
 {
 	std::string filename = "../examples/Models/1_kuka_shelf.g";
-	std::string planner_ = "BITstar";
 	// set state validity checking based on KOMO
 	rai::Configuration C;
 	C.addFile(filename.c_str());

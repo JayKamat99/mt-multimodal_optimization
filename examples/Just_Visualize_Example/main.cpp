@@ -43,6 +43,10 @@ int main(int argc, char** argv)
 	else if (filename_s == "../examples/Models/10_MobileManipulator.g"){
 		goal = {-0.555762, 0.000540429, 1.57074, 0.00188429, 0.764456, -0.000160723, -2.21317, -0.00321155, 2.28468, -0.000332939};
 	}
+	else if (filename_s == "../examples/Models/model2.g"){
+		start = {0.0505656, 0.673177, 0.10986, -1.96045, -0.139219, 2.62652, -1.05106, 0.0481076};
+		goal = {-0.00371728, 0.210831, -0.0231252, -2.97777, -0.0949239, 3.19421, -0.420676, 0.0491746};
+	}
 	std::cout << goal << std::endl;
 	// for(auto f: C.frames){
 	// 	arr c = f->getShape().mesh().C;
