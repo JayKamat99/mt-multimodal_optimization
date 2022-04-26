@@ -146,13 +146,17 @@ target_link_libraries(pickplace_seq  rai )
 add_executable(t_main ./examples/Main/main.cpp)
 target_link_libraries( t_main ompl rai Path)
 
+add_executable(sequential ./examples/Main/sequential.cpp)
+target_link_libraries( sequential ompl rai Path)
+
+
 # try_path executable
 add_executable(t_path ./examples/Test_KOMO/main.cpp)
 target_link_libraries( t_path rai ompl Path )
 
-# sequentialPlanning executable
-add_executable(t_sequential ./examples/SequentialPlanning/main.cpp)
-target_link_libraries( t_sequential rai ompl Path )
+# # sequentialPlanning executable
+# add_executable(t_sequential ./examples/SequentialPlanning/main.cpp)
+# target_link_libraries( t_sequential rai ompl Path )
 
 # goalRegion executable
 add_executable(t_goalRegion ./examples/goalRegionTest/main.cpp)

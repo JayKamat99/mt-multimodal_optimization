@@ -11,7 +11,8 @@ int main() {
 
   std::cout << "hello world" << std::endl;
 
-  auto filename = "../examples/only_KOMO/model.g";
+  // auto filename = "../examples/only_KOMO/model.g";
+  auto filename = "../examples/Models/s1_2d_manip.g";
 
 
   rai::Configuration C;
@@ -42,7 +43,8 @@ int main() {
    C.attach(C.getFrame("endeff"), C.getFrame("object"));
 
    // Now, if we move robot, the object moves
-   C.setJointState( arr({0, 0, 0, 0, 1, 0, 0, 0, 0, 0}) );
+  //  C.setJointState( arr({0, 0, 0, 0, 1, 0, 0, 0, 0, 0}) );
+   C.setJointState( arr({0, 0, 0}) );
    C.watch(true);
 
 
