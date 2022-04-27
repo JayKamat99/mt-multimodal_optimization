@@ -41,6 +41,9 @@
     use ompl to find path from robot picking to robot placing (new collision checking, with another komo object, that takes into account the relative transformation)
 **/
 
+// necessary
+#include<fstream>
+
 // ompl includes
 #include <ompl/config.h>
 #include <ompl/geometric/SimpleSetup.h>
@@ -97,7 +100,7 @@ arr getTargetConfig(rai::Configuration &C, std::string &ref1, std::string &ref2)
     return komo.x;
 }
 
-arrA solveMotion(rai::Configuration &C, arr goal_)
+arrA solveMotion(rai::Configuration &C, arr goal_, std::string planner_ = "BITstar")
 {
     KOMO komo;
 	komo.setModel(C, true);
@@ -139,8 +142,11 @@ arrA solveMotion(rai::Configuration &C, arr goal_)
 
     ss.setStartAndGoalStates(start, goal);
 	auto si = ss.getSpaceInformation();
-    auto planner(std::make_shared<og::BITstar>(si));
-	ss.setPlanner(planner);
+    if (planner_ == "BITstar")
+    {
+        auto planner(std::make_shared<og::BITstar>(si));
+	    ss.setPlanner(planner);
+    }
 
     ss.setup();
 
@@ -193,66 +199,65 @@ void visualizePath(rai::Configuration &C, arrA configs){
     V.playVideo();
 }
 
-// void visualizeSequence(std::string filename, std::vector<arrA> &trajectories)
-// {
-//     rai::Configuration C;
-//     C.addFile(filename.c_str());
-//     KOMO komo;
-//     komo.verbose = 0;
-//     komo.setModel(C, true);
-    
-//     arrA configs = trajectories.at(0);
-//     komo.setTiming(2, configs.N, 5., 2);
-// 	komo.add_qControlObjective({}, 1, 1.);
 
-//     //use configs to initialize with waypoints
-// 	komo.initWithWaypoints(configs, configs.N, false);
-//     komo.run_prepare(0);
-// 	komo.plotTrajectory();
-
-// 	rai::ConfigurationViewer V;
-// 	V.setPath(C, komo.x, "result", true);
-//     V.playVideo();
-// }
-
-void sequentialPlan(std::string filename = "../examples/Models/s1_2d_manip.g")
+int main(int argc, char ** argv)
 {
+    // sequentialPlan();
+    // return 0;
+    // rai::initCmdLine(argc,argv);
+    // std::cout << "OMPL version: " << OMPL_VERSION << std::endl;
+
+    // Default inputs
+    std::string inputFile = "../examples/Main/manipulationSequence.txt";
+    std::string planner_ = "BITstar";
+
+    // Don't like the default inputs? You can input the inputs you want!
+    switch(argc) {
+        case 3:
+        planner_ = argv[2];
+        case 2:
+        inputFile = argv[1];
+    }
+
+    // Read file to get inputs
+    std::string line;
+    ifstream myfile (inputFile);
+    std::vector<std::string> inputs;
+    if (myfile.is_open())
+    {
+        while ( getline (myfile,line) )
+        {
+            inputs.push_back(line);
+        }
+        myfile.close();
+    }
+    else
+    {
+        cout << "Unable to open file";
+        return 0;
+    }
+
+    // Set filename (Model) and totalPhases
+    std::string filename = inputs.at(0);
+    int totalPhases = stoi(inputs.at(1));
+
+    // Set Configuration
     rai::Configuration C;
     C.addFile(filename.c_str());
 
-    // visualize environment
+    for (int phase = 0; phase < totalPhases; ++phase)
+    {
+        std::string ref1 = inputs.at(2+phase*2), ref2 = inputs.at(3+phase*2);
+        arr goalConfig = getTargetConfig(C, ref1, ref2);
+        std::cout << "goalConfig[" << phase << "]: " << goalConfig << std::endl;
+        arrA Trajectory = solveMotion(C, goalConfig, planner_);
+        visualizePath(C, Trajectory);
+        C.setJointState(Trajectory.last());
+        if(phase%2 == 0)
+            C.attach(C.getFrame(ref1.c_str()), C.getFrame(ref2.c_str())); //pick
+        else
+            C.attach(C.getFrame("world"), C.getFrame(ref1.c_str())); //place
+    }
+    C.setJointState({0,0,0});
     C.watch(true);
-
-    std::string ref1 = "endeff", ref2 = "object";
-    arr pickConfig = getTargetConfig(C, ref1, ref2);
-    std::cout << "pickConfig: " << pickConfig << std::endl;
-
-    // checkCollision(C);
-    arrA pickTrajectory = solveMotion(C, pickConfig);
-    visualizePath(C, pickTrajectory);
-
-    // set the joint state for the keyframe, and attach the frame
-    C.setJointState(pickTrajectory.last());
-    C.attach(C.getFrame(ref1.c_str()), C.getFrame(ref2.c_str()));
-    C.watch(true);
-
-    ref1 = "object", ref2 = "target";
-    arr placeConfig = getTargetConfig(C, ref1, ref2);
-    std::cout << "placeConfig: " << placeConfig << std::endl;
-
-    // checkCollision(C);
-    arrA placeTrajectory = solveMotion(C, placeConfig);
-    visualizePath(C, placeTrajectory);
-    C.setJointState(placeTrajectory.last());
-    C.watch(true);
-
-    C.attach(C.getFrame("world"), C.getFrame(ref1.c_str()));
-    C.watch(true);
-}
-
-int main()
-{
-    sequentialPlan();
-    // visualizeModel();
-  
 }
