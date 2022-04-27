@@ -1,5 +1,7 @@
 world{}
 Include = '2D_bot.g'
 Include = 'small_box.g'
+Include = 'four_rooms.g'
+#Include = 'maze.g'
 
-target  { X=<T t(.7 -1. 1.5) d(-20 0 1 0) d(20 0 0 1)>  shape:marker size=[.2] color=[0 .5 0] }
+target  { X=<T t(.7 -.7 0.02) d(-20 0 0 1)>  shape:marker size=[.2] color=[0 .5 0] }

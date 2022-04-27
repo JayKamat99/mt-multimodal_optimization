@@ -1,0 +1,13 @@
+number of phases
+what to move 1
+where to move 1
+what to move 2
+where to move 2
+.
+.
+.
+
+
+
+
+// By default the code will oscillate between transit and transfer paths. This code is limited to single agent. 
