@@ -57,8 +57,6 @@
 #include <KOMO/komo.h>
 #include <Kin/viewer.h>
 
-#include "debugFunctions.h"
-
 #define PI 3.14159
 
 namespace ob = ompl::base;
@@ -86,18 +84,27 @@ struct ValidityCheckWithKOMO {
 	}
 };
 
-arr getTargetConfig(rai::Configuration &C, std::string &ref1, std::string &ref2)
+arr getTargetConfig(rai::Configuration C, std::string &ref1, std::string &ref2)
 {
-    KOMO komo;
-    komo.setModel(C);
-    komo.setTiming(1,1,1,1);
-    komo.addObjective({1,1},FS_distance,{ref2.c_str(),ref1.c_str()}, OT_eq);
-    komo.addObjective({1,1},FS_distance,{ref2.c_str(),ref1.c_str()}, OT_ineq);
+    arrA targetConfigs;
+    for(int i = 0; i<10; i++)
+    {
+        KOMO komo;
+        komo.verbose = 0;
+        komo.setModel(C);
+        komo.setTiming(1,1,1,1);
+        komo.addObjective({1,1},FS_distance,{ref2.c_str(),ref1.c_str()}, OT_eq);
+        komo.addObjective({1,1},FS_distance,{ref2.c_str(),ref1.c_str()}, OT_ineq);
 
-    komo.optimize();
-    // komo.view(true);
+        komo.optimize();
+        std::cout << komo.x << std::endl;
+        targetConfigs.append(komo.x);
 
-    return komo.x;
+        // genrate a random configuration
+        C.setJointState(rand(C.getJointStateDimension()));
+    }
+
+    return targetConfigs(5);
 }
 
 arrA solveMotion(rai::Configuration &C, arr goal_, std::string planner_ = "BITstar")
@@ -199,6 +206,7 @@ void visualizePath(rai::Configuration &C, arrA configs){
     V.playVideo();
 }
 
+#include "debugFunctions.h"
 
 int main(int argc, char ** argv)
 {
@@ -245,10 +253,11 @@ int main(int argc, char ** argv)
     rai::Configuration C;
     C.addFile(filename.c_str());
 
+    // Loop for iterating over task sequences.
     for (int phase = 0; phase < totalPhases; ++phase)
     {
         std::string ref1 = inputs.at(2+phase*2), ref2 = inputs.at(3+phase*2);
-        arr goalConfig = getTargetConfig(C, ref1, ref2);
+        arr goalConfig = getTargetConfig(C, ref1, ref2); //inverse kin
         std::cout << "goalConfig[" << phase << "]: " << goalConfig << std::endl;
         arrA Trajectory = solveMotion(C, goalConfig, planner_);
         visualizePath(C, Trajectory);
@@ -258,6 +267,6 @@ int main(int argc, char ** argv)
         else
             C.attach(C.getFrame("world"), C.getFrame(ref1.c_str())); //place
     }
-    C.setJointState({0,0,0});
-    C.watch(true);
+    // C.setJointState({0,0,0});
+    // C.watch(true);
 }

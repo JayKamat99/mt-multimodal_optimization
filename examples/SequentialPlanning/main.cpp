@@ -48,31 +48,31 @@ struct ValidityCheckWithKOMO {
  * @brief The graph structure maintains 
  * 
  */
-typedef struct graph
-{
-private:
+// typedef struct graph
+// {
+// private:
 
-public:
-  graph();
-  ~graph();
-}graph;
+// public:
+//   graph();
+//   ~graph();
+// }graph;
 
-typedef struct ConfigurationSpaceTree
-{
-private:
-  ob::SpaceInformationPtr si_;
-  ConfigurationSpaceTree* parent{nullptr};
-  std::vector<double> startS;
-  std::vector<std::vector<double>> goalRegion;
-  graph* graph;   
-public:
-  ConfigurationSpaceTree() = default;
-  ConfigurationSpaceTree(const ob::SpaceInformationPtr &si) : si_(std::move(si))
-  {}
-  ~ConfigurationSpaceTree();
-  void setStartState(arr start);
-  void addGoalConfig(arr goal);
-}ConfigurationSpaceTree;
+// typedef struct ConfigurationSpaceTree
+// {
+// private:
+//   ob::SpaceInformationPtr si_;
+//   ConfigurationSpaceTree* parent{nullptr};
+//   std::vector<double> startS;
+//   std::vector<std::vector<double>> goalRegion;
+//   graph* graph;   
+// public:
+//   ConfigurationSpaceTree() = default;
+//   ConfigurationSpaceTree(const ob::SpaceInformationPtr &si) : si_(std::move(si))
+//   {}
+//   ~ConfigurationSpaceTree();
+//   void setStartState(arr start);
+//   void addGoalConfig(arr goal);
+// }ConfigurationSpaceTree;
 
 //=============================================================
 
@@ -190,7 +190,7 @@ void sequentialOmpl()
 
   while (!goalReached)
   {
-    arrA solutionPath = solve(ConfigurationSpaceTree &leaf_);
+    // arrA solutionPath = solve(ConfigurationSpaceTree &leaf_);
 
     // If success, move to goal region in komo and perform mode_switch // fix rel transformation for now
     // How do I do this? Is there a nice way of doing it?

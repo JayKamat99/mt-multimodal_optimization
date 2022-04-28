@@ -1,0 +1,6 @@
+../examples/Models/model2.g
+2
+gripper
+box
+box
+table2

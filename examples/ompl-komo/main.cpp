@@ -14,7 +14,8 @@ namespace og = ompl::geometric;
 
 void compute_collisions_with_KOMO() {
 
-  auto filename = "../examples/Models/two_boxes.g";
+  // auto filename = "../examples/Models/two_boxes.g";
+  auto filename = "../examples/Models/s1_2d_manip.g";
   rai::Configuration C;
   C.addFile(filename);
   KOMO komo;
@@ -45,9 +46,9 @@ void compute_collisions_with_KOMO() {
 
   size_t N = 20;
   for (size_t i = 0; i < N; i++) {
-    arr pose(3);
-    arr position = {(double)-0.3*i/15,.01,0.2};
-    pose({0, 2}) = position;
+    arr pose(rand(C.getJointStateDimension()));
+    // arr position = {(double)-0.3*i/15,.01,0.2};
+    // pose({0, 2}) = position;
 
     nlp->evaluate(phi, NoArr, pose);
     std::cout << pose << " " << phi << std::endl;
