@@ -1,6 +1,8 @@
 ../examples/Models/s1_2d_manip.g
-2
+3
 endeff
 object
 object
 target
+endeff
+origin

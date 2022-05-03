@@ -87,21 +87,22 @@ struct ValidityCheckWithKOMO {
 arr getTargetConfig(rai::Configuration C, std::string &ref1, std::string &ref2)
 {
     arrA targetConfigs;
+    KOMO komo;
+    komo.verbose = 0;
+    komo.setModel(C);
+    komo.setTiming(1,1,1,1);
+    komo.addObjective({1,1},FS_distance,{ref2.c_str(),ref1.c_str()}, OT_eq);
+    komo.addObjective({1,1},FS_distance,{ref2.c_str(),ref1.c_str()}, OT_ineq);
     for(int i = 0; i<10; i++)
     {
-        KOMO komo;
-        komo.verbose = 0;
-        komo.setModel(C);
-        komo.setTiming(1,1,1,1);
-        komo.addObjective({1,1},FS_distance,{ref2.c_str(),ref1.c_str()}, OT_eq);
-        komo.addObjective({1,1},FS_distance,{ref2.c_str(),ref1.c_str()}, OT_ineq);
-
+        komo.run_prepare(0);
         komo.optimize();
         std::cout << komo.x << std::endl;
+        // Check if config is feasible?
         targetConfigs.append(komo.x);
 
         // genrate a random configuration
-        C.setJointState(rand(C.getJointStateDimension()));
+        C.setJointState(rand(C.getJointStateDimension())); // generate rand in the bounds
     }
 
     return targetConfigs(5);
