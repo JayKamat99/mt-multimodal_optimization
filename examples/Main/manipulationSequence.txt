@@ -1,4 +1,4 @@
-../examples/Models/s1_2d_manip.g
+../examples/Models/s2_bugtrap.g
 3
 endeff
 object
@@ -6,3 +6,5 @@ object
 target
 endeff
 origin
+small_box
+small_box

@@ -4,9 +4,9 @@ table (world){
     shape:ssBox, Q:<t(0 0. .6)>, size:[1. 1. .1 .02], color:[.3 .3 .3]
 }
 
-table2 (world){
-    shape:ssBox, Q:<t(0 0. .7)>, size:[.5 .5 .1 .02], color:[0. 0. .3]
-}
+#table2 (world){
+#    shape:ssBox, Q:<t(0 0. .7)>, size:[.5 .5 .1 .02], color:[0. 0. .3]
+#}
 
 box (table){
   shape:ssBox, Q:<t(.4 .1 .08) d(120 0 0 1)>, size:[.2 .06 .06 .02], color:[.4 .8 .4]

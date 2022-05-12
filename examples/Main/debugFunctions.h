@@ -62,6 +62,49 @@ void visualizeModel(std::string filename = "../examples/Models/s1_2d_manip.g" )
 //     V.playVideo();
 // }
 
+void runOnlyKOMO()
+{
+    rai::Configuration C("../examples/Models/model2.g");
+
+    //  rai::ConfigurationViewer V;
+    //  V.setConfiguration(C, "initial model", false);
+
+    KOMO komo;
+
+    komo.setModel(C, false);
+    komo.setTiming(2.5, 30, 5., 2);
+    komo.add_qControlObjective({}, 2);
+    komo.addSquaredQuaternionNorms();
+
+    //grasp
+    komo.addSwitch_stable(1., 2., "table", "gripper", "box");
+    komo.addObjective({1.}, FS_positionDiff, {"gripper", "box"}, OT_eq, {1e2});
+    komo.addObjective({1.}, FS_scalarProductXX, {"gripper", "box"}, OT_eq, {1e2}, {0.});
+    komo.addObjective({1.}, FS_vectorZ, {"gripper"}, OT_eq, {1e2}, {0., 0., 1.});
+
+    // komo.addObjective({1.}, FS_qItself, {}, OT_eq, {}, {}, 1);
+    // komo.addObjective({.9,1.1}, FS_position, {"gripper"}, OT_eq, {}, {0.,0.,.1}, 2);
+
+    //place
+    komo.addSwitch_stable(2., -1., "gripper", "table", "box", false);
+    // komo.addObjective({2.}, FS_positionDiff, {"box", "table"}, OT_eq, {1e2}, {0,0,.08}); //arr({1,3},{0,0,1e2})
+    komo.addObjective({2.}, FS_distance, {"box", "table"}, OT_eq/* , {1e2}, {0,0,.08} */); //arr({1,3},{0,0,1e2})
+    komo.addObjective({2.}, FS_vectorZ, {"gripper"}, OT_eq, {1e2}, {0., 0., 1.});
+
+    //slow - down - up
+    komo.addObjective({2.}, FS_qItself, {}, OT_eq, {}, {}, 1);
+    komo.addObjective({1.9,2.1}, FS_position, {"gripper"}, OT_eq, {}, {0.,0.,.1}, 2);
+
+    komo.verbose = 4;
+    komo.optimize();
+    //  komo.checkGradients();
+
+    komo.view(true, "optimized motion");
+    for(uint i=0;i<2;i++) komo.view_play(true);
+    // V.setPath(komo.getPath_frames(), "optimized motion", true);
+    // for(uint i=0;i<2;i++) V.playVideo(true);
+}
+
 void sequentialPlan(std::string filename = "../examples/Models/s1_2d_manip.g")
 {
     rai::Configuration C;
@@ -71,7 +114,7 @@ void sequentialPlan(std::string filename = "../examples/Models/s1_2d_manip.g")
     C.watch(true);
 
     std::string ref1 = "endeff", ref2 = "object";
-    arr pickConfig = getTargetConfig(C, ref1, ref2);
+    arr pickConfig = getGoalConfig(C, ref1, ref2);
     std::cout << "pickConfig: " << pickConfig << std::endl;
 
     // checkCollision(C);
@@ -84,7 +127,7 @@ void sequentialPlan(std::string filename = "../examples/Models/s1_2d_manip.g")
     C.watch(true);
 
     ref1 = "object", ref2 = "target";
-    arr placeConfig = getTargetConfig(C, ref1, ref2);
+    arr placeConfig = getGoalConfig(C, ref1, ref2);
     std::cout << "placeConfig: " << placeConfig << std::endl;
 
     // checkCollision(C);
