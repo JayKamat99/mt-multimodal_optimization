@@ -104,9 +104,9 @@ arr getGoalConfig(rai::Configuration C, std::string &ref1, std::string &ref2, tr
         {
             randomConfig_.append(-PI+2*PI*rand(1));
         }
-        C.setJointState(randomConfig_); // generate rand in the bounds
-        komo.addObjective({1,1},FS_distance,{ref2.c_str(),ref1.c_str()}, OT_eq);
-        komo.addObjective({1,1},FS_distance,{ref2.c_str(),ref1.c_str()}, OT_ineq);
+        // C.setJointState(randomConfig_); // generate rand in the bounds
+        komo.initWithConstant(randomConfig_);
+        komo.addObjective({1,1},FS_distance,{ref2.c_str(),ref1.c_str()}, OT_eq, {}, {-0.1});
         // if (transition_ == pick)
         // {
         //     komo.addObjective({1,1},FS_distance,{ref2.c_str(),ref1.c_str()}, OT_eq);
@@ -134,11 +134,14 @@ std::vector<arr> getHardGoalConfigs(rai::Configuration C, std::string &ref1, std
     std::vector<arr> goalConfigs;
     switch(mode)
     {
-        case(1):
-            goalConfigs = {{1.0498, 0.0911573, 0.868818},{0.689771, 0.229342, 1.66093},/* {0.350224, 0.0911714, 2.27218} */};
-            break;
+        // case(1):
+        //     goalConfigs = {{1.0498, 0.0911573, 0.868818},{0.689771, 0.229342, 1.66093},/* {0.350224, 0.0911714, 2.27218} */};
+        //     break;
         default:
-            goalConfigs.push_back(getGoalConfig(C,ref1,ref2));
+            for(int i = 0; i< 10; i++)
+            {
+                goalConfigs.push_back(getGoalConfig(C,ref1,ref2));
+            }
     }
     mode ++;
     return goalConfigs;
@@ -257,7 +260,7 @@ void visualizePath(rai::Configuration &C, arrA configs){
     V.playVideo();
 }
 
-// #include "debugFunctions.h"
+#include "debugFunctions.h"
 
 void Print(const std::vector<arr>& vec) {
   for (const auto& i : vec) {
@@ -321,6 +324,10 @@ int main(int argc, char ** argv)
     while (phase < totalPhases)
     {
         std::string ref1 = inputs.at(2+phase*2), ref2 = inputs.at(3+phase*2);
+        for (int i=0; i<10; ++i)
+        {
+            sampleGoalsandDisplay(C, ref1, ref2);
+        }
         std::vector<arr> goalConfigs = getHardGoalConfigs(C, ref1, ref2); //inverse kin
         // std::cout << "goalConfigs[" << phase << "]: " << goalConfigs << std::endl;
         Print(goalConfigs);

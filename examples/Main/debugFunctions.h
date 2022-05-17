@@ -105,40 +105,67 @@ void runOnlyKOMO()
     // for(uint i=0;i<2;i++) V.playVideo(true);
 }
 
-void sequentialPlan(std::string filename = "../examples/Models/s1_2d_manip.g")
+void sampleGoalsandDisplay(rai::Configuration C, std::string &ref1, std::string &ref2, transition transition_ = pick)
 {
-    rai::Configuration C;
-    C.addFile(filename.c_str());
+    arr goalConfig;
+    KOMO komo;
+    komo.verbose = 0;
+    komo.setModel(C);
+    arr tergetReference;
 
-    // visualize environment
-    C.watch(true);
-
-    std::string ref1 = "endeff", ref2 = "object";
-    arr pickConfig = getGoalConfig(C, ref1, ref2);
-    std::cout << "pickConfig: " << pickConfig << std::endl;
-
-    // checkCollision(C);
-    arrA pickTrajectory = solveMotion(C, pickConfig);
-    visualizePath(C, pickTrajectory);
-
-    // set the joint state for the keyframe, and attach the frame
-    C.setJointState(pickTrajectory.last());
-    C.attach(C.getFrame(ref1.c_str()), C.getFrame(ref2.c_str()));
-    C.watch(true);
-
-    ref1 = "object", ref2 = "target";
-    arr placeConfig = getGoalConfig(C, ref1, ref2);
-    std::cout << "placeConfig: " << placeConfig << std::endl;
-
-    // checkCollision(C);
-    arrA placeTrajectory = solveMotion(C, placeConfig);
-    visualizePath(C, placeTrajectory);
-    C.setJointState(placeTrajectory.last());
-    C.watch(true);
-
-    C.attach(C.getFrame("world"), C.getFrame(ref1.c_str()));
-    C.watch(true);
-
-    C.setJointState({0,0,0});
-    C.watch(true);
+    komo.setTiming(1,1,1,1);
+	komo.addObjective({}, FS_accumulatedCollisions, {}, OT_eq, { 1 });
+    bool feasible = false;
+    while (!feasible)
+    {
+        arr randomConfig_ = -PI+2*PI*rand(C.getJointStateDimension());
+        komo.initWithConstant(randomConfig_);
+        komo.addObjective({1,1},FS_distance,{ref2.c_str(),ref1.c_str()}, OT_eq, {}, {-0.1});
+        komo.run_prepare(0);
+        komo.animateOptimization = 1;
+        komo.optimize();
+        std::cout << komo.x << std::endl;
+        feasible = true;
+    }
+    
+    goalConfig.append(komo.x);
+    // komo.view(true);
 }
+
+// void sequentialPlan(std::string filename = "../examples/Models/s1_2d_manip.g")
+// {
+//     rai::Configuration C;
+//     C.addFile(filename.c_str());
+
+//     // visualize environment
+//     C.watch(true);
+
+//     std::string ref1 = "endeff", ref2 = "object";
+//     arr pickConfig = getGoalConfig(C, ref1, ref2);
+//     std::cout << "pickConfig: " << pickConfig << std::endl;
+
+//     // checkCollision(C);
+//     arrA pickTrajectory = solveMotion(C, pickConfig);
+//     visualizePath(C, pickTrajectory);
+
+//     // set the joint state for the keyframe, and attach the frame
+//     C.setJointState(pickTrajectory.last());
+//     C.attach(C.getFrame(ref1.c_str()), C.getFrame(ref2.c_str()));
+//     C.watch(true);
+
+//     ref1 = "object", ref2 = "target";
+//     arr placeConfig = getGoalConfig(C, ref1, ref2);
+//     std::cout << "placeConfig: " << placeConfig << std::endl;
+
+//     // checkCollision(C);
+//     arrA placeTrajectory = solveMotion(C, placeConfig);
+//     visualizePath(C, placeTrajectory);
+//     C.setJointState(placeTrajectory.last());
+//     C.watch(true);
+
+//     C.attach(C.getFrame("world"), C.getFrame(ref1.c_str()));
+//     C.watch(true);
+
+//     C.setJointState({0,0,0});
+//     C.watch(true);
+// }
