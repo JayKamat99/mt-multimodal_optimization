@@ -106,7 +106,8 @@ arr getGoalConfig(rai::Configuration C, std::string &ref1, std::string &ref2, tr
         }
         // C.setJointState(randomConfig_); // generate rand in the bounds
         komo.initWithConstant(randomConfig_);
-        komo.addObjective({1,1},FS_distance,{ref2.c_str(),ref1.c_str()}, OT_eq, {}, {-0.1});
+        // komo.addObjective({1,1},FS_distance,{ref2.c_str(),ref1.c_str()}, OT_eq, {}, {-0.1});
+        komo.addObjective({1,1},FS_positionDiff,{ref2.c_str(),ref1.c_str()}, OT_eq, {});
         // if (transition_ == pick)
         // {
         //     komo.addObjective({1,1},FS_distance,{ref2.c_str(),ref1.c_str()}, OT_eq);
@@ -197,11 +198,9 @@ arrA solveMotion(rai::Configuration &C, std::vector<arr> goal_, std::string plan
     ss.setGoal(goalStates);
 
 	auto si = ss.getSpaceInformation();
-    if (planner_ == "BITstar")
-    {
-        auto planner(std::make_shared<og::BITstar>(si));
-	    ss.setPlanner(planner);
-    }
+    auto BITStar_Planner = std::make_shared<og::BITstar>(si);
+    auto planner(BITStar_Planner);
+    ss.setPlanner(planner);
 
     ss.setup();
 
@@ -260,7 +259,7 @@ void visualizePath(rai::Configuration &C, arrA configs){
     V.playVideo();
 }
 
-#include "debugFunctions.h"
+// #include "debugFunctions.h"
 
 void Print(const std::vector<arr>& vec) {
   for (const auto& i : vec) {
@@ -324,10 +323,10 @@ int main(int argc, char ** argv)
     while (phase < totalPhases)
     {
         std::string ref1 = inputs.at(2+phase*2), ref2 = inputs.at(3+phase*2);
-        for (int i=0; i<10; ++i)
-        {
-            sampleGoalsandDisplay(C, ref1, ref2);
-        }
+        // for (int i=0; i<10; ++i)
+        // {
+        //     sampleGoalsandDisplay(C, ref1, ref2);
+        // }
         std::vector<arr> goalConfigs = getHardGoalConfigs(C, ref1, ref2); //inverse kin
         // std::cout << "goalConfigs[" << phase << "]: " << goalConfigs << std::endl;
         Print(goalConfigs);

@@ -118,11 +118,15 @@ void sampleGoalsandDisplay(rai::Configuration C, std::string &ref1, std::string 
     bool feasible = false;
     while (!feasible)
     {
-        arr randomConfig_ = -PI+2*PI*rand(C.getJointStateDimension());
+        arr pos_ref2 = C.getFrameState(C.getFrameIDs({"object"/* (rai::String)ref2 */})).resize(3);
+        std::cout << "pos_ref2: " << pos_ref2 << "\nCSpace_dim: " << C.getJointStateDimension() << std::endl; 
+        arr randomConfig_ = pos_ref2 /* - 0.2 + 2*0.2*rand(C.getJointStateDimension()) */;
         komo.initWithConstant(randomConfig_);
-        komo.addObjective({1,1},FS_distance,{ref2.c_str(),ref1.c_str()}, OT_eq, {}, {-0.1});
+        std::cout << komo.getConfiguration_q(0)<< std::endl;
+        // komo.addObjective({1,1},FS_distance,{ref2.c_str(),ref1.c_str()}, OT_eq, {}, {-0.2});
+        komo.addObjective({1,1},FS_positionDiff,{ref2.c_str(),ref1.c_str()}, OT_eq, {}, {0,0,0});
         komo.run_prepare(0);
-        komo.animateOptimization = 1;
+        komo.animateOptimization = 2;
         komo.optimize();
         std::cout << komo.x << std::endl;
         feasible = true;

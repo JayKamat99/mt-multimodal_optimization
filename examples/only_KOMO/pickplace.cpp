@@ -1,6 +1,7 @@
 
 
 #include <KOMO/komo.h>
+#include <KOMO/komo-ext.h>
 #include <Kin/viewer.h>
 #include <fstream>
 
@@ -62,7 +63,7 @@ void testPickAndPlace(std::string filename, bool keyframesOnly)
   // rai::ConfigurationViewer V;
   // V.setConfiguration(C, "initial model", false);
 
-	KOMO komo;
+	KOMO_ext komo;
 
 	komo.setModel(C, false);
 	if (!keyframesOnly)
@@ -83,25 +84,31 @@ void testPickAndPlace(std::string filename, bool keyframesOnly)
 	komo.addObjective({1.}, FS_scalarProductXX, {"gripper", "box"}, OT_eq, {1e2}, {0.});
 	komo.addObjective({1.}, FS_vectorZ, {"gripper"}, OT_eq, {1e2}, {0., 0., 1.});
 
-	if (!keyframesOnly)
-	{
-		// slow - down - up
-		komo.addObjective({1.}, FS_qItself, {}, OT_eq, {}, {}, 1);
-		komo.addObjective({.9, 1.1}, FS_position, {"gripper"}, OT_eq, {}, {0., 0., .1}, 2);
-	}
+	// if (!keyframesOnly)
+	// {
+	// 	// slow - down - up
+	// 	komo.addObjective({1.}, FS_qItself, {}, OT_eq, {}, {}, 1);
+	// 	komo.addObjective({.9, 1.1}, FS_position, {"gripper"}, OT_eq, {}, {0., 0., .1}, 2);
+	// }
 
 	// place
-	komo.addSwitch_stable(2., -1., "gripper", "table", "box", false);
-	komo.addObjective({2.}, FS_aboveBox, {"box", "table"}, OT_ineq, {1e2}, {0,0,0,0});
+	komo.addSwitch_stable(2., -1., "gripper", "table2", "box", false);
+	// komo.addObjective({2.}, FS_aboveBox, {"box", "table"}, OT_ineq, {1e2}, {0,0,0,0});
+  // komo.setPlace(2., "gripper", "box", "table");
+  // komo.addObjective({2.}, FS_aboveBox, {"box" , "table"}, OT_ineq, {1e1});
+  komo.addSwitch_stableOn(2., 2., "table2", "box");
+
+  // komo.addObjective({2.}, FS_aboveBox, {"box" , "table"}, OT_ineq, {1e2});
+  komo.add_collision(true, 0.1);
   // komo.addObjective({2.}, FS_positionDiff, {"box", "table"}, OT_eq, {1e2}, {0,0,.08}); //arr({1,3},{0,0,1e2})
 	komo.addObjective({2.}, FS_vectorZ, {"gripper"}, OT_eq, {1e2}, {0., 0., 1.});
 
-	if (!keyframesOnly)
-	{
-		// slow - down - up
-		komo.addObjective({2.}, FS_qItself, {}, OT_eq, {}, {}, 1);
-		komo.addObjective({1.9, 2.1}, FS_position, {"gripper"}, OT_eq, {}, {0., 0., .1}, 2);
-	}
+	// if (!keyframesOnly)
+	// {
+	// 	// slow - down - up
+	// 	komo.addObjective({2.}, FS_qItself, {}, OT_eq, {}, {}, 1);
+	// 	komo.addObjective({1.9, 2.1}, FS_position, {"gripper"}, OT_eq, {}, {0., 0., .1}, 2);
+	// }
 
 	komo.verbose = 4;
 	komo.optimize();

@@ -1,4 +1,4 @@
-../examples/Models/model2.g
+../examples/Models/s3_manip_table.g
 2
 gripper
 box
