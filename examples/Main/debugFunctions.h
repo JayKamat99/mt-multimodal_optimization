@@ -105,6 +105,7 @@ void runOnlyKOMO()
     // for(uint i=0;i<2;i++) V.playVideo(true);
 }
 
+
 void sampleGoalsandDisplay(rai::Configuration C, std::string &ref1, std::string &ref2, transition transition_ = pick)
 {
     arr goalConfig;
@@ -120,14 +121,16 @@ void sampleGoalsandDisplay(rai::Configuration C, std::string &ref1, std::string 
     {
         arr pos_ref2 = C.getFrameState(C.getFrameIDs({"object"/* (rai::String)ref2 */})).resize(3);
         std::cout << "pos_ref2: " << pos_ref2 << "\nCSpace_dim: " << C.getJointStateDimension() << std::endl; 
-        arr randomConfig_ = pos_ref2 /* - 0.2 + 2*0.2*rand(C.getJointStateDimension()) */;
+        arr randomConfig_ = pos_ref2 - 0.5 + 2*0.5*rand(C.getJointStateDimension());
         komo.initWithConstant(randomConfig_);
         std::cout << komo.getConfiguration_q(0)<< std::endl;
-        // komo.addObjective({1,1},FS_distance,{ref2.c_str(),ref1.c_str()}, OT_eq, {}, {-0.2});
-        komo.addObjective({1,1},FS_positionDiff,{ref2.c_str(),ref1.c_str()}, OT_eq, {}, {0,0,0});
+        std::cout << "ref1, ref2: " << ref2.c_str() <<  ", " <<ref1.c_str() << std::endl;
+        komo.addObjective({1,1},FS_distance,{ref2.c_str(),ref1.c_str()}, OT_eq);
+        // komo.addObjective({1,1},FS_distance,{ref2.c_str(),ref1.c_str()}, OT_eq, {}, {0,0,0});
         komo.run_prepare(0);
-        komo.animateOptimization = 2;
+        // komo.animateOptimization = 2;
         komo.optimize();
+        komo.view(true);
         std::cout << komo.x << std::endl;
         feasible = true;
     }

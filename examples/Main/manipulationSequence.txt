@@ -1,10 +1,10 @@
 ../examples/Models/s2_bugtrap.g
 3
-endeff
-object
-object
+bot
+small_box
+small_box
 target
-endeff
+bot
 origin
 small_box
 small_box

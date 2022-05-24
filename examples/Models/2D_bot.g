@@ -1,4 +1,4 @@
-base_bot { X:[-.4 0.5 0.02] }
+base_bot { X:[0 0 0.02] }
 
 #bot (base_bot) { joint:transXYPhi Q:<T t(0 0 0) d(90 0 0 1)>  shape:cylinder mass=.1 size=[0.04 0.1] contact color=[ 0 0 1] }
 bot (base_bot) { joint:transXYPhi Q:<T t(0 0 0) d(90 0 0 1)>  shape:sphere mass=.1 size=[0.1] color=[ 0 0 1], contact }

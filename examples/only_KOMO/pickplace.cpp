@@ -95,13 +95,13 @@ void testPickAndPlace(std::string filename, bool keyframesOnly)
 	komo.addSwitch_stable(2., -1., "gripper", "table2", "box", false);
 	// komo.addObjective({2.}, FS_aboveBox, {"box", "table"}, OT_ineq, {1e2}, {0,0,0,0});
   // komo.setPlace(2., "gripper", "box", "table");
-  // komo.addObjective({2.}, FS_aboveBox, {"box" , "table"}, OT_ineq, {1e1});
-  komo.addSwitch_stableOn(2., 2., "table2", "box");
+  komo.addObjective({2.}, FS_aboveBox, {"box" , "table2"}, OT_ineq, {1e1});
+  komo.addObjective({2.}, FS_positionDiff, {"box", "table2"}, OT_eq, {0,0,1e2}, {0,0,.1}); //arr({1,3},{0,0,1e2})
+	komo.addObjective({2.}, FS_vectorZ, {"box"}, OT_eq, {1e2}, {0., 0., 1.});
+  // komo.addSwitch_stableOn(2., 2., "table2", "box");
 
   // komo.addObjective({2.}, FS_aboveBox, {"box" , "table"}, OT_ineq, {1e2});
   komo.add_collision(true, 0.1);
-  // komo.addObjective({2.}, FS_positionDiff, {"box", "table"}, OT_eq, {1e2}, {0,0,.08}); //arr({1,3},{0,0,1e2})
-	komo.addObjective({2.}, FS_vectorZ, {"gripper"}, OT_eq, {1e2}, {0., 0., 1.});
 
 	// if (!keyframesOnly)
 	// {
