@@ -90,42 +90,36 @@ struct ValidityCheckWithKOMO {
 
 arr getGoalConfig(rai::Configuration C, std::string &ref1, std::string &ref2, transition transition_ = pick)
 {
+
     arr goalConfig;
     KOMO komo;
     komo.verbose = 0;
     komo.setModel(C);
+    arr tergetReference;
+
     komo.setTiming(1,1,1,1);
 	komo.addObjective({}, FS_accumulatedCollisions, {}, OT_eq, { 1 });
     bool feasible = false;
     while (!feasible)
     {
-        arr randomConfig_;
-        for (int i=0; i<C.getJointStateDimension(); i++)
-        {
-            randomConfig_.append(-PI+2*PI*rand(1));
-        }
-        // C.setJointState(randomConfig_); // generate rand in the bounds
+        arr pos_ref2 = C.getFrameState(C.getFrameIDs({"object"/* (rai::String)ref2 */})).resize(3);
+        std::cout << "pos_ref2: " << pos_ref2 << "\nCSpace_dim: " << C.getJointStateDimension() << std::endl; 
+        arr randomConfig_ = pos_ref2 - 0.5 + 2*0.5*rand(C.getJointStateDimension());
         komo.initWithConstant(randomConfig_);
-        komo.addObjective({1,1},FS_distance,{ref2.c_str(),ref1.c_str()}, OT_eq, {}, {-0.01});
-        // komo.addObjective({1,1},FS_positionDiff,{ref2.c_str(),ref1.c_str()}, OT_eq, {});
-        // if (transition_ == pick)
-        // {
-        //     komo.addObjective({1,1},FS_distance,{ref2.c_str(),ref1.c_str()}, OT_eq);
-        // }
-        // else
-        // {
-        //     komo.addObjective({1,1},FS_distance,{ref2.c_str(),ref1.c_str()}, OT_eq);
-        //     // komo.addObjective({1,1},FS_aboveBox,{ref2.c_str(),ref1.c_str()}, OT_eq);
-        // }
+        std::cout << komo.getConfiguration_q(0)<< std::endl;
+        std::cout << "ref1, ref2: " << ref2.c_str() <<  ", " <<ref1.c_str() << std::endl;
+        komo.addObjective({1,1},FS_distance,{ref2.c_str(),ref1.c_str()}, OT_eq);
+        // komo.addObjective({1,1},FS_distance,{ref2.c_str(),ref1.c_str()}, OT_eq, {}, {0,0,0});
         komo.run_prepare(0);
+        // komo.animateOptimization = 2;
         komo.optimize();
+        // komo.view(true);
         std::cout << komo.x << std::endl;
-        // Check if config is feasible?
         feasible = true;
     }
     
     goalConfig.append(komo.x);
-
+    // komo.view(true);
     return goalConfig;
 }
 
@@ -259,7 +253,7 @@ void visualizePath(rai::Configuration &C, arrA configs){
     V.playVideo();
 }
 
-#include "debugFunctions.h"
+// #include "debugFunctions.h"
 
 void Print(const std::vector<arr>& vec) {
   for (const auto& i : vec) {
@@ -323,10 +317,10 @@ int main(int argc, char ** argv)
     while (phase < totalPhases)
     {
         std::string ref1 = inputs.at(2+phase*2), ref2 = inputs.at(3+phase*2);
-        for (int i=0; i<50; ++i)
-        {
-            sampleGoalsandDisplay(C, ref1, ref2);
-        }
+        // for (int i=0; i<50; ++i)
+        // {
+        //     sampleGoalsandDisplay(C, ref1, ref2);
+        // }
         std::vector<arr> goalConfigs = getHardGoalConfigs(C, ref1, ref2); //inverse kin
         // std::cout << "goalConfigs[" << phase << "]: " << goalConfigs << std::endl;
         Print(goalConfigs);
