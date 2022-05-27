@@ -1,11 +1,11 @@
 world {}
 
 table (world){
-    shape:ssBox, Q:<t(0 0. .6)>, size:[1. 1. .1 .02], color:[.3 .3 .3] contact
+    shape:ssBox, Q:<t(0 0. .6)>, size:[1. 1. .1 .02], color:[.3 .3 .3]
 }
 
 table2 (world){
-    shape:ssBox, Q:<t(0 0. .7)>, size:[.5 .5 .1 .02], color:[0. 0. .3] contact
+    shape:ssBox, Q:<t(0.01 0. .7)>, size:[.4 .4 .1 .02], color:[0. 0. .3] contact
 }
 
 box (table){
@@ -16,6 +16,13 @@ box (table){
 
 Include: '../../rai-robotModels/panda/panda.g'
 Edit panda_link0{ X:<t(-.3 0 .65)> }
+
+# Fix the joints
+Edit panda_hand>panda_finger_joint1(panda_hand_joint) 	{  Q:<0 0.05 0.0584 0.707107 0 0 .707107> }
+Edit panda_hand>panda_finger_joint2(panda_hand_joint) 	{  Q:<0 -0.05 0.0584 0.707107 0 0 -.707107> }
+
+Edit panda_finger_joint1     {q:.05 joint:rigid }
+Edit panda_finger_joint2     {q:.05 joint:rigid }
 
 gripper (panda_joint7){
     shape:marker, size:[.03], color:[.9 .9 .5],

@@ -102,19 +102,38 @@ arr getGoalConfig(rai::Configuration C, std::string &ref1, std::string &ref2, tr
     bool feasible = false;
     while (!feasible)
     {
-        arr pos_ref2 = C.getFrameState(C.getFrameIDs({"object"/* (rai::String)ref2 */})).resize(3);
+        arr pos_ref2 = C.getFrameState(C.getFrameIDs({(rai::String)ref2})).resize(3);
         std::cout << "pos_ref2: " << pos_ref2 << "\nCSpace_dim: " << C.getJointStateDimension() << std::endl; 
-        arr randomConfig_ = pos_ref2 - 0.5 + 2*0.5*rand(C.getJointStateDimension());
+        arr randomConfig_ = pos_ref2.resize(C.getJointStateDimension()) - 0.5 + 2*0.5*rand(C.getJointStateDimension());
         komo.initWithConstant(randomConfig_);
         std::cout << komo.getConfiguration_q(0)<< std::endl;
         std::cout << "ref1, ref2: " << ref2.c_str() <<  ", " <<ref1.c_str() << std::endl;
-        komo.addObjective({1,1},FS_distance,{ref2.c_str(),ref1.c_str()}, OT_eq);
+        komo.addObjective({1.}, FS_distance, {ref2.c_str(),ref1.c_str()}, OT_eq, {1e2});
+        komo.addObjective({1.}, FS_vectorZ, {ref1.c_str()}, OT_eq, {1e2}, {0., 0., 1.});
+
+        if(transition_ == pick)
+        {
+            komo.addObjective({1.}, FS_scalarProductXX, {ref2.c_str(),ref1.c_str()}, OT_eq, {1e2}, {0.});
+        }
+        else if (transition_ == place)
+        {
+            std::cout << "I have been asked to place" << std::endl;
+            komo.addObjective({1.}, FS_aboveBox, {ref2.c_str(),ref1.c_str()}, OT_ineq, {1e2});
+        }
+
         // komo.addObjective({1,1},FS_distance,{ref2.c_str(),ref1.c_str()}, OT_eq, {}, {0,0,0});
         komo.run_prepare(0);
         // komo.animateOptimization = 2;
         komo.optimize();
-        // komo.view(true);
-        std::cout << komo.x << std::endl;
+        komo.view(true);
+        // std::cout << komo.x << std::endl;
+        // Use a feasibility checker here for now. Later check if you can use the same feasibility checker as the planner
+        auto nlp = std::make_shared<KOMO::Conv_KOMO_SparseNonfactored>(komo, false);
+        ObjectiveTypeA ot;
+        nlp->getFeatureTypes(ot);
+        arr phi;
+        nlp->evaluate(phi, NoArr, komo.x);
+        std::cout << komo.x << " " << phi(0) << std::endl;
         feasible = true;
     }
     
@@ -123,7 +142,7 @@ arr getGoalConfig(rai::Configuration C, std::string &ref1, std::string &ref2, tr
     return goalConfig;
 }
 
-std::vector<arr> getHardGoalConfigs(rai::Configuration C, std::string &ref1, std::string &ref2)
+std::vector<arr> getGoalConfigsSet(rai::Configuration C, std::string &ref1, std::string &ref2, transition transition_)
 {
     static int mode = 1;
     std::vector<arr> goalConfigs;
@@ -135,7 +154,7 @@ std::vector<arr> getHardGoalConfigs(rai::Configuration C, std::string &ref1, std
         default:
             for(int i = 0; i< 10; i++)
             {
-                goalConfigs.push_back(getGoalConfig(C,ref1,ref2));
+                goalConfigs.push_back(getGoalConfig(C,ref1,ref2,transition_));
             }
     }
     mode ++;
@@ -253,7 +272,7 @@ void visualizePath(rai::Configuration &C, arrA configs){
     V.playVideo();
 }
 
-// #include "debugFunctions.h"
+#include "debugFunctions.h"
 
 void Print(const std::vector<arr>& vec) {
   for (const auto& i : vec) {
@@ -316,12 +335,20 @@ int main(int argc, char ** argv)
     int phase = 0;
     while (phase < totalPhases)
     {
+        std::cout << "phase: " << phase << std::endl;
         std::string ref1 = inputs.at(2+phase*2), ref2 = inputs.at(3+phase*2);
         // for (int i=0; i<50; ++i)
         // {
         //     sampleGoalsandDisplay(C, ref1, ref2);
         // }
-        std::vector<arr> goalConfigs = getHardGoalConfigs(C, ref1, ref2); //inverse kin
+
+        transition transition_{pick};
+        if(phase%2 != 0)
+        {
+            transition_ = place;
+        }
+        std::cout << "Transition: " << transition_ << std::endl;
+        std::vector<arr> goalConfigs = getGoalConfigsSet(C, ref1, ref2, transition_); //inverse kin
         // std::cout << "goalConfigs[" << phase << "]: " << goalConfigs << std::endl;
         Print(goalConfigs);
         bool flag = true;

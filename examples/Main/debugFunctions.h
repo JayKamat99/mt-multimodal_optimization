@@ -31,6 +31,22 @@ void checkCollision(rai::Configuration &C)
     }
 }
 
+void calculateCollision(rai::Configuration C)
+{
+    KOMO komo;
+	komo.setModel(C, true);
+	komo.setTiming(1, 1, 1, 1);
+	komo.addObjective({}, FS_accumulatedCollisions, {}, OT_eq, { 1 });
+	komo.run_prepare(0);
+    auto nlp = std::make_shared<KOMO::Conv_KOMO_SparseNonfactored>(komo, false);
+    ObjectiveTypeA ot;
+    nlp->getFeatureTypes(ot);
+    arr phi;
+    arr config = C.getJointState();
+    nlp->evaluate(phi, NoArr, config);
+    std::cout << config << " " << phi(0) << std::endl;
+}
+
 void visualizeModel(std::string filename = "../examples/Models/s1_2d_manip.g" )
 {
     rai::Configuration C;
