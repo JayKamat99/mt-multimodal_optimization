@@ -125,7 +125,7 @@ arr getGoalConfig(rai::Configuration C, std::string &ref1, std::string &ref2, tr
         komo.run_prepare(0);
         // komo.animateOptimization = 2;
         komo.optimize();
-        komo.view(true);
+        // komo.view(true);
         // std::cout << komo.x << std::endl;
         // Use a feasibility checker here for now. Later check if you can use the same feasibility checker as the planner
         auto nlp = std::make_shared<KOMO::Conv_KOMO_SparseNonfactored>(komo, false);

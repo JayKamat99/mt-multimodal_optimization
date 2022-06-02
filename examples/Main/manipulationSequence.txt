@@ -6,5 +6,3 @@ small_box
 target
 bot
 origin
-small_box
-small_box

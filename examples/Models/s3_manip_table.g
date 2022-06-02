@@ -29,4 +29,4 @@ gripper (panda_joint7){
     Q:<d(-90 0 1 0) d(135 0 0 1) t(0 0 -.155) t(0 0 -.05)>  
 }
 
-#target (table) { Q:<t(0 0 0.08)> shape:marker size=[.2] color=[0 .5 0] }
+target (table) { Q:<t(0.1 0 0.3)> shape:marker size=[.2] color=[0 .5 0] }
