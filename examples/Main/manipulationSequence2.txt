@@ -1,8 +1,6 @@
 ../examples/Models/s3_manip_table.g
-3
+2
 gripper
 box
 box
 table2
-gripper
-target

@@ -59,6 +59,7 @@
 #include <Kin/viewer.h>
 
 #define PI 3.14159
+#define tol 1e-3
 
 namespace ob = ompl::base;
 namespace og = ompl::geometric;
@@ -82,7 +83,6 @@ struct ValidityCheckWithKOMO {
 
 		arr phi;
 		nlp.evaluate(phi, NoArr, x_query);
-		double tol = 1e-2;
 
 		return std::abs(phi(0)) < tol;
 	}
@@ -92,28 +92,29 @@ arr getGoalConfig(rai::Configuration C, std::string &ref1, std::string &ref2, tr
 {
 
     arr goalConfig;
-    KOMO komo;
-    komo.verbose = 0;
-    komo.setModel(C);
-    arr tergetReference;
-
-    komo.setTiming(1,1,1,1);
-	komo.addObjective({}, FS_accumulatedCollisions, {}, OT_eq, { 1 });
     bool feasible = false;
     while (!feasible)
     {
+        KOMO komo;
+        komo.verbose = 0;
+        komo.setModel(C,true);
+        arr tergetReference;
+
+        komo.setTiming(1,1,1,1);
+        komo.addObjective({}, FS_accumulatedCollisions, {}, OT_eq, { 1 });
+        komo.add_collision(true, 0.01);
         arr pos_ref2 = C.getFrameState(C.getFrameIDs({(rai::String)ref2})).resize(3);
         std::cout << "pos_ref2: " << pos_ref2 << "\nCSpace_dim: " << C.getJointStateDimension() << std::endl; 
         arr randomConfig_ = pos_ref2.resize(C.getJointStateDimension()) - 0.5 + 2*0.5*rand(C.getJointStateDimension());
         komo.initWithConstant(randomConfig_);
         std::cout << komo.getConfiguration_q(0)<< std::endl;
         std::cout << "ref1, ref2: " << ref2.c_str() <<  ", " <<ref1.c_str() << std::endl;
-        komo.addObjective({1.}, FS_distance, {ref2.c_str(),ref1.c_str()}, OT_eq, {1e2});
+        komo.addObjective({1.}, FS_distance, {ref1.c_str(),ref2.c_str()}, OT_eq, {1e2});
         komo.addObjective({1.}, FS_vectorZ, {ref1.c_str()}, OT_eq, {1e2}, {0., 0., 1.});
 
         if(transition_ == pick)
         {
-            komo.addObjective({1.}, FS_scalarProductXX, {ref2.c_str(),ref1.c_str()}, OT_eq, {1e2}, {0.});
+            komo.addObjective({1.}, FS_scalarProductXX, {ref1.c_str(),ref2.c_str()}, OT_eq, {1e2}, {0.});
         }
         else if (transition_ == place)
         {
@@ -134,10 +135,17 @@ arr getGoalConfig(rai::Configuration C, std::string &ref1, std::string &ref2, tr
         arr phi;
         nlp->evaluate(phi, NoArr, komo.x);
         std::cout << komo.x << " " << phi(0) << std::endl;
-        feasible = true;
+        if (phi(0) < tol)
+            feasible = true;
+        else
+        {
+            feasible = false;
+            continue;
+        }
+        goalConfig.append(komo.x);
+        std::cout << "Goal Config: " << komo.x << komo.x.N << std::endl;
     }
     
-    goalConfig.append(komo.x);
     // komo.view(true);
     return goalConfig;
 }
@@ -325,6 +333,7 @@ int main(int argc, char ** argv)
     // Set Configuration
     rai::Configuration C;
     C.addFile(filename.c_str());
+    std::cout << "C_Dim = " << C.getJointStateDimension() << std::endl;
 
     arrA previousTrajectory;
     std::vector<arr> previousGoals;

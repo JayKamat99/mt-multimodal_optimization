@@ -1,5 +1,5 @@
 ../examples/Models/s2_bugtrap.g
-3
+2
 bot
 small_box
 small_box

@@ -1,0 +1,6 @@
+../examples/Models/s4_beer_table.g
+2
+gripper
+winenose
+winebase
+targetspace
