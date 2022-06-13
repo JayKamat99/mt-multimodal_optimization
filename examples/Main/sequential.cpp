@@ -376,11 +376,106 @@ void samplePath(std::vector<std::string> inputs, std::string planner_, std::vect
     }
 }
 
-void optimizePath(std::vector<std::string> inputs, std::vector<arrA>& subTrajectories)
+void optimizePath(std::vector<std::string> inputs, arrA& finalPath)
 {
+    static int attempt = 0;
+    // Set filename (Model) and totalPhases
+    std::string filename = inputs.at(0);
+    int totalPhases = stoi(inputs.at(1));
+
+    // Set Configuration
+    rai::Configuration C;
+    C.addFile(filename.c_str());
+
+    // make a KOMO object and write down the whole action sequence
+    KOMO komo;
+    komo.verbose = 0;
+    komo.setModel(C, true);
+    komo.setTiming(totalPhases, 15, 5, 2);
+    if(attempt > 0)
+        komo.initWithWaypoints(finalPath,15,false);
+    komo.add_qControlObjective({}, 2);
+    komo.add_collision(true, 0.01);
+
+
+    // Define the KOMO problem by iterating over action the sequence
+    int phase = 0;
+    while (phase < totalPhases)
+    {
+        std::string ref1 = inputs.at(2+phase*2), ref2 = inputs.at(3+phase*2);
+
+        if (phase == 0)
+            komo.addSwitch_stable(phase+1, phase+2., "", ref1.c_str(),ref2.c_str());
+        else if(phase%2 == 0)
+            komo.addSwitch_stable(phase+1, phase+2., "", ref1.c_str(),ref2.c_str(),false);
+        else
+            komo.addSwitch_stable(phase+1, phase+2., "", ref2.c_str(),ref1.c_str(), false);
+        komo.addObjective({phase+1.}, FS_distance, {ref1.c_str(),ref2.c_str()}, OT_eq, {1e2});
+        komo.addObjective({phase+1.}, FS_vectorZ, {ref1.c_str()}, OT_eq, {1e2}, {0., 0., 1.});
+
+        if(phase%2 == 0) //pick
+        {
+            std::cout << "pick" << std::endl;
+            komo.addObjective({phase+1.}, FS_scalarProductXX, {ref1.c_str(),ref2.c_str()}, OT_eq, {1e2}, {0.});
+        }
+        else //place
+        {
+            std::cout << "place" << std::endl;
+            komo.addObjective({phase+1.}, FS_aboveBox, {ref2.c_str(),ref1.c_str()}, OT_ineq, {1e2});
+        }
+        phase++;
+    }
+
+    komo.optimize();
+    //  komo.checkGradients();
+    arrA solution = komo.getPath_q();
+    finalPath = solution;
+    std::cout << solution << std::endl;
+    attempt ++;
+
+    komo.view(true, "optimized motion");
+    for(uint i=0;i<2;i++) komo.view_play(true);
+}
+
+void storePath(std::vector<arrA>& subtrajectories)
+{
+    ofstream myfile ("../examples/Main/FeasiblePath.txt");
+    if (myfile.is_open())
+    {
+        for (const auto& i : subtrajectories) {
+            myfile << i << "\n";
+        }
+        myfile.close();
+    }
+    else cout << "Unable to open file";
 
 }
 
+void copyPath(arrA& subtrajectories)
+{
+    ifstream myfile ("../examples/Main/FeasiblePath.txt");
+    std::string line;
+    if (myfile.is_open())
+    {
+        for (int i=0; i<2; i++) { // keep reading until end-of-file
+            // cout << "The next number is " << num << endl;
+            arrA temp;
+            myfile >> temp; // sets EOF flag if no value found
+            subtrajectories.append(temp);
+            // std::cout << temp << "\n\n";
+        }
+        myfile.close();
+    }
+    else cout << "Unable to open file";
+}
+
+void modifyPath(arrA& finalPath)
+{
+    for (int i=14; i<30; ++i)
+    {
+        finalPath(i).append({0,0,0,0,0,0,0});
+    }
+}
 
 int main(int argc, char ** argv)
 {
@@ -421,11 +516,17 @@ int main(int argc, char ** argv)
 
     // Get sampled path
     std::vector<arrA> subTrajectories;
-    samplePath(inputs, planner_, subTrajectories);
-    std::cout << "Final Path" << std::endl;
-    printVector(subTrajectories);
+    // samplePath(inputs, planner_, subTrajectories);
+    // std::cout << "Final Path" << std::endl;
+    // storePath(subTrajectories);
 
-    
+    //This function is to be called if you want to only debug the optimization.
+    arrA finalPath;
+    copyPath(finalPath);
+    modifyPath(finalPath);
+    std::cout << finalPath << std::endl;
     // Take the subtrajectories and feed it to the optimizer
-    optimizePath(inputs, subTrajectories);
+    optimizePath(inputs, finalPath);
+    std::cout << finalPath << "\n" << finalPath.N << std::endl;
+    optimizePath(inputs, finalPath);
 }
