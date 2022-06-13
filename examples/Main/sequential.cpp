@@ -392,10 +392,6 @@ void optimizePath(std::vector<std::string> inputs, arrA& finalPath)
     komo.verbose = 0;
     komo.setModel(C, true);
     komo.setTiming(totalPhases, 15, 5, 2);
-    if(attempt > 0)
-        komo.initWithWaypoints(finalPath,15,false);
-    komo.add_qControlObjective({}, 2);
-    komo.add_collision(true, 0.01);
 
 
     // Define the KOMO problem by iterating over action the sequence
@@ -425,6 +421,13 @@ void optimizePath(std::vector<std::string> inputs, arrA& finalPath)
         }
         phase++;
     }
+
+    komo.add_qControlObjective({}, 2);
+    komo.add_collision(true, 0.01);
+
+    komo.run_prepare(.0);
+    if(attempt > 0)
+        komo.initWithWaypoints(finalPath,15,false);
 
     komo.optimize();
     //  komo.checkGradients();
