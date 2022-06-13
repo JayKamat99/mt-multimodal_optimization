@@ -59,7 +59,7 @@
 #include <Kin/viewer.h>
 
 #define PI 3.14159
-#define tol 1e-3
+#define tol 1e-2
 
 namespace ob = ompl::base;
 namespace og = ompl::geometric;
@@ -282,12 +282,105 @@ void visualizePath(rai::Configuration &C, arrA configs){
 
 #include "debugFunctions.h"
 
-void Print(const std::vector<arr>& vec) {
+template <typename T>
+void printVector(T& vec) {
   for (const auto& i : vec) {
-    std::cout << i << ' ';
+    std::cout << i << std::endl;
   }
   std::cout << '\n';
 }
+
+void samplePath(std::vector<std::string> inputs, std::string planner_, std::vector<arrA>& subTrajectories)
+{
+    // Set filename (Model) and totalPhases
+    std::string filename = inputs.at(0);
+    int totalPhases = stoi(inputs.at(1));
+
+    // Set Configuration
+    rai::Configuration C;
+    C.addFile(filename.c_str());
+    std::cout << "C_Dim = " << C.getJointStateDimension() << std::endl;
+
+    arrA previousTrajectory;
+    std::vector<arr> previousGoals;
+    arrA Trajectory;
+    arr C_prev = C.getJointState();
+
+    // Loop for iterating over task sequences.
+    int phase = 0;
+    while (phase < totalPhases)
+    {
+        std::cout << "phase: " << phase << std::endl;
+        std::string ref1 = inputs.at(2+phase*2), ref2 = inputs.at(3+phase*2);
+        // for (int i=0; i<50; ++i)
+        // {
+        //     sampleGoalsandDisplay(C, ref1, ref2);
+        // }
+
+        transition transition_{pick};
+        if(phase%2 != 0)
+        {
+            transition_ = place;
+        }
+        std::cout << "Transition: " << transition_ << std::endl;
+        std::vector<arr> goalConfigs = getGoalConfigsSet(C, ref1, ref2, transition_); //inverse kin
+        // std::cout << "goalConfigs[" << phase << "]: " << goalConfigs << std::endl;
+        printVector(goalConfigs);
+        bool flag = true;
+        while(flag)
+        {
+            flag = false;
+            std::cout << C.getJointState() << std::endl;
+            Trajectory = solveMotion(C, goalConfigs, planner_);
+            std::cout << C_prev << std::endl;
+            if (Trajectory == Null_arrA)
+            {
+                flag = true;
+                if (phase == 0) // If this is the first run. I am sorry we cannot find a solution
+                {
+                    OMPL_ERROR("Can't find a solution!");
+                    return;
+                }
+                /** Ahh, our previous solution might have been the problem. 
+                 * We need to revert to the phase and plan again without the currently used goal.
+                **/
+
+                // Remove the goal that did not work!
+                arr redGoal = C.getJointState();
+                previousGoals.erase(std::remove(previousGoals.begin(), previousGoals.end(), redGoal), previousGoals.end());
+                printVector(previousGoals);
+                goalConfigs = previousGoals;
+
+                // Revert configuration
+                phase --;
+                ref1 = inputs.at(2+phase*2), ref2 = inputs.at(3+phase*2);
+                C.attach(C.getFrame("world"), C.getFrame(ref2.c_str())); //revert pick action
+                std::cout << C.getJointState() << "  " << C_prev << std::endl;
+                C.setJointState(C_prev);
+            }
+        }
+        C_prev = C.getJointState();
+        previousGoals = goalConfigs;
+        visualizePath(C, Trajectory);
+        if (subTrajectories.size()>phase)
+            subTrajectories.at(phase) = Trajectory;
+        else
+            subTrajectories.push_back(Trajectory);
+        // std::cout << C.getJointState() << std::endl;
+        // C.setJointState(Trajectory.last());
+        if(phase%2 == 0)
+            C.attach(C.getFrame(ref1.c_str()), C.getFrame(ref2.c_str())); //pick
+        else
+            C.attach(C.getFrame("world"), C.getFrame(ref1.c_str())); //place
+        phase ++;
+    }
+}
+
+void optimizePath(std::vector<std::string> inputs, std::vector<arrA>& subTrajectories)
+{
+
+}
+
 
 int main(int argc, char ** argv)
 {
@@ -326,82 +419,13 @@ int main(int argc, char ** argv)
         return 0;
     }
 
-    // Set filename (Model) and totalPhases
-    std::string filename = inputs.at(0);
-    int totalPhases = stoi(inputs.at(1));
+    // Get sampled path
+    std::vector<arrA> subTrajectories;
+    samplePath(inputs, planner_, subTrajectories);
+    std::cout << "Final Path" << std::endl;
+    printVector(subTrajectories);
 
-    // Set Configuration
-    rai::Configuration C;
-    C.addFile(filename.c_str());
-    std::cout << "C_Dim = " << C.getJointStateDimension() << std::endl;
-
-    arrA previousTrajectory;
-    std::vector<arr> previousGoals;
-    arrA Trajectory;
-    arr C_prev = C.getJointState();
-
-    // Loop for iterating over task sequences.
-    int phase = 0;
-    while (phase < totalPhases)
-    {
-        std::cout << "phase: " << phase << std::endl;
-        std::string ref1 = inputs.at(2+phase*2), ref2 = inputs.at(3+phase*2);
-        // for (int i=0; i<50; ++i)
-        // {
-        //     sampleGoalsandDisplay(C, ref1, ref2);
-        // }
-
-        transition transition_{pick};
-        if(phase%2 != 0)
-        {
-            transition_ = place;
-        }
-        std::cout << "Transition: " << transition_ << std::endl;
-        std::vector<arr> goalConfigs = getGoalConfigsSet(C, ref1, ref2, transition_); //inverse kin
-        // std::cout << "goalConfigs[" << phase << "]: " << goalConfigs << std::endl;
-        Print(goalConfigs);
-        bool flag = true;
-        while(flag)
-        {
-            flag = false;
-            std::cout << C.getJointState() << std::endl;
-            Trajectory = solveMotion(C, goalConfigs, planner_);
-            std::cout << C_prev << std::endl;
-            if (Trajectory == Null_arrA)
-            {
-                flag = true;
-                if (phase == 0) // If this is the first run. I am sorry we cannot find a solution
-                {
-                    OMPL_ERROR("Can't find a solution!");
-                    return 0;
-                }
-                /** Ahh, our previous solution might have been the problem. 
-                 * We need to revert to the phase and plan again without the currently used goal.
-                **/
-
-                // Remove the goal that did not work!
-                arr redGoal = C.getJointState();
-                previousGoals.erase(std::remove(previousGoals.begin(), previousGoals.end(), redGoal), previousGoals.end());
-                Print(previousGoals);
-                goalConfigs = previousGoals;
-
-                // Revert configuration
-                phase --;
-                ref1 = inputs.at(2+phase*2), ref2 = inputs.at(3+phase*2);
-                C.attach(C.getFrame("world"), C.getFrame(ref2.c_str())); //revert pick action
-                std::cout << C.getJointState() << "  " << C_prev << std::endl;
-                C.setJointState(C_prev);
-            }
-        }
-        C_prev = C.getJointState();
-        previousGoals = goalConfigs;
-        visualizePath(C, Trajectory);
-        // std::cout << C.getJointState() << std::endl;
-        // C.setJointState(Trajectory.last());
-        if(phase%2 == 0)
-            C.attach(C.getFrame(ref1.c_str()), C.getFrame(ref2.c_str())); //pick
-        else
-            C.attach(C.getFrame("world"), C.getFrame(ref1.c_str())); //place
-        phase ++;
-    }
+    
+    // Take the subtrajectories and feed it to the optimizer
+    optimizePath(inputs, subTrajectories);
 }
