@@ -4,12 +4,12 @@
  * @brief This code is for generating sequential motion plans for manipulation tasks
  * @version 0.1
  * @date 2022-04-26
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 
-/** 
+/**
  * Quim's Proposal
     Pick and Place:
 
@@ -29,7 +29,7 @@
 
     Result: path from start to pick keyframe, with a relative trasnformation object-gripper
 
-    ---- 
+    ----
 
 
     use komo -> Robot configuration place object (compatible with relative transformation we found)
@@ -42,7 +42,7 @@
 **/
 
 // necessary
-#include<fstream>
+#include <fstream>
 
 // ompl includes
 #include <ompl/config.h>
@@ -52,7 +52,7 @@
 #include <ompl/base/spaces/RealVectorStateSpace.h>
 #include <ompl/base/goals/GoalStates.h>
 // planner
-#include<ompl/geometric/planners/informedtrees/BITstar.h>
+#include <ompl/geometric/planners/informedtrees/BITstar.h>
 
 // komo includes
 #include <KOMO/komo.h>
@@ -67,25 +67,31 @@ namespace og = ompl::geometric;
 int C_Dimension;
 const arrA Null_arrA = {{}};
 
-enum transition {pick,place};
+enum transition
+{
+    pick,
+    place
+};
 
-struct ValidityCheckWithKOMO {
-	KOMO::Conv_KOMO_SparseNonfactored &nlp;
-	ValidityCheckWithKOMO(KOMO::Conv_KOMO_SparseNonfactored &nlp) : nlp(nlp){}
-	bool check(const ob::State *state)
-	{
-		const auto *State = state->as<ob::RealVectorStateSpace::StateType>();
+struct ValidityCheckWithKOMO
+{
+    KOMO::Conv_KOMO_SparseNonfactored &nlp;
+    ValidityCheckWithKOMO(KOMO::Conv_KOMO_SparseNonfactored &nlp) : nlp(nlp) {}
+    bool check(const ob::State *state)
+    {
+        const auto *State = state->as<ob::RealVectorStateSpace::StateType>();
 
-		arr x_query;
-		for (unsigned int i = 0; i < C_Dimension; i++){
-			x_query.append((*State)[i]);
-		}
+        arr x_query;
+        for (unsigned int i = 0; i < C_Dimension; i++)
+        {
+            x_query.append((*State)[i]);
+        }
 
-		arr phi;
-		nlp.evaluate(phi, NoArr, x_query);
+        arr phi;
+        nlp.evaluate(phi, NoArr, x_query);
 
-		return std::abs(phi(0)) < tol;
-	}
+        return std::abs(phi(0)) < tol;
+    }
 };
 
 arr getGoalConfig(rai::Configuration C, std::string &ref1, std::string &ref2, transition transition_ = pick)
@@ -97,29 +103,29 @@ arr getGoalConfig(rai::Configuration C, std::string &ref1, std::string &ref2, tr
     {
         KOMO komo;
         komo.verbose = 0;
-        komo.setModel(C,true);
+        komo.setModel(C, true);
         arr tergetReference;
 
-        komo.setTiming(1,1,1,1);
-        komo.addObjective({}, FS_accumulatedCollisions, {}, OT_eq, { 1 });
+        komo.setTiming(1, 1, 1, 1);
+        komo.addObjective({}, FS_accumulatedCollisions, {}, OT_eq, {1});
         komo.add_collision(true, 0.01);
         arr pos_ref2 = C.getFrameState(C.getFrameIDs({(rai::String)ref2})).resize(3);
-        std::cout << "pos_ref2: " << pos_ref2 << "\nCSpace_dim: " << C.getJointStateDimension() << std::endl; 
-        arr randomConfig_ = pos_ref2.resize(C.getJointStateDimension()) - 0.5 + 2*0.5*rand(C.getJointStateDimension());
+        std::cout << "pos_ref2: " << pos_ref2 << "\nCSpace_dim: " << C.getJointStateDimension() << std::endl;
+        arr randomConfig_ = pos_ref2.resize(C.getJointStateDimension()) - 0.5 + 2 * 0.5 * rand(C.getJointStateDimension());
         komo.initWithConstant(randomConfig_);
-        std::cout << komo.getConfiguration_q(0)<< std::endl;
-        std::cout << "ref1, ref2: " << ref2.c_str() <<  ", " <<ref1.c_str() << std::endl;
-        komo.addObjective({1.}, FS_distance, {ref1.c_str(),ref2.c_str()}, OT_eq, {1e2});
+        std::cout << komo.getConfiguration_q(0) << std::endl;
+        std::cout << "ref1, ref2: " << ref2.c_str() << ", " << ref1.c_str() << std::endl;
+        komo.addObjective({1.}, FS_distance, {ref1.c_str(), ref2.c_str()}, OT_eq, {1e2});
         komo.addObjective({1.}, FS_vectorZ, {ref1.c_str()}, OT_eq, {1e2}, {0., 0., 1.});
 
-        if(transition_ == pick)
+        if (transition_ == pick)
         {
-            komo.addObjective({1.}, FS_scalarProductXX, {ref1.c_str(),ref2.c_str()}, OT_eq, {1e2}, {0.});
+            komo.addObjective({1.}, FS_scalarProductXX, {ref1.c_str(), ref2.c_str()}, OT_eq, {1e2}, {0.});
         }
         else if (transition_ == place)
         {
             std::cout << "I have been asked to place" << std::endl;
-            komo.addObjective({1.}, FS_aboveBox, {ref2.c_str(),ref1.c_str()}, OT_ineq, {1e2});
+            komo.addObjective({1.}, FS_aboveBox, {ref2.c_str(), ref1.c_str()}, OT_ineq, {1e2});
         }
 
         // komo.addObjective({1,1},FS_distance,{ref2.c_str(),ref1.c_str()}, OT_eq, {}, {0,0,0});
@@ -145,7 +151,7 @@ arr getGoalConfig(rai::Configuration C, std::string &ref1, std::string &ref2, tr
         goalConfig.append(komo.x);
         std::cout << "Goal Config: " << komo.x << komo.x.N << std::endl;
     }
-    
+
     // komo.view(true);
     return goalConfig;
 }
@@ -154,71 +160,72 @@ std::vector<arr> getGoalConfigsSet(rai::Configuration C, std::string &ref1, std:
 {
     static int mode = 1;
     std::vector<arr> goalConfigs;
-    switch(mode)
+    switch (mode)
     {
-        // case(1):
-        //     goalConfigs = {{1.0498, 0.0911573, 0.868818},{0.689771, 0.229342, 1.66093},/* {0.350224, 0.0911714, 2.27218} */};
-        //     break;
-        default:
-            for(int i = 0; i< 10; i++)
-            {
-                goalConfigs.push_back(getGoalConfig(C,ref1,ref2,transition_));
-            }
+    // case(1):
+    //     goalConfigs = {{1.0498, 0.0911573, 0.868818},{0.689771, 0.229342, 1.66093},/* {0.350224, 0.0911714, 2.27218} */};
+    //     break;
+    default:
+        for (int i = 0; i < 10; i++)
+        {
+            goalConfigs.push_back(getGoalConfig(C, ref1, ref2, transition_));
+        }
     }
-    mode ++;
+    mode++;
     return goalConfigs;
 }
 
 arrA solveMotion(rai::Configuration &C, std::vector<arr> goal_, std::string planner_ = "BITstar")
 {
     KOMO komo;
-	komo.setModel(C, true);
-	komo.setTiming(1, 1, 1, 1);
-	komo.addObjective({}, FS_accumulatedCollisions, {}, OT_eq, { 1 });
-	komo.run_prepare(0);
+    komo.setModel(C, true);
+    komo.setTiming(1, 1, 1, 1);
+    komo.addObjective({}, FS_accumulatedCollisions, {}, OT_eq, {1});
+    komo.run_prepare(0);
 
-	C_Dimension = C.getJointStateDimension();
+    C_Dimension = C.getJointStateDimension();
 
-	//Construct the state space we are planning in
-	auto space(std::make_shared<ob::RealVectorStateSpace>(C_Dimension));
+    // Construct the state space we are planning in
+    auto space(std::make_shared<ob::RealVectorStateSpace>(C_Dimension));
 
-	ob::RealVectorBounds bounds(C_Dimension);
-	bounds.setLow(-PI);
-	bounds.setHigh(PI);
+    ob::RealVectorBounds bounds(C_Dimension);
+    bounds.setLow(-PI);
+    bounds.setHigh(PI);
     space->setBounds(bounds);
 
-	//create simple setup
-	og::SimpleSetup ss(space);
+    // create simple setup
+    og::SimpleSetup ss(space);
 
     // set state validity checking for this space
-	auto nlp = std::make_shared<KOMO::Conv_KOMO_SparseNonfactored>(komo, false);
-	ValidityCheckWithKOMO checker(*nlp);
+    auto nlp = std::make_shared<KOMO::Conv_KOMO_SparseNonfactored>(komo, false);
+    ValidityCheckWithKOMO checker(*nlp);
 
-	ss.setStateValidityChecker([&checker](const ob::State *state) {
-		return checker.check(state);
-	});
+    ss.setStateValidityChecker([&checker](const ob::State *state)
+                               { return checker.check(state); });
 
-	// create start and goal states. These states might change from example to example
+    // create start and goal states. These states might change from example to example
     ob::ScopedState<> start(space);
-	for (unsigned int i=0; i<C.getJointStateDimension(); i++){
-	start[i] = komo.getConfiguration_q(0).elem(i);
-	}
+    for (unsigned int i = 0; i < C.getJointStateDimension(); i++)
+    {
+        start[i] = komo.getConfiguration_q(0).elem(i);
+    }
     ss.setStartState(start);
 
     auto goalStates = std::make_shared<ob::GoalStates>(ss.getSpaceInformation());
 
-    for (unsigned int j=0; j<goal_.size(); j++)
+    for (unsigned int j = 0; j < goal_.size(); j++)
     {
         ob::ScopedState<> goal(space);
-        for (unsigned int i=0; i<C.getJointStateDimension(); i++){
-        goal[i] = goal_.at(j)(i);
+        for (unsigned int i = 0; i < C.getJointStateDimension(); i++)
+        {
+            goal[i] = goal_.at(j)(i);
         }
         goalStates->addState(goal);
     }
 
     ss.setGoal(goalStates);
 
-	auto si = ss.getSpaceInformation();
+    auto si = ss.getSpaceInformation();
     auto BITStar_Planner = std::make_shared<og::BITstar>(si);
     auto planner(BITStar_Planner);
     ss.setPlanner(planner);
@@ -252,7 +259,8 @@ arrA solveMotion(rai::Configuration &C, std::vector<arr> goal_, std::string plan
         arr config;
         std::vector<double> reals;
         space->copyToReals(reals, state);
-        for (double r : reals){
+        for (double r : reals)
+        {
             config.append(r);
         }
         configs.append(config);
@@ -262,35 +270,38 @@ arrA solveMotion(rai::Configuration &C, std::vector<arr> goal_, std::string plan
     return configs;
 }
 
-void visualizePath(rai::Configuration &C, arrA configs){
+void visualizePath(rai::Configuration &C, arrA configs)
+{
     KOMO komo;
     komo.verbose = 0;
     komo.setModel(C, true);
-    
+
     komo.setTiming(1., configs.N, 5., 2);
-	komo.add_qControlObjective({}, 1, 1.);
+    komo.add_qControlObjective({}, 1, 1.);
 
-    //use configs to initialize with waypoints
-	komo.initWithWaypoints(configs, configs.N, false);
+    // use configs to initialize with waypoints
+    komo.initWithWaypoints(configs, configs.N, false);
     komo.run_prepare(0);
-	komo.plotTrajectory();
+    komo.plotTrajectory();
 
-	rai::ConfigurationViewer V;
-	V.setPath(C, komo.x, "result", true);
+    rai::ConfigurationViewer V;
+    V.setPath(C, komo.x, "result", true);
     V.playVideo();
 }
 
 #include "debugFunctions.h"
 
 template <typename T>
-void printVector(T& vec) {
-  for (const auto& i : vec) {
-    std::cout << i << std::endl;
-  }
-  std::cout << '\n';
+void printVector(T &vec)
+{
+    for (const auto &i : vec)
+    {
+        std::cout << i << std::endl;
+    }
+    std::cout << '\n';
 }
 
-void samplePath(std::vector<std::string> inputs, std::string planner_, std::vector<arrA>& subTrajectories)
+void samplePath(std::vector<std::string> inputs, std::string planner_, std::vector<arrA> &subTrajectories)
 {
     // Set filename (Model) and totalPhases
     std::string filename = inputs.at(0);
@@ -311,23 +322,23 @@ void samplePath(std::vector<std::string> inputs, std::string planner_, std::vect
     while (phase < totalPhases)
     {
         std::cout << "phase: " << phase << std::endl;
-        std::string ref1 = inputs.at(2+phase*2), ref2 = inputs.at(3+phase*2);
+        std::string ref1 = inputs.at(2 + phase * 2), ref2 = inputs.at(3 + phase * 2);
         // for (int i=0; i<50; ++i)
         // {
         //     sampleGoalsandDisplay(C, ref1, ref2);
         // }
 
         transition transition_{pick};
-        if(phase%2 != 0)
+        if (phase % 2 != 0)
         {
             transition_ = place;
         }
         std::cout << "Transition: " << transition_ << std::endl;
-        std::vector<arr> goalConfigs = getGoalConfigsSet(C, ref1, ref2, transition_); //inverse kin
+        std::vector<arr> goalConfigs = getGoalConfigsSet(C, ref1, ref2, transition_); // inverse kin
         // std::cout << "goalConfigs[" << phase << "]: " << goalConfigs << std::endl;
         printVector(goalConfigs);
         bool flag = true;
-        while(flag)
+        while (flag)
         {
             flag = false;
             std::cout << C.getJointState() << std::endl;
@@ -341,9 +352,9 @@ void samplePath(std::vector<std::string> inputs, std::string planner_, std::vect
                     OMPL_ERROR("Can't find a solution!");
                     return;
                 }
-                /** Ahh, our previous solution might have been the problem. 
+                /** Ahh, our previous solution might have been the problem.
                  * We need to revert to the phase and plan again without the currently used goal.
-                **/
+                 **/
 
                 // Remove the goal that did not work!
                 arr redGoal = C.getJointState();
@@ -352,9 +363,9 @@ void samplePath(std::vector<std::string> inputs, std::string planner_, std::vect
                 goalConfigs = previousGoals;
 
                 // Revert configuration
-                phase --;
-                ref1 = inputs.at(2+phase*2), ref2 = inputs.at(3+phase*2);
-                C.attach(C.getFrame("world"), C.getFrame(ref2.c_str())); //revert pick action
+                phase--;
+                ref1 = inputs.at(2 + phase * 2), ref2 = inputs.at(3 + phase * 2);
+                C.attach(C.getFrame("world"), C.getFrame(ref2.c_str())); // revert pick action
                 std::cout << C.getJointState() << "  " << C_prev << std::endl;
                 C.setJointState(C_prev);
             }
@@ -362,23 +373,124 @@ void samplePath(std::vector<std::string> inputs, std::string planner_, std::vect
         C_prev = C.getJointState();
         previousGoals = goalConfigs;
         visualizePath(C, Trajectory);
-        if (subTrajectories.size()>phase)
+        if (subTrajectories.size() > phase)
             subTrajectories.at(phase) = Trajectory;
         else
             subTrajectories.push_back(Trajectory);
         // std::cout << C.getJointState() << std::endl;
         // C.setJointState(Trajectory.last());
-        if(phase%2 == 0)
-            C.attach(C.getFrame(ref1.c_str()), C.getFrame(ref2.c_str())); //pick
+        if (phase % 2 == 0)
+            C.attach(C.getFrame(ref1.c_str()), C.getFrame(ref2.c_str())); // pick
         else
-            C.attach(C.getFrame("world"), C.getFrame(ref1.c_str())); //place
-        phase ++;
+            C.attach(C.getFrame("world"), C.getFrame(ref1.c_str())); // place
+        phase++;
     }
 }
 
-void optimizePath(std::vector<std::string> inputs, arrA& finalPath)
+arrA sampleKeyFrames(std::vector<std::string> inputs)
 {
-    static int attempt = 0;
+    arrA keyFrames;
+    std::string filename = inputs.at(0);
+    int totalPhases = stoi(inputs.at(1));
+
+    // Set Configuration
+    rai::Configuration C;
+    C.addFile(filename.c_str());
+
+    // make a KOMO object and write down the whole action sequence
+    KOMO komo;
+    komo.verbose = 0;
+    komo.setModel(C, true);
+    komo.setTiming(totalPhases, 1, 5, 2);
+
+    int phase = 0;
+    while (phase < totalPhases)
+    {
+        std::string ref1 = inputs.at(2 + phase * 2), ref2 = inputs.at(3 + phase * 2);
+
+        if (phase == 0)
+            komo.addSwitch_stable(phase + 1, phase + 2., "", ref1.c_str(), ref2.c_str());
+        else if (phase % 2 == 0)
+            komo.addSwitch_stable(phase + 1, phase + 2., "", ref1.c_str(), ref2.c_str(), false);
+        else
+            komo.addSwitch_stable(phase + 1, phase + 2., "", ref2.c_str(), ref1.c_str(), false);
+        komo.addObjective({phase + 1.}, FS_distance, {ref1.c_str(), ref2.c_str()}, OT_eq, {1e2});
+        komo.addObjective({phase + 1.}, FS_vectorZ, {ref1.c_str()}, OT_eq, {1e2}, {0., 0., 1.});
+
+        if (phase % 2 == 0) // pick
+        {
+            std::cout << "pick" << std::endl;
+            komo.addObjective({phase + 1.}, FS_scalarProductXX, {ref1.c_str(), ref2.c_str()}, OT_eq, {1e2}, {0.});
+        }
+        else // place
+        {
+            std::cout << "place" << std::endl;
+            komo.addObjective({phase + 1.}, FS_aboveBox, {ref2.c_str(), ref1.c_str()}, OT_ineq, {1e2});
+        }
+        phase++;
+    }
+
+    komo.add_qControlObjective({}, 2);
+    komo.add_collision(true, 0.01);
+
+    komo.run_prepare(0);
+    komo.optimize();
+    keyFrames = komo.getPath_q();
+    komo.view(true);
+    komo.view_play(true);
+
+    return keyFrames;
+}
+
+arrA planMotion(std::vector<std::string> &inputs, arrA &keyFrames)
+{
+    arrA finalPath;
+
+    std::string filename = inputs.at(0);
+    int totalPhases = stoi(inputs.at(1));
+
+    // Set Configuration
+    rai::Configuration C;
+    C.addFile(filename.c_str());
+    C_Dimension = C.getJointStateDimension();
+
+
+    int phase = 0;
+    while (phase < totalPhases)
+    {
+        std::cout << "phase: " << phase << std::endl;
+        std::string ref1 = inputs.at(2 + phase * 2), ref2 = inputs.at(3 + phase * 2);
+
+        transition transition_{pick};
+        if (phase % 2 != 0)
+        {
+            transition_ = place;
+        }
+
+        std::vector<arr> goalConfigs;
+        std::cout << keyFrames(phase) << "<- This is inside" << std::endl; 
+        arr goalKeyFrame = keyFrames(phase);
+        goalConfigs.push_back(goalKeyFrame.resize(C_Dimension));
+        arrA intermediatePath = solveMotion(C, goalConfigs);
+        if (intermediatePath == Null_arrA)
+        {
+            OMPL_ERROR("Can't find a solution!");
+        }
+        finalPath.append(intermediatePath);
+        // std::cout << C.getJointState() << std::endl;
+        // C.setJointState(Trajectory.last());
+        if (phase % 2 == 0)
+            C.attach(C.getFrame(ref1.c_str()), C.getFrame(ref2.c_str())); // pick
+        else
+            C.attach(C.getFrame("world"), C.getFrame(ref1.c_str())); // place
+        phase++;
+    }
+    return finalPath;
+}
+
+void optimizePath(std::vector<std::string> &inputs, arrA &finalPath)
+{
+    // static int attempt = 0;
     // Set filename (Model) and totalPhases
     std::string filename = inputs.at(0);
     int totalPhases = stoi(inputs.at(1));
@@ -392,92 +504,103 @@ void optimizePath(std::vector<std::string> inputs, arrA& finalPath)
     komo.verbose = 0;
     komo.setModel(C, true);
     komo.setTiming(totalPhases, 15, 5, 2);
-    if(attempt > 0)
-        komo.initWithWaypoints(finalPath,15,false);
-    komo.add_qControlObjective({}, 2);
-    komo.add_collision(true, 0.01);
-
 
     // Define the KOMO problem by iterating over action the sequence
     int phase = 0;
     while (phase < totalPhases)
     {
-        std::string ref1 = inputs.at(2+phase*2), ref2 = inputs.at(3+phase*2);
+        std::string ref1 = inputs.at(2 + phase * 2), ref2 = inputs.at(3 + phase * 2);
 
         if (phase == 0)
-            komo.addSwitch_stable(phase+1, phase+2., "", ref1.c_str(),ref2.c_str());
-        else if(phase%2 == 0)
-            komo.addSwitch_stable(phase+1, phase+2., "", ref1.c_str(),ref2.c_str(),false);
+            komo.addSwitch_stable(phase + 1, phase + 2., "", ref1.c_str(), ref2.c_str());
+        else if (phase % 2 == 0)
+            komo.addSwitch_stable(phase + 1, phase + 2., "", ref1.c_str(), ref2.c_str(), false);
         else
-            komo.addSwitch_stable(phase+1, phase+2., "", ref2.c_str(),ref1.c_str(), false);
-        komo.addObjective({phase+1.}, FS_distance, {ref1.c_str(),ref2.c_str()}, OT_eq, {1e2});
-        komo.addObjective({phase+1.}, FS_vectorZ, {ref1.c_str()}, OT_eq, {1e2}, {0., 0., 1.});
+            komo.addSwitch_stable(phase + 1, phase + 2., "", ref2.c_str(), ref1.c_str(), false);
+        komo.addObjective({phase + 1.}, FS_distance, {ref1.c_str(), ref2.c_str()}, OT_eq, {1e2});
+        komo.addObjective({phase + 1.}, FS_vectorZ, {ref1.c_str()}, OT_eq, {1e2}, {0., 0., 1.});
 
-        if(phase%2 == 0) //pick
+        if (phase % 2 == 0) // pick
         {
             std::cout << "pick" << std::endl;
-            komo.addObjective({phase+1.}, FS_scalarProductXX, {ref1.c_str(),ref2.c_str()}, OT_eq, {1e2}, {0.});
+            komo.addObjective({phase + 1.}, FS_scalarProductXX, {ref1.c_str(), ref2.c_str()}, OT_eq, {1e2}, {0.});
         }
-        else //place
+        else // place
         {
             std::cout << "place" << std::endl;
-            komo.addObjective({phase+1.}, FS_aboveBox, {ref2.c_str(),ref1.c_str()}, OT_ineq, {1e2});
+            komo.addObjective({phase + 1.}, FS_aboveBox, {ref2.c_str(), ref1.c_str()}, OT_ineq, {1e2});
         }
         phase++;
     }
 
+    komo.add_qControlObjective({}, 2);
+    komo.add_collision(true, 0.01);
+
+    komo.run_prepare(0);
+    // if(attempt > 0)
+    komo.initWithWaypoints(finalPath, 15, false);
     komo.optimize();
-    //  komo.checkGradients();
-    arrA solution = komo.getPath_q();
-    finalPath = solution;
-    std::cout << solution << std::endl;
-    attempt ++;
+    // komo.checkGradients();
+    // arrA solution = komo.getPath_q();
+    // finalPath = solution;
+    // std::cout << solution << std::endl;
+    // attempt++;
 
     komo.view(true, "optimized motion");
-    for(uint i=0;i<2;i++) komo.view_play(true);
+    for (uint i = 0; i < 2; i++)
+        komo.view_play(true);
 }
 
-void storePath(std::vector<arrA>& subtrajectories)
+void storePath(std::vector<arrA> &subtrajectories)
 {
-    ofstream myfile ("../examples/Main/FeasiblePath.txt");
+    ofstream myfile("../examples/Main/FeasiblePath.txt");
     if (myfile.is_open())
     {
-        for (const auto& i : subtrajectories) {
+        for (const auto &i : subtrajectories)
+        {
             myfile << i << "\n";
         }
         myfile.close();
     }
-    else cout << "Unable to open file";
-
+    else
+        cout << "Unable to open file";
 }
 
-void copyPath(arrA& subtrajectories)
+void copyPath(arrA &finalPath)
 {
-    ifstream myfile ("../examples/Main/FeasiblePath.txt");
+    ifstream myfile("../examples/Main/FeasiblePath.txt");
     std::string line;
     if (myfile.is_open())
     {
-        for (int i=0; i<2; i++) { // keep reading until end-of-file
+        for (int i = 0; i < 2; i++)
+        { // keep reading until end-of-file
             // cout << "The next number is " << num << endl;
             arrA temp;
             myfile >> temp; // sets EOF flag if no value found
-            subtrajectories.append(temp);
+            finalPath.append(temp);
             // std::cout << temp << "\n\n";
         }
         myfile.close();
     }
-    else cout << "Unable to open file";
+    else
+        cout << "Unable to open file";
 }
 
-void modifyPath(arrA& finalPath)
+void copyPath(std::vector<arrA> &subtrajectories, arrA &finalPath)
 {
-    for (int i=14; i<30; ++i)
-    {
-        finalPath(i).append({0,0,0,0,0,0,0});
-    }
+    for (int i=0; i<subtrajectories.size(); i++)
+        finalPath.append(subtrajectories.at(i));
 }
 
-int main(int argc, char ** argv)
+void modifyPath(arrA &finalPath)
+{
+    for (int i = 14; i < 30; ++i)
+    {
+        finalPath(i).append({0.202214, -0.0843378, 0.0118378, -0.699524, 5.80856e-06, -4.88227e-05, 0.715277});
+    } 
+}
+
+int main(int argc, char **argv)
 {
     // sequentialPlan();
     // runOnlyKOMO();
@@ -489,20 +612,21 @@ int main(int argc, char ** argv)
     std::string planner_ = "BITstar";
 
     // Don't like the default inputs? You can input the inputs you want!
-    switch(argc) {
-        case 3:
+    switch (argc)
+    {
+    case 3:
         planner_ = argv[2];
-        case 2:
+    case 2:
         inputFile = argv[1];
     }
 
     // Read file to get inputs
     std::string line;
-    ifstream myfile (inputFile);
+    ifstream myfile(inputFile);
     std::vector<std::string> inputs;
     if (myfile.is_open())
     {
-        while ( getline (myfile,line) )
+        while (getline(myfile, line))
         {
             inputs.push_back(line);
         }
@@ -516,17 +640,22 @@ int main(int argc, char ** argv)
 
     // Get sampled path
     std::vector<arrA> subTrajectories;
+    arrA keyFrames = sampleKeyFrames(inputs);
+    std::cout << keyFrames << std::endl;
+    arrA finalPath = planMotion(inputs, keyFrames);
+
     // samplePath(inputs, planner_, subTrajectories);
     // std::cout << "Final Path" << std::endl;
+
+    // //Stores path in a file
     // storePath(subTrajectories);
 
-    //This function is to be called if you want to only debug the optimization.
-    arrA finalPath;
-    copyPath(finalPath);
+    // // These set of functions are to be called if you want to only debug the optimization.
+    // copyPath(finalPath);
+
+    copyPath(subTrajectories,finalPath);
     modifyPath(finalPath);
-    std::cout << finalPath << std::endl;
+    // std::cout << finalPath << std::endl;
     // Take the subtrajectories and feed it to the optimizer
-    optimizePath(inputs, finalPath);
-    std::cout << finalPath << "\n" << finalPath.N << std::endl;
     optimizePath(inputs, finalPath);
 }
