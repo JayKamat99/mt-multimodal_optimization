@@ -40,6 +40,16 @@ void plan(std::string filename = "../examples/Models/2D_arm.g"){
 	else if (filename == "../examples/Models/7_disc_rooms.g"){
         komo.addObjective({1.}, FS_positionDiff, {"bot", "target"}, OT_sos, {1e1});
 	}
+        else if (filename == "../examples/Models/s2_bugtrap.g"){
+        komo.addObjective({1.}, FS_distance, {"bot", "small_box"}, OT_eq, {1e2});
+        komo.addObjective({1.}, FS_vectorZ, {"bot"}, OT_eq, {1e2}, {0., 0., 1.});
+        komo.addObjective({1.}, FS_scalarProductXX, {"bot", "small_box"}, OT_eq, {1e2}, {0.});
+        }
+        else if (filename == "../examples/Models/s3_manip_table.g"){
+        komo.addObjective({1.}, FS_distance, {"gripper", "box"}, OT_eq, {1e2});
+        komo.addObjective({1.}, FS_vectorZ, {"gripper"}, OT_eq, {1e2}, {0., 0., 1.});
+        komo.addObjective({1.}, FS_scalarProductXX, {"gripper", "box"}, OT_eq, {1e2}, {0.});
+        }
 
     // komo.addObjective({.98,1.}, FS_qItself, {}, OT_sos, {1e1}, {}, 1);  //small velocity in that time frame
     // komo.addObjective({}, FS_accumulatedCollisions, {}, OT_eq, {1.});
@@ -58,13 +68,14 @@ void plan(std::string filename = "../examples/Models/2D_arm.g"){
     //   while(V.playVideo());
     // }
     komo.optimize();
+    std::cout << komo.getPath_q() << std::endl;
 
-    std::ofstream myfile;
-    myfile.open ("../debug/3_finalPathConfigs.txt");
-    myfile << komo.getPath_q();
-    myfile.close();
+//     std::ofstream myfile;
+//     myfile.open ("../debug/3_finalPathConfigs.txt");
+//     myfile << komo.getPath_q();
+//     myfile.close();
 
-    arr FinalConfig = komo.getConfiguration_q(1);
+//     arr FinalConfig = komo.getConfiguration_q(1);
     komo.plotTrajectory();
     komo.checkGradients();
     rai::ConfigurationViewer V;

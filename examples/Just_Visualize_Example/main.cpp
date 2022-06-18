@@ -37,7 +37,6 @@ int main(int argc, char** argv)
 		goal = {-0.555762, 0.000540429, 1.57074, 0.00188429, 0.764456, -0.000160723, -2.21317, -0.00321155, 2.28468, -0.000332939, 0.555647, -0.00012235, -1.57154, 0.00161455, 0.764632, -0.000429018, -2.21257, 0.00103216, 2.28374, 0.00102819};
 	}	
 	else if (filename_s == "../examples/Models/9_TwoMobileRobots_hard.g"){
-		std::cout << "do I reach here?" << std::endl;
 		goal = {-0.755762, 0.000540429, 1.57074, 0.755647, -0.00012235, -1.57154};
 	}
 	else if (filename_s == "../examples/Models/10_MobileManipulator.g"){
@@ -47,7 +46,16 @@ int main(int argc, char** argv)
 		start = {0.0505656, 0.673177, 0.10986, -1.96045, -0.139219, 2.62652, -1.05106, 0.0481076};
 		goal = {-0.00371728, 0.210831, -0.0231252, -2.97777, -0.0949239, 3.19421, -0.420676, 0.0491746};
 	}
-	std::cout << goal << std::endl;
+	else if (filename_s == "../examples/Models/s3_manip_table.g")
+	{
+		start = {0.0442656, 0.189576, 0.29443, -2.3698, -0.0982839, 2.54935, -0.553162};
+		goal = {0.0421136, 0.764693, 0.246095, -1.73399, -0.272772, 2.4651, -0.872665};
+	}
+	else if (filename_s == "../examples/Models/s2_bugtrap.g")
+	{
+		goal = {0.0482666, 0.299826, 1.5708};
+	}
+	std::cout << "Goal: " << goal << std::endl;
 	// for(auto f: C.frames){
 	// 	arr c = f->getShape().mesh().C;
 	// 	std::cout << c.N << std::endl;
