@@ -14,7 +14,7 @@
 #include <Kin/viewer.h>
 #include "keyframeTree.h"
 
-std::vector<std::shared_ptr<keyframeNode>> leafNodes;
+std::vector<std::shared_ptr<keyframeNode>> leafNodes; // replace this vector with priority queue
 
 arrA solveMotion(rai::Configuration &C, std::vector<arr> goal_)
 {
@@ -46,11 +46,27 @@ std::shared_ptr<keyframeNode> makeRootNode(std::vector<std::string> inputs)
     return std::make_shared<keyframeNode>(C.getJointState(),nullptr);
 }
 
+int getCurrentPhase(std::shared_ptr<keyframeNode> start)
+{
+    int phase = 0;
+    auto node = start;
+    while (node->parent != nullptr)
+    {
+        node = node->parent;
+        phase ++;
+    }
+    return phase;
+}
+
 arrA sampleKeyframeSequence(std::vector<std::string> inputs, std::shared_ptr <keyframeNode> start = nullptr)
 {
     arrA keyFrames;
     std::string filename = inputs.at(0);
     int totalPhases = stoi(inputs.at(1));
+
+    int currentPhase = getCurrentPhase(start);
+    std::cout << "currentPhase: " << currentPhase << std::endl;
+    totalPhases = totalPhases - currentPhase;
 
     bool keyframesValid = false;
 
@@ -79,16 +95,16 @@ arrA sampleKeyframeSequence(std::vector<std::string> inputs, std::shared_ptr <ke
             komo.addObjective({phase + 1.}, FS_distance, {ref1.c_str(), ref2.c_str()}, OT_eq, {1e2});
             komo.addObjective({phase + 1.}, FS_vectorZ, {ref1.c_str()}, OT_eq, {1e2}, {0., 0., 1.});
 
-            std::cout << "ref1,ref2: " << ref1 << ref2 << std::endl;
+            // std::cout << "ref1,ref2: " << ref1 << ref2 << std::endl;
 
             if (phase % 2 == 0) // pick
             {
-                std::cout << "pick" << std::endl;
+                // std::cout << "pick" << std::endl;
                 komo.addObjective({phase + 1.}, FS_scalarProductXX, {ref1.c_str(), ref2.c_str()}, OT_eq, {1e2}, {0.});
             }
             else // place
             {
-                std::cout << "place" << std::endl;
+                // std::cout << "place" << std::endl;
                 komo.addObjective({phase + 1.}, FS_aboveBox, {ref2.c_str(), ref1.c_str()}, OT_ineq, {1e2});
             }
             phase++;
@@ -105,7 +121,7 @@ arrA sampleKeyframeSequence(std::vector<std::string> inputs, std::shared_ptr <ke
 
         rai::Graph R = komo.getReport(false);
         double constraint_violation = R.get<double>("eq") + R.get<double>("ineq");
-        std::cout << constraint_violation << std::endl;
+        // std::cout << constraint_violation << std::endl;
 
         if (constraint_violation < 1){
             keyframesValid = true;
@@ -128,7 +144,7 @@ arrA planMotion(std::vector<std::string> &inputs, arrA keyFrames)
     int phase = 0;
     while (phase < totalPhases)
     {
-        std::cout << "phase: " << phase << std::endl;
+        // std::cout << "phase: " << phase << std::endl;
         std::string ref1 = inputs.at(2 + phase * 2), ref2 = inputs.at(3 + phase * 2);
 
         transition transition_{pick};
@@ -139,7 +155,7 @@ arrA planMotion(std::vector<std::string> &inputs, arrA keyFrames)
 
         std::vector<arr> goalConfigs;
         arr goalKeyFrame = keyFrames(phase);
-        std::cout << goalKeyFrame << std::endl;
+        // std::cout << goalKeyFrame << std::endl;
         goalConfigs.push_back(goalKeyFrame.resize(C_Dimension));
         arrA intermediatePath = solveMotion(C, goalConfigs);
         if (intermediatePath == Null_arrA)
@@ -163,42 +179,31 @@ void addToTree(arrA sequence, std::shared_ptr<keyframeNode> start)
     {
         auto node = std::make_shared<keyframeNode>(keyframe, prevNode_ptr);
         prevNode_ptr = node;
-        std::cout << "now " << std::endl;
-        std::cout << prevNode_ptr->state << "    " << prevNode_ptr->parent << std::endl;
     }
     leafNodes.push_back(prevNode_ptr);
-    std::cout << prevNode_ptr->state << "    " << prevNode_ptr->parent << std::endl;
-    std::cout << leafNodes.front()->state << "\t" << leafNodes.front()->parent->parent->state << std::endl;
 }
 
 void growTree(std::vector<std::string> &inputs, std::shared_ptr <keyframeNode> start = nullptr)
 {
-    // for(int i=0; i<3; i++)
-    // {
+    for(int i=0; i<1; i++)
+    {
         arrA sequence = sampleKeyframeSequence(inputs, start);
-        std::cout << "sequence" << sequence << std::endl;
         addToTree(sequence, start);
-    // }
+    }
 }
 
 arrA getBestSequence() // Need to change this to return the best sequence instead of the first.
 {
     auto node_ptr = leafNodes.front();
-    std::cout << "I reach here 1" << std::endl;
     arrA sequence;
-    std::cout << node_ptr->state << std::endl;
     sequence.append(node_ptr->state);
-    std::cout << "I reach here 2" << std::endl;
     while(node_ptr->parent != nullptr)
     {
         node_ptr = node_ptr->parent;
         sequence.append(node_ptr->state);
-        std::cout << sequence << std::endl;
     }
-    std::cout << "I reach here 3" << std::endl;
 
     sequence.reverse();
-    std::cout << "sequence : " << sequence << std::endl;
     return sequence;
 }
 
@@ -237,11 +242,9 @@ int main(int argc, char **argv)
 
     // build a  start node
     auto root = makeRootNode(inputs);
-    std::cout << "root: " << root->state << "\t" << root->parent << std::endl;
 
     // Get sampled path
     growTree(inputs, root);
-    std::cout << "growTree done" << std::endl;
     arrA keyFrames = getBestSequence();
     std::cout << keyFrames << std::endl;
     arrA finalPath = planMotion(inputs, keyFrames);
