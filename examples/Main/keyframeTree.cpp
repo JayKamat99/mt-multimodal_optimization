@@ -22,16 +22,6 @@ arrA solveMotion(rai::Configuration &C, std::vector<arr> goal_)
     return solvedPath;
 }
 
-template <typename T>
-void printVector(T &vec)
-{
-    for (const auto &i : vec)
-    {
-        std::cout << i << std::endl;
-    }
-    std::cout << '\n';
-}
-
 std::shared_ptr<keyframeNode> makeRootNode(std::vector<std::string> inputs)
 {
 
@@ -50,9 +40,9 @@ int getCurrentPhase(std::shared_ptr<keyframeNode> start)
 {
     int phase = 0;
     auto node = start;
-    while (node->parent != nullptr)
+    while (node->get_parent() != nullptr)
     {
-        node = node->parent;
+        node = node->get_parent();
         phase ++;
     }
     return phase;
@@ -195,12 +185,14 @@ void growTree(std::vector<std::string> &inputs, std::shared_ptr <keyframeNode> s
 arrA getBestSequence() // Need to change this to return the best sequence instead of the first.
 {
     auto node_ptr = leafNodes.front();
+    std::cout << node_ptr->get_costHeuristic() << "\n" << node_ptr->get_parent()->get_costHeuristic() << "\n" << node_ptr->get_parent()->get_parent()->get_costHeuristic() << std::endl;
+    std::cout << node_ptr->get_bestCostToCome() << "\n" << node_ptr->get_parent()->get_bestCostToCome() << "\n" << node_ptr->get_parent()->get_parent()->get_bestCostToCome() << std::endl;
     arrA sequence;
-    sequence.append(node_ptr->state);
-    while(node_ptr->parent != nullptr)
+    sequence.append(node_ptr->get_state());
+    while(node_ptr->get_parent() != nullptr)
     {
-        node_ptr = node_ptr->parent;
-        sequence.append(node_ptr->state);
+        node_ptr = node_ptr->get_parent();
+        sequence.append(node_ptr->get_state());
     }
 
     sequence.reverse();
