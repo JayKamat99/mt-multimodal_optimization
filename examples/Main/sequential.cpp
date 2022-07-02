@@ -97,62 +97,63 @@ struct ValidityCheckWithKOMO
 arrA solveMotion(rai::Configuration &C, std::vector<arr> goal_, std::string planner_ = "BITstar")
 {
     KOMO komo;
-    komo.setModel(C, true);
-    komo.setTiming(1, 1, 1, 1);
-    komo.addObjective({}, FS_accumulatedCollisions, {}, OT_eq, {1});
-    komo.run_prepare(0);
+	komo.setModel(C, true);
+	komo.setTiming(1, 1, 1, 1);
+	komo.addObjective({}, FS_accumulatedCollisions, {}, OT_eq, { 1 });
+	komo.run_prepare(2);
 
-    C_Dimension = C.getJointStateDimension();
+	C_Dimension = C.getJointStateDimension();
 
-    // Construct the state space we are planning in
-    auto space(std::make_shared<ob::RealVectorStateSpace>(C_Dimension));
+	//Construct the state space we are planning in
+	auto space(std::make_shared<ob::RealVectorStateSpace>(C_Dimension));
 
-    ob::RealVectorBounds bounds(C_Dimension);
-    bounds.setLow(-PI);
-    bounds.setHigh(PI);
+	ob::RealVectorBounds bounds(C_Dimension);
+	bounds.setLow(-PI);
+	bounds.setHigh(PI);
     space->setBounds(bounds);
 
-    // create simple setup
-    og::SimpleSetup ss(space);
+	//create space information pointer
+	ob::SpaceInformationPtr si(std::make_shared<ob::SpaceInformation>(space));
 
     // set state validity checking for this space
-    auto nlp = std::make_shared<KOMO::Conv_KOMO_SparseNonfactored>(komo, false);
-    ValidityCheckWithKOMO checker(*nlp);
+	auto nlp = std::make_shared<KOMO::Conv_KOMO_SparseNonfactored>(komo, false);
+	ValidityCheckWithKOMO checker(*nlp);
 
-    ss.setStateValidityChecker([&checker](const ob::State *state)
-                               { return checker.check(state); });
+	si->setStateValidityChecker([&checker](const ob::State *state) {
+		return checker.check(state);
+	});
 
-    // create start and goal states. These states might change from example to example
+    ob::ProblemDefinitionPtr pdef(std::make_shared<ob::ProblemDefinition>(si));
+
+	// create start and goal states. These states might change from example to example
     ob::ScopedState<> start(space);
-    for (unsigned int i = 0; i < C.getJointStateDimension(); i++)
+	for (unsigned int i = 0; i < C.getJointStateDimension(); i++)
     {
-        start[i] = komo.getConfiguration_q(0).elem(i);
-    }
-    ss.setStartState(start);
+	start[i] = komo.getConfiguration_q(0).elem(i);
+	}
+    pdef->addStartState(start);
 
-    auto goalStates = std::make_shared<ob::GoalStates>(ss.getSpaceInformation());
+    auto goalStates = std::make_shared<ob::GoalStates>(si);
 
     for (unsigned int j = 0; j < goal_.size(); j++)
     {
         ob::ScopedState<> goal(space);
         for (unsigned int i = 0; i < C.getJointStateDimension(); i++)
         {
-            goal[i] = goal_.at(j)(i);
+        goal[i] = goal_.at(j)(i);
         }
         goalStates->addState(goal);
     }
 
-    ss.setGoal(goalStates);
-
-    auto si = ss.getSpaceInformation();
+    pdef->setGoal(goalStates);
     auto BITStar_Planner = std::make_shared<og::BITstar>(si);
     auto planner(BITStar_Planner);
-    ss.setPlanner(planner);
-
-    ss.setup();
+    planner->setProblemDefinition(pdef);
+    planner->setup();
 
     // attempt to solve the problem
-    ob::PlannerStatus solved = ss.solve(5.0);
+    ob::PlannerStatus solved;
+    solved = planner->ob::Planner::solve(5.0);
 
     if (solved == ob::PlannerStatus::StatusType::APPROXIMATE_SOLUTION)
         std::cout << "Found solution: APPROXIMATE_SOLUTION" << std::endl;
@@ -169,7 +170,7 @@ arrA solveMotion(rai::Configuration &C, std::vector<arr> goal_, std::string plan
         return Null_arrA;
     }
 
-    auto path = ss.getSolutionPath();
+    auto path = static_cast<og::PathGeometric &>(*(pdef->getSolutionPath()));
     path.interpolate(15);
 
     arrA configs;
@@ -382,7 +383,12 @@ void optimizePath(std::vector<std::string> &inputs, arrA &finalPath)
 
     komo.run_prepare(0);
     // if(attempt > 0)
-    // komo.initWithWaypoints(finalPath, 15, false);
+    komo.initWithWaypoints(finalPath, 15, false);
+
+    komo.view(true, "pre-optimization motion");
+    for (uint i = 0; i < 2; i++)
+        komo.view_play(true);
+    
     // komo.animateOptimization = 2;
     komo.optimize();
     // komo.checkGradients();

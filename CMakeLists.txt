@@ -155,6 +155,9 @@ target_link_libraries( sequentialSampling ompl rai Path)
 add_executable(sequentialOptimization ./examples/Main/sequentialOptimization.cpp)
 target_link_libraries( sequentialOptimization ompl rai Path)
 
+add_executable(keyframeTree ./examples/Main/keyframeTree.cpp)
+target_link_libraries( keyframeTree rai)
+
 # try_path executable
 add_executable(t_path ./examples/Test_KOMO/main.cpp)
 target_link_libraries( t_path rai ompl Path )
