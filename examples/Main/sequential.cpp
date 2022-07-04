@@ -324,6 +324,7 @@ arrA planMotion(std::vector<std::string> &inputs, arrA keyFrames)
         finalPath.append(intermediatePath);
         // std::cout << C.getJointState() << std::endl;
         // C.setJointState(Trajectory.last());
+        C.setJointState(goalKeyFrame);
         if (phase % 2 == 0)
             C.attach(C.getFrame(ref1.c_str()), C.getFrame(ref2.c_str())); // pick
         else
@@ -517,7 +518,7 @@ int main(int argc, char **argv)
     // // These set of functions are to be called if you want to only debug the optimization.
     // copyPath(finalPath);
 
-    copyPath(subTrajectories,finalPath);
+    // copyPath(subTrajectories,finalPath);
     modifyPath(finalPath, keyFrames);
     std::cout << finalPath << std::endl;
 

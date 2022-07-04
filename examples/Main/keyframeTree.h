@@ -1,3 +1,5 @@
+#pragma once
+
 #define PI 3.14159
 #define tol 1e-2
 

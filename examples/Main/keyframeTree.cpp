@@ -12,14 +12,142 @@
 // komo includes
 #include <KOMO/komo.h>
 #include <Kin/viewer.h>
+
 #include "keyframeTree.h"
+
+// ompl includes
+#include <ompl/config.h>
+#include <ompl/geometric/SimpleSetup.h>
+#include <ompl/base/SpaceInformation.h>
+#include <ompl/base/ProblemDefinition.h>
+#include <ompl/base/spaces/RealVectorStateSpace.h>
+#include <ompl/base/goals/GoalStates.h>
+// planner
+#include <ompl/geometric/planners/informedtrees/BITstar.h>
+
+#define PI 3.14159
+#define tol 1e-2
+
+namespace ob = ompl::base;
+namespace og = ompl::geometric;
+
+struct ValidityCheckWithKOMO
+{
+    KOMO::Conv_KOMO_SparseNonfactored &nlp;
+    ValidityCheckWithKOMO(KOMO::Conv_KOMO_SparseNonfactored &nlp) : nlp(nlp) {}
+    bool check(const ob::State *state)
+    {
+        const auto *State = state->as<ob::RealVectorStateSpace::StateType>();
+
+        arr x_query;
+        for (unsigned int i = 0; i < C_Dimension; i++)
+        {
+            x_query.append((*State)[i]);
+        }
+
+        arr phi;
+        nlp.evaluate(phi, NoArr, x_query);
+
+        return std::abs(phi(0)) < tol;
+    }
+};
 
 std::vector<std::shared_ptr<keyframeNode>> leafNodes; // replace this vector with priority queue
 
 arrA solveMotion(rai::Configuration &C, std::vector<arr> goal_)
 {
-    arrA solvedPath = {{1,2,3},{3,4,5}};
-    return solvedPath;
+    KOMO komo;
+	komo.setModel(C, true);
+	komo.setTiming(1, 1, 1, 1);
+	komo.addObjective({}, FS_accumulatedCollisions, {}, OT_eq, { 1 });
+	komo.run_prepare(2);
+
+	C_Dimension = C.getJointStateDimension();
+
+	//Construct the state space we are planning in
+	auto space(std::make_shared<ob::RealVectorStateSpace>(C_Dimension));
+
+	ob::RealVectorBounds bounds(C_Dimension);
+	bounds.setLow(-PI);
+	bounds.setHigh(PI);
+    space->setBounds(bounds);
+
+	//create space information pointer
+	ob::SpaceInformationPtr si(std::make_shared<ob::SpaceInformation>(space));
+
+    // set state validity checking for this space
+	auto nlp = std::make_shared<KOMO::Conv_KOMO_SparseNonfactored>(komo, false);
+	ValidityCheckWithKOMO checker(*nlp);
+
+	si->setStateValidityChecker([&checker](const ob::State *state) {
+		return checker.check(state);
+	});
+
+    ob::ProblemDefinitionPtr pdef(std::make_shared<ob::ProblemDefinition>(si));
+
+	// create start and goal states. These states might change from example to example
+    ob::ScopedState<> start(space);
+	for (unsigned int i = 0; i < C.getJointStateDimension(); i++)
+    {
+	start[i] = komo.getConfiguration_q(0).elem(i);
+	}
+    pdef->addStartState(start);
+
+    auto goalStates = std::make_shared<ob::GoalStates>(si);
+
+    for (unsigned int j = 0; j < goal_.size(); j++)
+    {
+        ob::ScopedState<> goal(space);
+        for (unsigned int i = 0; i < C.getJointStateDimension(); i++)
+        {
+        goal[i] = goal_.at(j)(i);
+        }
+        goalStates->addState(goal);
+    }
+
+    pdef->setGoal(goalStates);
+    auto BITStar_Planner = std::make_shared<og::BITstar>(si);
+    auto planner(BITStar_Planner);
+    planner->setProblemDefinition(pdef);
+    planner->setup();
+
+    // attempt to solve the problem
+    ob::PlannerStatus solved;
+    solved = planner->ob::Planner::solve(5.0);
+
+    if (solved == ob::PlannerStatus::StatusType::APPROXIMATE_SOLUTION)
+        std::cout << "Found solution: APPROXIMATE_SOLUTION" << std::endl;
+    else if (solved == ob::PlannerStatus::StatusType::EXACT_SOLUTION)
+        std::cout << "Found solution: EXACT_SOLUTION" << std::endl;
+    else if (solved == ob::PlannerStatus::StatusType::TIMEOUT)
+    {
+        std::cout << "Found solution: TIMEOUT" << std::endl;
+        return Null_arrA;
+    }
+    else
+    {
+        std::cout << "No solution found: Invalid " << std::endl;
+        return Null_arrA;
+    }
+
+    auto path = static_cast<og::PathGeometric &>(*(pdef->getSolutionPath()));
+    path.interpolate(15);
+
+    arrA configs;
+    for (auto state : path.getStates())
+    {
+        arr config;
+        std::vector<double> reals;
+        space->copyToReals(reals, state);
+        for (double r : reals)
+        {
+            config.append(r);
+        }
+        configs.append(config);
+    }
+
+    std::cout << "Solution Path" << configs << std::endl;
+    return configs;
 }
 
 std::shared_ptr<keyframeNode> makeRootNode(std::vector<std::string> inputs)
@@ -144,7 +272,7 @@ arrA planMotion(std::vector<std::string> &inputs, arrA keyFrames)
         }
 
         std::vector<arr> goalConfigs;
-        arr goalKeyFrame = keyFrames(phase);
+        arr goalKeyFrame = keyFrames(phase+1);
         // std::cout << goalKeyFrame << std::endl;
         goalConfigs.push_back(goalKeyFrame.resize(C_Dimension));
         arrA intermediatePath = solveMotion(C, goalConfigs);
@@ -153,6 +281,7 @@ arrA planMotion(std::vector<std::string> &inputs, arrA keyFrames)
             // Your grow tree function comes in here.
         }
         finalPath.append(intermediatePath);
+        C.setJointState(goalKeyFrame);
         if (phase % 2 == 0)
             C.attach(C.getFrame(ref1.c_str()), C.getFrame(ref2.c_str())); // pick
         else
@@ -160,6 +289,90 @@ arrA planMotion(std::vector<std::string> &inputs, arrA keyFrames)
         phase++;
     }
     return finalPath;
+}
+
+void addRelTransformations(arrA &finalPath, arrA keyFrames)
+{
+    std::cout << "I enter modify Path" << std::endl;
+    std::cout << "final Path length : " << finalPath.N << std::endl;
+    int phase = 1;
+    while (phase < keyFrames.N-1)
+    {
+        arr keyframe = keyFrames(phase);
+        std::cout << "keyframe" << keyframe << std::endl;
+        arr relTransformation = keyframe({C_Dimension, keyframe.N-1});
+        std::cout << "relTransformation" << relTransformation << std::endl;
+        for (int i = 0; i < 15; i++)
+        {
+            finalPath(15*phase+i-1).append(relTransformation);
+        }
+        phase ++;
+    }
+    finalPath(15*(keyFrames.N-1)-1) = keyFrames(keyFrames.N-1);
+}
+
+void optimizePath(std::vector<std::string> &inputs, arrA &finalPath)
+{
+    // static int attempt = 0;
+    // Set filename (Model) and totalPhases
+    std::string filename = inputs.at(0);
+    int totalPhases = stoi(inputs.at(1));
+
+    // Set Configuration
+    rai::Configuration C;
+    C.addFile(filename.c_str());
+
+    // make a KOMO object and write down the whole action sequence
+    KOMO komo;
+    komo.verbose = 0;
+    komo.setModel(C, true);
+    komo.setTiming(totalPhases, 15, 5, 2);
+
+    // Define the KOMO problem by iterating over action the sequence
+    int phase = 0;
+    while (phase < totalPhases)
+    {
+        std::string ref1 = inputs.at(2 + phase * 2), ref2 = inputs.at(3 + phase * 2);
+
+        if (phase == 0)
+            komo.addSwitch_stable(phase + 1, phase + 2., "", ref1.c_str(), ref2.c_str());
+        else if (phase % 2 == 0)
+            komo.addSwitch_stable(phase + 1, phase + 2., "", ref1.c_str(), ref2.c_str(), false);
+        else
+            komo.addSwitch_stable(phase + 1, phase + 2., "", ref2.c_str(), ref1.c_str(), false);
+        komo.addObjective({phase + 1.}, FS_distance, {ref1.c_str(), ref2.c_str()}, OT_eq, {1e2});
+        komo.addObjective({phase + 1.}, FS_vectorZ, {ref1.c_str()}, OT_eq, {1e2}, {0., 0., 1.});
+
+        if (phase % 2 == 0) // pick
+        {
+            std::cout << "pick" << std::endl;
+            komo.addObjective({phase + 1.}, FS_scalarProductXX, {ref1.c_str(), ref2.c_str()}, OT_eq, {1e2}, {0.});
+        }
+        else // place
+        {
+            std::cout << "place" << std::endl;
+            komo.addObjective({phase + 1.}, FS_aboveBox, {ref2.c_str(), ref1.c_str()}, OT_ineq, {1e2});
+        }
+        phase++;
+    }
+
+    komo.add_qControlObjective({}, 2);
+    komo.add_collision(true, 0.01);
+
+    komo.run_prepare(0);
+    // if(attempt > 0)
+    komo.initWithWaypoints(finalPath, 15, false);
+
+    komo.view(true, "pre-optimization motion");
+    for (uint i = 0; i < 2; i++)
+        komo.view_play(true);
+    
+    // komo.animateOptimization = 2;
+    komo.optimize();
+
+    komo.view(true, "optimized motion");
+    for (uint i = 0; i < 2; i++)
+        komo.view_play(true);
 }
 
 void addToTree(arrA sequence, std::shared_ptr<keyframeNode> start)
@@ -240,4 +453,9 @@ int main(int argc, char **argv)
     arrA keyFrames = getBestSequence();
     std::cout << keyFrames << std::endl;
     arrA finalPath = planMotion(inputs, keyFrames);
+
+    addRelTransformations(finalPath,keyFrames);
+    optimizePath(inputs, finalPath);
+
+    std::cout << "final Path: " << finalPath << std::endl;
 }
