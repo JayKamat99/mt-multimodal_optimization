@@ -11,6 +11,17 @@ table2 (world){
     shape:ssBox, Q:<t(0.01 0. .7)>, size:[.4 .4 .1 .02], color:[0. 0. .3] contact
 }
 
+obstacle (table2){
+    shape:ssBox, Q:<t(.2 0 .2) d(90 0 1 0)>, size:[.5 .5 .01 .02], color:[0. 0. .3 0.5] contact
+}
+obstacle (table2){
+    shape:ssBox, Q:<t(.1 .2 .2) d(90 1 0 0)>, size:[.25 .5 .01 .02], color:[0. 0. .3 0.5] contact
+}
+obstacle (table2){
+    shape:ssBox, Q:<t(.1 -.2 .2) d(90 1 0 0)>, size:[.25 .5 .01 .02], color:[0. 0. .3 0.5] contact
+}
+
+
 box (table){
   shape:ssBox, Q:<t(.4 .1 .08) d(120 0 0 1)>, size:[.2 .06 .06 .02], color:[.4 .8 .4] contact
   joint:rigid

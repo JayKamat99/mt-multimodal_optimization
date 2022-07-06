@@ -184,7 +184,6 @@ arrA sampleKeyframeSequence(std::vector<std::string> inputs, std::shared_ptr <ke
 
     int currentPhase = getCurrentPhase(start);
     std::cout << "currentPhase: " << currentPhase << std::endl;
-    totalPhases = totalPhases - currentPhase;
 
     bool keyframesValid = false;
 
@@ -198,6 +197,7 @@ arrA sampleKeyframeSequence(std::vector<std::string> inputs, std::shared_ptr <ke
         komo.verbose = 0;
         komo.setModel(C, true);
         komo.setTiming(totalPhases, 1, 5, 2);
+        komo.addObjective({(double)currentPhase}, FS_qItself, {}, OT_eq, {}, start->get_state().resize(C_Dimension));
 
         int phase = 0;
         while (phase < totalPhases)
@@ -293,7 +293,6 @@ arrA planMotion(std::vector<std::string> &inputs, arrA keyFrames)
 
 void addRelTransformations(arrA &finalPath, arrA keyFrames)
 {
-    std::cout << "I enter modify Path" << std::endl;
     std::cout << "final Path length : " << finalPath.N << std::endl;
     int phase = 1;
     while (phase < keyFrames.N-1)
@@ -345,12 +344,12 @@ void optimizePath(std::vector<std::string> &inputs, arrA &finalPath)
 
         if (phase % 2 == 0) // pick
         {
-            std::cout << "pick" << std::endl;
+            // std::cout << "pick" << std::endl;
             komo.addObjective({phase + 1.}, FS_scalarProductXX, {ref1.c_str(), ref2.c_str()}, OT_eq, {1e2}, {0.});
         }
         else // place
         {
-            std::cout << "place" << std::endl;
+            // std::cout << "place" << std::endl;
             komo.addObjective({phase + 1.}, FS_aboveBox, {ref2.c_str(), ref1.c_str()}, OT_ineq, {1e2});
         }
         phase++;
@@ -377,10 +376,11 @@ void optimizePath(std::vector<std::string> &inputs, arrA &finalPath)
 
 void addToTree(arrA sequence, std::shared_ptr<keyframeNode> start)
 {
+    int currentPhase = getCurrentPhase(start);
     auto prevNode_ptr = start;
-    for(arr keyframe:sequence)
+    for(int i=currentPhase; i<sequence.N; i++)
     {
-        auto node = std::make_shared<keyframeNode>(keyframe, prevNode_ptr);
+        auto node = std::make_shared<keyframeNode>(sequence(i), prevNode_ptr);
         prevNode_ptr = node;
     }
     leafNodes.push_back(prevNode_ptr);
@@ -398,8 +398,8 @@ void growTree(std::vector<std::string> &inputs, std::shared_ptr <keyframeNode> s
 arrA getBestSequence() // Need to change this to return the best sequence instead of the first.
 {
     auto node_ptr = leafNodes.front();
-    std::cout << node_ptr->get_costHeuristic() << "\n" << node_ptr->get_parent()->get_costHeuristic() << "\n" << node_ptr->get_parent()->get_parent()->get_costHeuristic() << std::endl;
-    std::cout << node_ptr->get_bestCostToCome() << "\n" << node_ptr->get_parent()->get_bestCostToCome() << "\n" << node_ptr->get_parent()->get_parent()->get_bestCostToCome() << std::endl;
+    // std::cout << node_ptr->get_costHeuristic() << "\n" << node_ptr->get_parent()->get_costHeuristic() << "\n" << node_ptr->get_parent()->get_parent()->get_costHeuristic() << std::endl;
+    // std::cout << node_ptr->get_bestCostToCome() << "\n" << node_ptr->get_parent()->get_bestCostToCome() << "\n" << node_ptr->get_parent()->get_parent()->get_bestCostToCome() << std::endl;
     arrA sequence;
     sequence.append(node_ptr->get_state());
     while(node_ptr->get_parent() != nullptr)
