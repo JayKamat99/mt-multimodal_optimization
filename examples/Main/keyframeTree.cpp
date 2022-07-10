@@ -248,7 +248,7 @@ arrA sampleKeyframeSequence(std::vector<std::string> inputs, std::shared_ptr <ke
     return keyFrames;
 }
 
-arrA planMotion(std::vector<std::string> &inputs, arrA keyFrames)
+arrA planMotion(std::vector<std::string> &inputs, std::shared_ptr<keyframeNode> &goalKeyframe)
 {
     arrA finalPath;
 
@@ -258,6 +258,8 @@ arrA planMotion(std::vector<std::string> &inputs, arrA keyFrames)
     // Set Configuration
     rai::Configuration C;
     C.addFile(filename.c_str());
+
+    arrA keyFrames = getSequence(goalKeyframe);
 
     int phase = 0;
     while (phase < totalPhases)
@@ -276,8 +278,11 @@ arrA planMotion(std::vector<std::string> &inputs, arrA keyFrames)
         // std::cout << goalKeyFrame << std::endl;
         goalConfigs.push_back(goalKeyFrame.resize(C_Dimension));
         arrA intermediatePath = solveMotion(C, goalConfigs);
-        if (intermediatePath == Null_arrA)
+        if (intermediatePath == Null_arrA) // path cannot be found! Yo need to sample more points from the previous node
         {
+            // Add penalty to the current node.
+            // increment a counter.
+            // 
             // Your grow tree function comes in here.
         }
         finalPath.append(intermediatePath);
@@ -395,11 +400,8 @@ void growTree(std::vector<std::string> &inputs, std::shared_ptr <keyframeNode> s
     }
 }
 
-arrA getBestSequence() // Need to change this to return the best sequence instead of the first.
+arrA getSequence(std::shared_ptr<keyframeNode> node_ptr)
 {
-    auto node_ptr = leafNodes.front();
-    // std::cout << node_ptr->get_costHeuristic() << "\n" << node_ptr->get_parent()->get_costHeuristic() << "\n" << node_ptr->get_parent()->get_parent()->get_costHeuristic() << std::endl;
-    // std::cout << node_ptr->get_bestCostToCome() << "\n" << node_ptr->get_parent()->get_bestCostToCome() << "\n" << node_ptr->get_parent()->get_parent()->get_bestCostToCome() << std::endl;
     arrA sequence;
     sequence.append(node_ptr->get_state());
     while(node_ptr->get_parent() != nullptr)
@@ -450,12 +452,17 @@ int main(int argc, char **argv)
 
     // Get sampled path
     growTree(inputs, root);
-    arrA keyFrames = getBestSequence();
-    std::cout << keyFrames << std::endl;
-    arrA finalPath = planMotion(inputs, keyFrames);
+    arrA finalPath = planMotion(inputs, leafNodes.front()); // Plan motion till keyframe. I know the previous points! I don't need to send keyframes!
 
-    addRelTransformations(finalPath,keyFrames);
-    optimizePath(inputs, finalPath);
+    // addRelTransformations(finalPath,keyFrames);
+    // optimizePath(inputs, finalPath);
 
     std::cout << "final Path: " << finalPath << std::endl;
 }
+
+/**
+ * @todo run motion planner within the node. A node has only one parent so graph to the node (parent->node) can be saved.
+ * @todo Wrap the whole tree planner inside an ompl planner
+ * @todo Can I reuse information from nodes at the same level?
+ * 
+ */

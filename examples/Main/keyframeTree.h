@@ -84,5 +84,6 @@ int getCurrentPhase(std::shared_ptr<keyframeNode> start);
 
 arrA planMotion(std::vector<std::string> &inputs, arrA keyFrames);
 
-arrA getBestSequence();
+arrA getSequence(std::shared_ptr<keyframeNode> node_ptr);
+
 
