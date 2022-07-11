@@ -140,8 +140,6 @@ target_link_libraries( t_komo rai )
 add_executable( pickplace_seq ./examples/only_KOMO/pickplace.cpp)
 target_link_libraries(pickplace_seq  rai )
 
-
-
 # Main executable
 add_executable(t_main ./examples/Main/main.cpp)
 target_link_libraries( t_main ompl rai Path)
@@ -157,6 +155,10 @@ target_link_libraries( sequentialOptimization ompl rai)
 
 add_executable(keyframeTree ./examples/Main/keyframeTree.cpp)
 target_link_libraries( keyframeTree ompl rai)
+
+# sequential executable
+add_executable(s_main ./examples/sequential/main.cpp)
+target_link_libraries( s_main ompl rai Path)
 
 # try_path executable
 add_executable(t_path ./examples/Test_KOMO/main.cpp)

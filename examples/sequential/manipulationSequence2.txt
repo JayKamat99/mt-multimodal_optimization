@@ -1,0 +1,6 @@
+../examples/Models/s3_manip_table.g
+2
+gripper
+box
+box
+table2

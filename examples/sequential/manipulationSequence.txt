@@ -1,0 +1,8 @@
+../examples/Models/s2_bugtrap.g
+2
+bot
+small_box
+small_box
+target
+bot
+origin

@@ -6,30 +6,10 @@
  * 
  */
 
-// necessary
-#include <fstream>
-
-// komo includes
-#include <KOMO/komo.h>
-#include <Kin/viewer.h>
-
 #include "keyframeTree.h"
 
-// ompl includes
-#include <ompl/config.h>
-#include <ompl/geometric/SimpleSetup.h>
-#include <ompl/base/SpaceInformation.h>
-#include <ompl/base/ProblemDefinition.h>
-#include <ompl/base/spaces/RealVectorStateSpace.h>
-#include <ompl/base/goals/GoalStates.h>
 // planner
 #include <ompl/geometric/planners/informedtrees/BITstar.h>
-
-#define PI 3.14159
-#define tol 1e-2
-
-namespace ob = ompl::base;
-namespace og = ompl::geometric;
 
 struct ValidityCheckWithKOMO
 {
@@ -53,6 +33,42 @@ struct ValidityCheckWithKOMO
 };
 
 std::vector<std::shared_ptr<keyframeNode>> leafNodes; // replace this vector with priority queue
+
+std::vector<std::string> getInitInfo(int argc, char **argv)
+{
+    // Default inputs
+    std::string inputFile = "../examples/Main/manipulationSequence.txt";
+    std::string planner_ = "BITstar";
+
+    // Don't like the default inputs? You can input the inputs you want!
+    switch (argc)
+    {
+    case 3:
+        planner_ = argv[2];
+    case 2:
+        inputFile = argv[1];
+    }
+
+    // Read file to get inputs
+    std::string line;
+    ifstream myfile(inputFile);
+    std::vector<std::string> inputs;
+    if (myfile.is_open())
+    {
+        while (getline(myfile, line))
+        {
+            inputs.push_back(line);
+        }
+        myfile.close();
+    }
+    else
+    {
+        cout << "Unable to open file";
+        return Null_vector;
+    }
+
+    return inputs;
+}
 
 arrA solveMotion(rai::Configuration &C, std::vector<arr> goal_)
 {
@@ -391,9 +407,9 @@ void addToTree(arrA sequence, std::shared_ptr<keyframeNode> start)
     leafNodes.push_back(prevNode_ptr);
 }
 
-void growTree(std::vector<std::string> &inputs, std::shared_ptr <keyframeNode> start = nullptr)
+void growTree(std::vector<std::string> &inputs, std::shared_ptr <keyframeNode> start)
 {
-    for(int i=0; i<1; i++)
+    for(int i=0; i<3; i++)
     {
         arrA sequence = sampleKeyframeSequence(inputs, start);
         addToTree(sequence, start);
@@ -416,48 +432,21 @@ arrA getSequence(std::shared_ptr<keyframeNode> node_ptr)
 
 int main(int argc, char **argv)
 {
-    // Default inputs
-    std::string inputFile = "../examples/Main/manipulationSequence.txt";
-    std::string planner_ = "BITstar";
-
-    // Don't like the default inputs? You can input the inputs you want!
-    switch (argc)
-    {
-    case 3:
-        planner_ = argv[2];
-    case 2:
-        inputFile = argv[1];
-    }
-
-    // Read file to get inputs
-    std::string line;
-    ifstream myfile(inputFile);
-    std::vector<std::string> inputs;
-    if (myfile.is_open())
-    {
-        while (getline(myfile, line))
-        {
-            inputs.push_back(line);
-        }
-        myfile.close();
-    }
-    else
-    {
-        cout << "Unable to open file";
+    std::vector<std::string> inputs = getInitInfo(argc, argv);
+    if (inputs == Null_vector)
         return 0;
-    }
 
     // build a  start node
     auto root = makeRootNode(inputs);
 
-    // Get sampled path
-    growTree(inputs, root);
-    arrA finalPath = planMotion(inputs, leafNodes.front()); // Plan motion till keyframe. I know the previous points! I don't need to send keyframes!
+    // // Get sampled path
+    // growTree(inputs, root);
+    // arrA finalPath = planMotion(inputs, leafNodes.front()); // Plan motion till keyframe. I know the previous points! I don't need to send keyframes!
 
-    // addRelTransformations(finalPath,keyFrames);
-    // optimizePath(inputs, finalPath);
+    // // addRelTransformations(finalPath,keyFrames);
+    // // optimizePath(inputs, finalPath);
 
-    std::cout << "final Path: " << finalPath << std::endl;
+    // std::cout << "final Path: " << finalPath << std::endl;
 }
 
 /**

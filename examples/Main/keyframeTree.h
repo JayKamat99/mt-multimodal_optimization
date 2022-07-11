@@ -1,10 +1,30 @@
 #pragma once
 
+// necessary
+#include <fstream>
+
+// komo includes
+#include <KOMO/komo.h>
+#include <Kin/viewer.h>
+
+// ompl includes
+#include <ompl/config.h>
+#include <ompl/geometric/SimpleSetup.h>
+#include <ompl/base/SpaceInformation.h>
+#include <ompl/base/ProblemDefinition.h>
+#include <ompl/base/spaces/RealVectorStateSpace.h>
+#include <ompl/base/goals/GoalStates.h>
+#include <ompl/base/Planner.h>
+
 #define PI 3.14159
 #define tol 1e-2
 
+namespace ob = ompl::base;
+namespace og = ompl::geometric;
+
 int C_Dimension;
 const arrA Null_arrA = {{}};
+const std::vector<std::string> Null_vector = {{}};
 
 template <typename T>
 void printVector(T &vec)
@@ -29,8 +49,10 @@ private:
     std::shared_ptr<keyframeNode> parent;
     double costHeuristic; // lower-bound
     double bestCostToCome;
+    double bestCostToGo; // cost to reach the final goal.
     double calcDistHeuristic(); // calculates eucledian distance from parent and adds it to the best cost to parent if available, else to the dist heuristic to the parent
     double distFromParent();
+    std::shared_ptr<ompl::base::Planner> planner;
 public:
     keyframeNode(arr state, std::shared_ptr<keyframeNode> parent);
     ~keyframeNode() = default;
