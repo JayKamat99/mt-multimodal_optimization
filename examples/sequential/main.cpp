@@ -16,8 +16,6 @@
 
 // keyframe planner include
 #include <path/sktp.h>
-#include <ompl/geometric/planners/informedtrees/BITstar.h>
-
 
 #define PI 3.14159
 #define tol 1e-2
@@ -75,8 +73,9 @@ int main(int argc, char **argv)
     if (inputs == Null_vector)
         return 0;
 
-    // setup the outer planner with a dummy space information pointer
-	ob::SpaceInformationPtr si(std::make_shared<ob::SpaceInformation>(std::make_shared<ob::RealVectorStateSpace>(0)));
+    // setup the outer planner
+    rai::Configuration C(inputs.at(0).c_str());
+	ob::SpaceInformationPtr si(std::make_shared<ob::SpaceInformation>(std::make_shared<ob::RealVectorStateSpace>(C.getJointStateDimension())));
     auto planner = std::make_shared<og::sktp>(si);
     planner->set_inputs(inputs);
     planner->set_subPlanner(og::sktp::BITstar);
@@ -84,7 +83,7 @@ int main(int argc, char **argv)
 
     // attempt to solve the problem
     ob::PlannerStatus solved;
-    solved = planner->ob::Planner::solve(30.0);
+    solved = planner->ob::Planner::solve(3.0);
 
     return 0;
 }
