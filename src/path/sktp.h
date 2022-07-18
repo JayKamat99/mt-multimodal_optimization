@@ -18,8 +18,48 @@
 #include <KOMO/komo.h>
 #include <Kin/kin.h>
 
+// ompl includes
+#include <ompl/config.h>
+#include <ompl/geometric/SimpleSetup.h>
+#include <ompl/base/SpaceInformation.h>
+#include <ompl/base/ProblemDefinition.h>
+#include <ompl/base/spaces/RealVectorStateSpace.h>
+#include <ompl/base/goals/GoalStates.h>
+#include <ompl/base/Planner.h>
+
 // Planners
 #include <ompl/geometric/planners/informedtrees/BITstar.h>
+
+namespace ob = ompl::base;
+namespace og = ompl::geometric;
+
+#define PI 3.14159
+#define tol 1e-2
+
+struct ValidityCheckWithKOMO
+{
+    private:
+        int C_Dimension;
+    public:
+    KOMO::Conv_KOMO_SparseNonfactored &nlp;
+    ValidityCheckWithKOMO(KOMO::Conv_KOMO_SparseNonfactored &nlp) : nlp(nlp) {}
+    void set_dimension(int C_Dimension) {this->C_Dimension = C_Dimension;}
+    bool check(const ob::State *state)
+    {
+        const auto *State = state->as<ob::RealVectorStateSpace::StateType>();
+
+        arr x_query;
+        for (unsigned int i = 0; i < C_Dimension; i++)
+        {
+            x_query.append((*State)[i]);
+        }
+
+        arr phi;
+        nlp.evaluate(phi, NoArr, x_query);
+
+        return std::abs(phi(0)) < tol;
+    }
+};
 
 namespace ompl
 {
@@ -58,6 +98,7 @@ namespace ompl
             {
                 return std::to_string(bestCost);
             }
+            
             void clear() override;
 
             void setup() override;
@@ -83,11 +124,13 @@ namespace ompl
                 std::shared_ptr<keyframeNode> get_parent() {return this->parent;}
                 double get_costToComeHeuristic()  {return this->costToComeHeuristic;}
                 // double get_bestCostToCome() {return this->bestCostToCome;}
+                std::vector<std::shared_ptr<keyframeNode>> get_children() {return this->childern;}
                 void add_child(std::shared_ptr<keyframeNode> child, bool updateCosts);
                 void setasleaf() {this->costToGo = 0;}
                 void set_dimension(int C_Dimension) {this->C_Dimension = C_Dimension;}
                 void set_planner(std::shared_ptr<ompl::base::Planner> planner) {this->planner = planner;}
-                void plan() {planner->solve(1.0);}
+                std::shared_ptr<ompl::base::Planner> get_planner() {return planner;}
+                ob::PlannerStatus plan();
             };
 
             std::shared_ptr<og::sktp::keyframeNode> makeRootNode(std::vector<std::string> inputs);
@@ -96,6 +139,9 @@ namespace ompl
 		    arrA sampleKeyframeSequence(std::vector<std::string> inputs, std::shared_ptr<keyframeNode> start);
             int getCurrentPhase(std::shared_ptr<keyframeNode> node);
 			void addToTree(arrA sequence, std::shared_ptr<keyframeNode> start);
+
+		    void initPlanner(std::shared_ptr<ompl::geometric::sktp::keyframeNode> node);
+
         };  
     } // namespace geometric
 } //namespace ompl

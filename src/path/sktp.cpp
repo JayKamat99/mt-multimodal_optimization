@@ -8,6 +8,7 @@ namespace ompl
 		sktp::sktp(const base::SpaceInformationPtr &si) : base::Planner(si, "KOMO")
 		{
 			addPlannerProgressProperty("best cost REAL", [this] { return bestCostProperty(); });
+			C_Dimension = si->getStateDimension();
 		}
 
 		void sktp::setup()
@@ -74,6 +75,27 @@ namespace ompl
 				// No else
 			}
 			// No else
+		}
+
+		ob::PlannerStatus sktp::keyframeNode::plan()
+		{
+			// attempt to solve the problem
+			ob::PlannerStatus solved;
+			solved = planner->solve(5.0);
+
+			if (solved == ob::PlannerStatus::StatusType::APPROXIMATE_SOLUTION)
+				std::cout << "Found solution: APPROXIMATE_SOLUTION" << std::endl;
+			else if (solved == ob::PlannerStatus::StatusType::EXACT_SOLUTION)
+				std::cout << "Found solution: EXACT_SOLUTION" << std::endl;
+			else if (solved == ob::PlannerStatus::StatusType::TIMEOUT)
+			{
+				std::cout << "Found solution: TIMEOUT" << std::endl;
+			}
+			else
+			{
+				std::cout << "No solution found: Invalid " << std::endl;
+			}
+			return solved;
 		}
 
 		std::shared_ptr<og::sktp::keyframeNode> sktp::makeRootNode(std::vector<std::string> inputs)
@@ -203,19 +225,207 @@ namespace ompl
 			}
 		}
 
+		void sktp::initPlanner(std::shared_ptr<ompl::geometric::sktp::keyframeNode> node)
+		{
+			// initialize the planner variable
+			std::shared_ptr<ompl::base::Planner> planner;
+
+			// get state history until now
+			int currentPhase = getCurrentPhase(node);
+			// std::cout << "currentPhase: " << currentPhase << std::endl; 
+			auto node_ = node;
+			std::stack<arr> pathUntilNow;
+			for (int i=0; i<currentPhase; i++)
+			{
+				pathUntilNow.push(node_->get_state().resize(C_Dimension));
+				node_ = node_->get_parent();
+			}
+
+			// initialize the configuration
+			rai::Configuration C(inputs.at(0).c_str());
+			for(int phase = 0; phase <currentPhase; phase++)
+			{
+				std::cout << "this is called" << std::endl;
+				std::string ref1 = inputs.at(2 + phase * 2), ref2 = inputs.at(3 + phase * 2);
+				C.setJointState(pathUntilNow.top());
+				std::cout << pathUntilNow.top() << std::endl;
+				pathUntilNow.pop();
+				if (phase % 2 == 0)
+					C.attach(C.getFrame(ref1.c_str()), C.getFrame(ref2.c_str())); // pick
+				else
+					C.attach(C.getFrame("world"), C.getFrame(ref1.c_str())); // place
+				phase++;
+			}
+
+			KOMO komo;
+			komo.setModel(C, true);
+			komo.setTiming(1, 1, 1, 1);
+			komo.addObjective({}, FS_accumulatedCollisions, {}, OT_eq, { 1 });
+			komo.run_prepare(2);
+			// komo.view(true);
+
+			//Construct the state space we are planning in
+			auto space(std::make_shared<ob::RealVectorStateSpace>(C_Dimension));
+
+			ob::RealVectorBounds bounds(C_Dimension);
+			bounds.setLow(-PI);
+			bounds.setHigh(PI);
+			space->setBounds(bounds);
+
+			//create space information pointer
+			ob::SpaceInformationPtr subplanner_si(std::make_shared<ob::SpaceInformation>(space));
+
+			// set state validity checking for this space
+			auto nlp = std::make_shared<KOMO::Conv_KOMO_SparseNonfactored>(komo, false);
+			ValidityCheckWithKOMO checker(*nlp);
+			checker.set_dimension(C_Dimension);
+
+			// subplanner_si->setStateValidityChecker([&checker](const ob::State *state) {
+			// 	return checker.check(state);
+			// });
+
+			ob::ProblemDefinitionPtr pdef(std::make_shared<ob::ProblemDefinition>(subplanner_si));
+
+			// create start and goal states. These states might change from example to example
+			ob::ScopedState<> start(space);
+			for (unsigned int i = 0; i < C_Dimension; i++)
+			{
+			start[i] = komo.getConfiguration_q(0).elem(i);
+			}
+			pdef->addStartState(start);
+
+			auto goalStates = std::make_shared<ob::GoalStates>(subplanner_si);
+
+			// Get goals
+			std::vector<arr> goal_;
+			for (auto child:node->get_children())
+			{
+				goal_.push_back(child->get_state().resize(C_Dimension));
+			}
+
+			for (unsigned int j = 0; j < goal_.size(); j++)
+			{
+				ob::ScopedState<> goal(space);
+				for (unsigned int i = 0; i < C_Dimension; i++)
+				{
+				goal[i] = goal_.at(j)(i);
+				}
+				goalStates->addState(goal);
+				std::cout << "goal " << j << " = " << goal << std::endl;
+			}
+
+			pdef->setGoal(goalStates);
+
+			switch (subPlanner)
+			{
+			case (BITstar):
+				planner = std::make_shared<og::BITstar>(subplanner_si);
+				break;
+			}
+			planner->setProblemDefinition(pdef);
+			planner->setup();
+			node->set_planner(planner);
+
+
+			// // attempt to solve the problem
+			// ob::PlannerStatus solved;
+			// solved = planner->solve(5.0);
+
+			// if (solved == ob::PlannerStatus::StatusType::APPROXIMATE_SOLUTION)
+			// 	std::cout << "Found solution: APPROXIMATE_SOLUTION" << std::endl;
+			// else if (solved == ob::PlannerStatus::StatusType::EXACT_SOLUTION)
+			// 	std::cout << "Found solution: EXACT_SOLUTION" << std::endl;
+			// else if (solved == ob::PlannerStatus::StatusType::TIMEOUT)
+			// {
+			// 	std::cout << "Found solution: TIMEOUT" << std::endl;
+			// }
+			// else
+			// {
+			// 	std::cout << "No solution found: Invalid " << std::endl;
+			// }
+
+		}
+
 		ompl::base::PlannerStatus sktp::solve(const base::PlannerTerminationCondition &ptc)
 		{
 			// Make sure I have the necessary inputs. This is the place you define filename and total phases. Also you need to do the sanity check here.
 
-			auto node = makeRootNode(inputs);
+			auto root = makeRootNode(inputs);
+			auto node = root;
 			while(!ptc)
 			{
+				if (getCurrentPhase(node) == stoi(inputs.at(1)))
+				{
+					// get previous nodes to reclaim the whole path.
+					// Along the way, you get to the root node anyway!
+					std::stack<std::shared_ptr<sktp::keyframeNode>> parentNodes;
+					while(node->get_parent() != nullptr)
+					{
+						parentNodes.push(node->get_parent());
+						node = node->get_parent();
+					}
+
+					// get the path from the nodes
+					arrA solutionPath_arrA;
+					auto solutionPath(std::make_shared<og::PathGeometric>(this->getSpaceInformation()));
+
+					while(!parentNodes.empty())
+					{
+						auto intermediate_solutionPath = static_cast<og::PathGeometric &>(*parentNodes.top()->get_planner()->getProblemDefinition()->getSolutionPath());
+						solutionPath->append(intermediate_solutionPath); // Todo: This does not work yet!
+						arrA configs;
+						for (auto state : intermediate_solutionPath.getStates())
+						{
+							arr config;
+							std::vector<double> reals;
+							node->get_planner()->getSpaceInformation()->getStateSpace()->copyToReals(reals, state);
+							for (double r : reals){
+								config.append(r);
+							}
+							configs.append(config);
+						}
+						solutionPath_arrA.append(configs);
+						parentNodes.pop();
+					}
+
+					std::cout << solutionPath_arrA << std::endl;
+					// This solutionPath_arrA is a solution and must be added to pdef
+				}
+
+
 				growTree(inputs,node); // This samples keyframe sequences starting from node and adds to the tree
 				
-				// Describe planner parameters
-				auto planner(std::make_shared<og::BITstar>(this->getSpaceInformation()));
-				node->set_planner(planner);
-				node->plan();
+				initPlanner(node);
+				auto solved = node->plan();
+
+
+				// if (solved == ob::PlannerStatus::StatusType::APPROXIMATE_SOLUTION || solved == ob::PlannerStatus::StatusType::EXACT_SOLUTION)
+				if (solved)
+				{
+					// move to the node whose solution you have.
+					// For that, we first need to to figure out which node it is
+					auto intermediate_solutionPath = static_cast<og::PathGeometric &>(*node->get_planner()->getProblemDefinition()->getSolutionPath());
+					auto finalState = intermediate_solutionPath.getState(intermediate_solutionPath.getStateCount()-1);
+					arr state;	std::vector<double> reals;
+					node->get_planner()->getSpaceInformation()->getStateSpace()->copyToReals(reals, finalState);
+					for (double r : reals)
+					{
+						std::cout << "I enter here" << std::endl;
+						state.append(r);
+						std::cout << r << std::endl;
+					}
+					std::cout << state << std::endl;
+
+					// Now, scroll through every child node to figure out which node to expand
+					for (auto child:node->get_children())
+					{
+						if(child->get_state().resize(C_Dimension) == state)
+						{
+							node = child;
+							break;
+						}
+					}
+				}
 			}
 
 			return ompl::base::PlannerStatus::ABORT;

@@ -83,7 +83,7 @@ int main(int argc, char **argv)
 
     // attempt to solve the problem
     ob::PlannerStatus solved;
-    solved = planner->ob::Planner::solve(3.0);
+    solved = planner->ob::Planner::solve(30.0);
 
     return 0;
 }
