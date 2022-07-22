@@ -321,12 +321,13 @@ namespace ompl
 				phase++;
 			}
 
-			KOMO komo;
-			komo.setModel(C, true);
-			komo.setTiming(1, 1, 1, 1);
-			komo.addObjective({}, FS_accumulatedCollisions, {}, OT_eq, { 1 });
-			komo.run_prepare(2);
-			// komo.view(true);
+			auto komo(std::make_shared<KOMO>());
+			komo->setModel(C, true);
+			komo->setTiming(1, 1, 1, 1);
+			komo->addObjective({}, FS_accumulatedCollisions, {}, OT_eq, { 1 });
+			komo->run_prepare(2);
+			// komo->view(true);
+			node->set_KOMOobj(komo);
 
 			//Construct the state space we are planning in
 			auto space(std::make_shared<ob::RealVectorStateSpace>(C_Dimension));
@@ -340,11 +341,13 @@ namespace ompl
 			ob::SpaceInformationPtr subplanner_si(std::make_shared<ob::SpaceInformation>(space));
 
 			// set state validity checking for this space
-			auto nlp = std::make_shared<KOMO::Conv_KOMO_SparseNonfactored>(komo, false);
-			ValidityCheckWithKOMO checker(*nlp);
+			auto nlp = std::make_shared<KOMO::Conv_KOMO_SparseNonfactored>(*komo, false);
+			node->set_nlp(nlp);
+			auto checker = std::make_shared<ValidityCheckWithKOMO>(*nlp);
+			node->set_checker(checker);
 
 			subplanner_si->setStateValidityChecker([&checker](const ob::State *state) {
-				return checker.check(state);
+				return checker->check(state);
 			});
 
 			ob::ProblemDefinitionPtr pdef(std::make_shared<ob::ProblemDefinition>(subplanner_si));
@@ -353,7 +356,7 @@ namespace ompl
 			ob::ScopedState<> start(space);
 			for (unsigned int i = 0; i < C_Dimension; i++)
 			{
-			start[i] = komo.getConfiguration_q(0).elem(i);
+			start[i] = komo->getConfiguration_q(0).elem(i);
 			}
 			pdef->addStartState(start);
 
@@ -388,28 +391,27 @@ namespace ompl
 			planner->setProblemDefinition(pdef);
 			planner->setup();
 			node->set_planner(planner);
-
 			// // attempt to solve the problem
-			ob::PlannerStatus solved;
-			solved = node->plan();
-			if (solved)
-			{
-				visualize(node);
-			}
-			// solved = planner->solve(5.0);
+			// ob::PlannerStatus solved;
+			// solved = node->plan();
+			// if (solved)
+			// {
+			// 	visualize(node);
+			// }
+			// // solved = planner->solve(5.0);
 
-			if (solved == ob::PlannerStatus::StatusType::APPROXIMATE_SOLUTION)
-				std::cout << "Found solution: APPROXIMATE_SOLUTION" << std::endl;
-			else if (solved == ob::PlannerStatus::StatusType::EXACT_SOLUTION)
-				std::cout << "Found solution: EXACT_SOLUTION" << std::endl;
-			else if (solved == ob::PlannerStatus::StatusType::TIMEOUT)
-			{
-				std::cout << "Found solution: TIMEOUT" << std::endl;
-			}
-			else
-			{
-				std::cout << "No solution found: Invalid " << std::endl;
-			}
+			// if (solved == ob::PlannerStatus::StatusType::APPROXIMATE_SOLUTION)
+			// 	std::cout << "Found solution: APPROXIMATE_SOLUTION" << std::endl;
+			// else if (solved == ob::PlannerStatus::StatusType::EXACT_SOLUTION)
+			// 	std::cout << "Found solution: EXACT_SOLUTION" << std::endl;
+			// else if (solved == ob::PlannerStatus::StatusType::TIMEOUT)
+			// {
+			// 	std::cout << "Found solution: TIMEOUT" << std::endl;
+			// }
+			// else
+			// {
+			// 	std::cout << "No solution found: Invalid " << std::endl;
+			// }
 
 		}
 
@@ -424,15 +426,10 @@ namespace ompl
 				growTree(inputs,node); // This samples keyframe sequences starting from node and adds to the tree
 				
 				initPlanner(node);
-				std::cout << "one time done" << std::endl;
-				// auto solved = node->plan();
-				// break;
-				// node->plan();
-				// visualize(node);
-				bool solved = true;
 
+				auto solved = node->plan();
+				visualize(node);
 
-				// if (solved == ob::PlannerStatus::StatusType::APPROXIMATE_SOLUTION || solved == ob::PlannerStatus::StatusType::EXACT_SOLUTION)
 				if (solved)
 				{
 					// move to the node whose solution you have.

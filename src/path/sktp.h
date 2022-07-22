@@ -124,6 +124,9 @@ namespace ompl
                 double costToGoHeuristic; // lower-bound cost to reach the final goal.
                 double calcDistHeuristic(); // calculates eucledian distance from parent and adds it to the best cost to parent if available, else to the dist heuristic to the parent
                 double distFromNode(std::shared_ptr<keyframeNode> node);
+                std::shared_ptr<ValidityCheckWithKOMO> checker;
+                std::shared_ptr<KOMO> komo;
+                std::shared_ptr<KOMO::Conv_KOMO_SparseNonfactored> nlp;
             public:
                 keyframeNode(arr state, std::shared_ptr<keyframeNode> parent);
                 ~keyframeNode() = default;
@@ -139,6 +142,9 @@ namespace ompl
                 std::shared_ptr<ompl::base::Planner> get_planner() {return planner;}
                 ob::PlannerStatus plan();
                 int penalty;
+                void set_checker(std::shared_ptr<ValidityCheckWithKOMO> &checker) {this->checker = checker;}
+                void set_KOMOobj(std::shared_ptr<KOMO>& komo) {this->komo = komo;}
+                void set_nlp(std::shared_ptr<KOMO::Conv_KOMO_SparseNonfactored> &nlp) {this->nlp = nlp;}
             };
 
             std::shared_ptr<og::sktp::keyframeNode> makeRootNode(std::vector<std::string> inputs);
