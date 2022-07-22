@@ -47,7 +47,7 @@ namespace ompl
 				this->bestCostToCome = INFINITY;
 				this->costToComeHeuristic = this->parent->costToComeHeuristic+ this->distFromNode(parent);
 			}
-			this->costToGo = INFINITY;
+			this->costToGoHeuristic = INFINITY;
 		}
 
 		double sktp::keyframeNode::distFromNode(std::shared_ptr<keyframeNode> node)
@@ -68,9 +68,9 @@ namespace ompl
 			this->childern.push_back(child);
 			if (updateCosts)
 			{
-				if (this->costToGo > child->costToGo + this->distFromNode(child))
+				if (this->costToGoHeuristic > child->costToGoHeuristic + this->distFromNode(child))
 				{
-					this->costToGo = child->costToGo + this->distFromNode(child);
+					this->costToGoHeuristic = child->costToGoHeuristic + this->distFromNode(child);
 				}
 				// No else
 			}
@@ -81,7 +81,7 @@ namespace ompl
 		{
 			// attempt to solve the problem
 			ob::PlannerStatus solved;
-			solved = planner->solve(5.0);
+			solved = planner->solve(1.0);
 
 			if (solved == ob::PlannerStatus::StatusType::APPROXIMATE_SOLUTION)
 				std::cout << "Found solution: APPROXIMATE_SOLUTION" << std::endl;
@@ -96,6 +96,70 @@ namespace ompl
 				std::cout << "No solution found: Invalid " << std::endl;
 			}
 			return solved;
+		}
+
+		void sktp::visualize(std::shared_ptr<og::sktp::keyframeNode> &node)
+		{
+			// get configuration
+
+			int currentPhase = getCurrentPhase(node);
+			// std::cout << "currentPhase: " << currentPhase << std::endl; 
+			auto node_ = node;
+			std::stack<arr> pathUntilNow;
+			for (int i=0; i<currentPhase; i++)
+			{
+				pathUntilNow.push(node_->get_state().resize(C_Dimension));
+				node_ = node_->get_parent();
+			}
+
+			// initialize the configuration
+			rai::Configuration C(inputs.at(0).c_str());
+			for(int phase = 0; phase <currentPhase; phase++)
+			{
+				std::cout << "this is called" << std::endl;
+				std::string ref1 = inputs.at(2 + phase * 2), ref2 = inputs.at(3 + phase * 2);
+				C.setJointState(pathUntilNow.top());
+				std::cout << pathUntilNow.top() << std::endl;
+				pathUntilNow.pop();
+				if (phase % 2 == 0)
+					C.attach(C.getFrame(ref1.c_str()), C.getFrame(ref2.c_str())); // pick
+				else
+					C.attach(C.getFrame("world"), C.getFrame(ref1.c_str())); // place
+				phase++;
+			}
+
+
+			// initialize KOMO object.
+
+			KOMO komo;
+			komo.verbose = 0;
+			komo.setModel(C, true);
+
+			auto path = static_cast<og::PathGeometric &>(*node->get_planner()->getProblemDefinition()->getSolutionPath());
+			arrA configs;
+			for (auto state : path.getStates())
+			{
+				arr config;
+				std::vector<double> reals;
+				node->get_planner()->getSpaceInformation()->getStateSpace()->copyToReals(reals, state);
+				for (double r : reals){
+					config.append(r);
+				}
+				configs.append(config);
+			}
+			
+			komo.setTiming(1., configs.N, 5., 2);
+			komo.add_qControlObjective({}, 1, 1.);
+
+			//use configs to initialize with waypoints
+			komo.initWithWaypoints(configs, configs.N, false);
+			komo.run_prepare(0);
+			komo.plotTrajectory();
+
+			rai::ConfigurationViewer V;
+			V.setPath(C, komo.x, "result", true);
+			V.playVideo(true, 1.);
+			
 		}
 
 		std::shared_ptr<og::sktp::keyframeNode> sktp::makeRootNode(std::vector<std::string> inputs)
@@ -278,11 +342,10 @@ namespace ompl
 			// set state validity checking for this space
 			auto nlp = std::make_shared<KOMO::Conv_KOMO_SparseNonfactored>(komo, false);
 			ValidityCheckWithKOMO checker(*nlp);
-			checker.set_dimension(C_Dimension);
 
-			// subplanner_si->setStateValidityChecker([&checker](const ob::State *state) {
-			// 	return checker.check(state);
-			// });
+			subplanner_si->setStateValidityChecker([&checker](const ob::State *state) {
+				return checker.check(state);
+			});
 
 			ob::ProblemDefinitionPtr pdef(std::make_shared<ob::ProblemDefinition>(subplanner_si));
 
@@ -294,9 +357,9 @@ namespace ompl
 			}
 			pdef->addStartState(start);
 
+			// Get goals
 			auto goalStates = std::make_shared<ob::GoalStates>(subplanner_si);
 
-			// Get goals
 			std::vector<arr> goal_;
 			for (auto child:node->get_children())
 			{
@@ -326,23 +389,27 @@ namespace ompl
 			planner->setup();
 			node->set_planner(planner);
 
-
 			// // attempt to solve the problem
-			// ob::PlannerStatus solved;
+			ob::PlannerStatus solved;
+			solved = node->plan();
+			if (solved)
+			{
+				visualize(node);
+			}
 			// solved = planner->solve(5.0);
 
-			// if (solved == ob::PlannerStatus::StatusType::APPROXIMATE_SOLUTION)
-			// 	std::cout << "Found solution: APPROXIMATE_SOLUTION" << std::endl;
-			// else if (solved == ob::PlannerStatus::StatusType::EXACT_SOLUTION)
-			// 	std::cout << "Found solution: EXACT_SOLUTION" << std::endl;
-			// else if (solved == ob::PlannerStatus::StatusType::TIMEOUT)
-			// {
-			// 	std::cout << "Found solution: TIMEOUT" << std::endl;
-			// }
-			// else
-			// {
-			// 	std::cout << "No solution found: Invalid " << std::endl;
-			// }
+			if (solved == ob::PlannerStatus::StatusType::APPROXIMATE_SOLUTION)
+				std::cout << "Found solution: APPROXIMATE_SOLUTION" << std::endl;
+			else if (solved == ob::PlannerStatus::StatusType::EXACT_SOLUTION)
+				std::cout << "Found solution: EXACT_SOLUTION" << std::endl;
+			else if (solved == ob::PlannerStatus::StatusType::TIMEOUT)
+			{
+				std::cout << "Found solution: TIMEOUT" << std::endl;
+			}
+			else
+			{
+				std::cout << "No solution found: Invalid " << std::endl;
+			}
 
 		}
 
@@ -354,6 +421,58 @@ namespace ompl
 			auto node = root;
 			while(!ptc)
 			{
+				growTree(inputs,node); // This samples keyframe sequences starting from node and adds to the tree
+				
+				initPlanner(node);
+				std::cout << "one time done" << std::endl;
+				// auto solved = node->plan();
+				// break;
+				// node->plan();
+				// visualize(node);
+				bool solved = true;
+
+
+				// if (solved == ob::PlannerStatus::StatusType::APPROXIMATE_SOLUTION || solved == ob::PlannerStatus::StatusType::EXACT_SOLUTION)
+				if (solved)
+				{
+					// move to the node whose solution you have.
+					// For that, we first need to to figure out which node it is
+					auto intermediate_solutionPath = static_cast<og::PathGeometric &>(*node->get_planner()->getProblemDefinition()->getSolutionPath());
+					auto finalState = intermediate_solutionPath.getState(intermediate_solutionPath.getStateCount()-1);
+					arr state;	std::vector<double> reals;
+					node->get_planner()->getSpaceInformation()->getStateSpace()->copyToReals(reals, finalState);
+					for (double r : reals)
+					{
+						state.append(r);
+					}
+					std::cout << state << std::endl;
+
+					// Now, scroll through every child node to figure out which node to expand
+					for (auto child:node->get_children())
+					{
+						if(child->get_state().resize(C_Dimension) == state)
+						{
+							node = child;
+							break;
+						}
+					}
+				}
+
+				else
+				{
+					// move to parent and re-plan
+					// You also need to penalize the parent
+					// TODO: I need to make sure that I don't revisit the node
+					node->get_parent()->penalty++;
+					node = node->get_parent();
+					// after this I need to add penalty to the child!
+					if (node->penalty > 1)
+					{
+						node = node->get_parent();
+						node->penalty++;
+					}
+				}
+
 				if (getCurrentPhase(node) == stoi(inputs.at(1)))
 				{
 					// get previous nodes to reclaim the whole path.
@@ -389,42 +508,9 @@ namespace ompl
 					}
 
 					std::cout << solutionPath_arrA << std::endl;
+					break;
 					// This solutionPath_arrA is a solution and must be added to pdef
-				}
-
-
-				growTree(inputs,node); // This samples keyframe sequences starting from node and adds to the tree
-				
-				initPlanner(node);
-				auto solved = node->plan();
-
-
-				// if (solved == ob::PlannerStatus::StatusType::APPROXIMATE_SOLUTION || solved == ob::PlannerStatus::StatusType::EXACT_SOLUTION)
-				if (solved)
-				{
-					// move to the node whose solution you have.
-					// For that, we first need to to figure out which node it is
-					auto intermediate_solutionPath = static_cast<og::PathGeometric &>(*node->get_planner()->getProblemDefinition()->getSolutionPath());
-					auto finalState = intermediate_solutionPath.getState(intermediate_solutionPath.getStateCount()-1);
-					arr state;	std::vector<double> reals;
-					node->get_planner()->getSpaceInformation()->getStateSpace()->copyToReals(reals, finalState);
-					for (double r : reals)
-					{
-						std::cout << "I enter here" << std::endl;
-						state.append(r);
-						std::cout << r << std::endl;
-					}
-					std::cout << state << std::endl;
-
-					// Now, scroll through every child node to figure out which node to expand
-					for (auto child:node->get_children())
-					{
-						if(child->get_state().resize(C_Dimension) == state)
-						{
-							node = child;
-							break;
-						}
-					}
+					// komo.optimize();
 				}
 			}
 

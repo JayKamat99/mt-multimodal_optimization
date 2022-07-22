@@ -17,6 +17,7 @@
 #include <stack>
 #include <KOMO/komo.h>
 #include <Kin/kin.h>
+#include <Kin/viewer.h>
 
 // ompl includes
 #include <ompl/config.h>
@@ -42,8 +43,10 @@ struct ValidityCheckWithKOMO
         int C_Dimension;
     public:
     KOMO::Conv_KOMO_SparseNonfactored &nlp;
-    ValidityCheckWithKOMO(KOMO::Conv_KOMO_SparseNonfactored &nlp) : nlp(nlp) {}
-    void set_dimension(int C_Dimension) {this->C_Dimension = C_Dimension;}
+    ValidityCheckWithKOMO(KOMO::Conv_KOMO_SparseNonfactored &nlp) : nlp(nlp) {
+        C_Dimension = nlp.getDimension();
+    }
+    // void set_dimension(int C_Dimension) {this->C_Dimension = C_Dimension;}
     bool check(const ob::State *state)
     {
         const auto *State = state->as<ob::RealVectorStateSpace::StateType>();
@@ -55,7 +58,11 @@ struct ValidityCheckWithKOMO
         }
 
         arr phi;
+        // std::cout << x_query << ",\t" << NoArr << ",\t" << phi << std::endl;
+        // std::cout << "nlp.getDimension(): " << nlp.getDimension() << std::endl;
+
         nlp.evaluate(phi, NoArr, x_query);
+        // std::cout << "collision: " << std::abs(phi(0)) << std::endl;
 
         return std::abs(phi(0)) < tol;
     }
@@ -98,7 +105,7 @@ namespace ompl
             {
                 return std::to_string(bestCost);
             }
-            
+
             void clear() override;
 
             void setup() override;
@@ -114,7 +121,7 @@ namespace ompl
                 std::shared_ptr<ompl::base::Planner> planner;
                 double costToComeHeuristic; // lower-bound cost to reach the node
                 double bestCostToCome; // cost of the best path to node until now
-                double costToGo; // lower-bound cost to reach the final goal.
+                double costToGoHeuristic; // lower-bound cost to reach the final goal.
                 double calcDistHeuristic(); // calculates eucledian distance from parent and adds it to the best cost to parent if available, else to the dist heuristic to the parent
                 double distFromNode(std::shared_ptr<keyframeNode> node);
             public:
@@ -126,11 +133,12 @@ namespace ompl
                 // double get_bestCostToCome() {return this->bestCostToCome;}
                 std::vector<std::shared_ptr<keyframeNode>> get_children() {return this->childern;}
                 void add_child(std::shared_ptr<keyframeNode> child, bool updateCosts);
-                void setasleaf() {this->costToGo = 0;}
+                void setasleaf() {this->costToGoHeuristic = 0;}
                 void set_dimension(int C_Dimension) {this->C_Dimension = C_Dimension;}
                 void set_planner(std::shared_ptr<ompl::base::Planner> planner) {this->planner = planner;}
                 std::shared_ptr<ompl::base::Planner> get_planner() {return planner;}
                 ob::PlannerStatus plan();
+                int penalty;
             };
 
             std::shared_ptr<og::sktp::keyframeNode> makeRootNode(std::vector<std::string> inputs);
@@ -141,6 +149,8 @@ namespace ompl
 			void addToTree(arrA sequence, std::shared_ptr<keyframeNode> start);
 
 		    void initPlanner(std::shared_ptr<ompl::geometric::sktp::keyframeNode> node);
+
+            void visualize(std::shared_ptr<og::sktp::keyframeNode> &node);
 
         };  
     } // namespace geometric

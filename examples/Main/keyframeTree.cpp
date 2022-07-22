@@ -439,14 +439,14 @@ int main(int argc, char **argv)
     // build a  start node
     auto root = makeRootNode(inputs);
 
-    // // Get sampled path
-    // growTree(inputs, root);
-    // arrA finalPath = planMotion(inputs, leafNodes.front()); // Plan motion till keyframe. I know the previous points! I don't need to send keyframes!
+    // Get sampled path
+    growTree(inputs, root);
+    arrA finalPath = planMotion(inputs, leafNodes.front()); // Plan motion till keyframe. I know the previous points! I don't need to send keyframes!
 
-    // // addRelTransformations(finalPath,keyFrames);
-    // // optimizePath(inputs, finalPath);
+    // addRelTransformations(finalPath,keyFrames);
+    // optimizePath(inputs, finalPath);
 
-    // std::cout << "final Path: " << finalPath << std::endl;
+    std::cout << "final Path: " << finalPath << std::endl;
 }
 
 /**
