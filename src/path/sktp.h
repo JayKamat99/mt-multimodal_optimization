@@ -44,30 +44,24 @@ struct ValidityCheckWithKOMO
         std::shared_ptr<KOMO> komo;
         KOMO::Conv_KOMO_SparseNonfactored nlp;
     public:
-    ValidityCheckWithKOMO(/* std::shared_ptr<KOMO::Conv_KOMO_SparseNonfactored> &nlp,  */std::shared_ptr<KOMO> &komo) : komo(komo) , nlp(*komo){
+    ValidityCheckWithKOMO(std::shared_ptr<KOMO> &komo) : komo(komo) , nlp(*komo){
         C_Dimension = nlp.getDimension();
-        std::cout << C_Dimension << std::endl;
     }
-    // void set_dimension(int C_Dimension) {this->C_Dimension = C_Dimension;}
+    void debug()
+    {
+        std::cout << nlp.getDimension() << std::endl;
+    }
     bool check(const ob::State *state)
     {
         const auto *State = state->as<ob::RealVectorStateSpace::StateType>();
 
         arr x_query;
-        std::cout << "I reach here" << std::endl;
-        std::cout << C_Dimension << std::endl;
         for (unsigned int i = 0; i < C_Dimension; i++)
         {
             x_query.append((*State)[i]);
         }
-
         arr phi;
-        // std::cout << x_query << ",\t" << NoArr << ",\t" << phi << std::endl;
-        // std::cout << "nlp.getDimension(): " << nlp.getDimension() << std::endl;
-
         nlp.evaluate(phi, NoArr, x_query);
-        // std::cout << "collision: " << std::abs(phi(0)) << std::endl;
-
         return std::abs(phi(0)) < tol;
     }
 };
@@ -94,6 +88,7 @@ namespace ompl
             void set_subPlanner(SUBPLANNER subPlanner) {this->subPlanner = subPlanner;}
             void set_branchingFactor(uint branchingFactor) {this->branchingFactor = branchingFactor;}
             void set_inputs(std::vector<std::string> inputs) {this->inputs = inputs;}
+            std::shared_ptr<ValidityCheckWithKOMO> checker_;
 
         protected:
             // PLanner Variables
@@ -128,9 +123,7 @@ namespace ompl
                 double costToGoHeuristic; // lower-bound cost to reach the final goal.
                 double calcDistHeuristic(); // calculates eucledian distance from parent and adds it to the best cost to parent if available, else to the dist heuristic to the parent
                 double distFromNode(std::shared_ptr<keyframeNode> node);
-                std::shared_ptr<ValidityCheckWithKOMO> checker;
-                std::shared_ptr<KOMO> komo;
-                // std::shared_ptr<KOMO::Conv_KOMO_SparseNonfactored> nlp; //remove
+                uint level;
             public:
                 keyframeNode(arr state, std::shared_ptr<keyframeNode> parent);
                 ~keyframeNode() = default;
@@ -146,9 +139,7 @@ namespace ompl
                 std::shared_ptr<ompl::base::Planner> get_planner() {return planner;}
                 ob::PlannerStatus plan();
                 int penalty;
-                void set_checker(std::shared_ptr<ValidityCheckWithKOMO> &checker) {this->checker = checker;}
-                void set_KOMOobj(std::shared_ptr<KOMO>& komo) {this->komo = komo;}
-                // void set_nlp(std::shared_ptr<KOMO::Conv_KOMO_SparseNonfactored> &nlp) {this->nlp = nlp;}
+                uint get_level() {return level;}
             };
 
             std::shared_ptr<og::sktp::keyframeNode> makeRootNode(std::vector<std::string> inputs);

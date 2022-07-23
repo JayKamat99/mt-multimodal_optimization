@@ -40,12 +40,14 @@ namespace ompl
 			{
 				this->bestCostToCome = 0;
 				this->costToComeHeuristic = 0;
+				this->level = 0;
 			}
 			else
 			{
 				this->C_Dimension = this->parent->C_Dimension;
 				this->bestCostToCome = INFINITY;
 				this->costToComeHeuristic = this->parent->costToComeHeuristic+ this->distFromNode(parent);
+				this->level = this->parent->level + 1;
 			}
 			this->costToGoHeuristic = INFINITY;
 		}
@@ -102,7 +104,7 @@ namespace ompl
 		{
 			// get configuration
 
-			int currentPhase = getCurrentPhase(node);
+			int currentPhase = node->get_level();
 			// std::cout << "currentPhase: " << currentPhase << std::endl; 
 			auto node_ = node;
 			std::stack<arr> pathUntilNow;
@@ -176,24 +178,13 @@ namespace ompl
 			return root;
 		}
 
-		int sktp::getCurrentPhase(std::shared_ptr<keyframeNode> node)
-		{
-			int phase = 0;
-			while (node->get_parent() != nullptr)
-			{
-				node = node->get_parent();
-				phase ++;
-			}
-			return phase;
-		}
-
 		arrA sktp::sampleKeyframeSequence(std::vector<std::string> inputs, std::shared_ptr<keyframeNode> start)
 		{
 			arrA keyFrames;
 			std::string filename = inputs.at(0);
     		int totalPhases = stoi(inputs.at(1));
 
-			int currentPhase = getCurrentPhase(start);
+			int currentPhase = start->get_level();
 			std::cout << "currentPhase: " << currentPhase << std::endl;
 
 			bool keyframesValid = false;
@@ -262,7 +253,7 @@ namespace ompl
 		void sktp::addToTree(arrA sequence, std::shared_ptr<keyframeNode> start)
 		{
 			std::stack<std::shared_ptr<keyframeNode>> keyframeStack;
-			int currentPhase = getCurrentPhase(start);
+			int currentPhase = start->get_level();
 			keyframeStack.push(start);
 			for(int i=currentPhase; i<sequence.N; i++)
 			{
@@ -295,7 +286,7 @@ namespace ompl
 			std::shared_ptr<ompl::base::Planner> planner;
 
 			// get state history until now
-			int currentPhase = getCurrentPhase(node);
+			int currentPhase = node->get_level();
 			// std::cout << "currentPhase: " << currentPhase << std::endl; 
 			auto node_ = node;
 			std::stack<arr> pathUntilNow;
@@ -326,8 +317,6 @@ namespace ompl
 			komo->setTiming(1, 1, 1, 1);
 			komo->addObjective({}, FS_accumulatedCollisions, {}, OT_eq, { 1 });
 			komo->run_prepare(2);
-			// komo->view(true);
-			node->set_KOMOobj(komo);
 
 			//Construct the state space we are planning in
 			auto space(std::make_shared<ob::RealVectorStateSpace>(C_Dimension));
@@ -339,14 +328,9 @@ namespace ompl
 
 			//create space information pointer
 			ob::SpaceInformationPtr subplanner_si(std::make_shared<ob::SpaceInformation>(space));
-
-			// set state validity checking for this space
-			auto nlp = std::make_shared<KOMO::Conv_KOMO_SparseNonfactored>(*komo, false);
-			// node->set_nlp(nlp);
 			auto checker = std::make_shared<ValidityCheckWithKOMO>(komo);
-			node->set_checker(checker);
 
-			subplanner_si->setStateValidityChecker([&checker](const ob::State *state) {
+			subplanner_si->setStateValidityChecker([checker](const ob::State *state) {
 				return checker->check(state);
 			});
 
@@ -391,29 +375,7 @@ namespace ompl
 			planner->setProblemDefinition(pdef);
 			planner->setup();
 			node->set_planner(planner);
-			// // attempt to solve the problem
-			// ob::PlannerStatus solved;
-			// solved = node->plan();
-			// if (solved)
-			// {
-			// 	visualize(node);
-			// }
-			// // solved = planner->solve(5.0);
-
-			// if (solved == ob::PlannerStatus::StatusType::APPROXIMATE_SOLUTION)
-			// 	std::cout << "Found solution: APPROXIMATE_SOLUTION" << std::endl;
-			// else if (solved == ob::PlannerStatus::StatusType::EXACT_SOLUTION)
-			// 	std::cout << "Found solution: EXACT_SOLUTION" << std::endl;
-			// else if (solved == ob::PlannerStatus::StatusType::TIMEOUT)
-			// {
-			// 	std::cout << "Found solution: TIMEOUT" << std::endl;
-			// }
-			// else
-			// {
-			// 	std::cout << "No solution found: Invalid " << std::endl;
-			// }
-
-		}
+			}
 
 		ompl::base::PlannerStatus sktp::solve(const base::PlannerTerminationCondition &ptc)
 		{
@@ -426,9 +388,9 @@ namespace ompl
 				growTree(inputs,node); // This samples keyframe sequences starting from node and adds to the tree
 				
 				initPlanner(node);
-
 				auto solved = node->plan();
 				visualize(node);
+				// bool solved = true;
 
 				if (solved)
 				{
@@ -470,7 +432,7 @@ namespace ompl
 					}
 				}
 
-				if (getCurrentPhase(node) == stoi(inputs.at(1)))
+				if (node->get_level() == stoi(inputs.at(1)))
 				{
 					// get previous nodes to reclaim the whole path.
 					// Along the way, you get to the root node anyway!
