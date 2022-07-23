@@ -321,7 +321,7 @@ namespace ompl
 				phase++;
 			}
 
-			auto komo(std::make_shared<KOMO>());
+			auto komo = std::make_shared<KOMO>();
 			komo->setModel(C, true);
 			komo->setTiming(1, 1, 1, 1);
 			komo->addObjective({}, FS_accumulatedCollisions, {}, OT_eq, { 1 });
@@ -342,8 +342,8 @@ namespace ompl
 
 			// set state validity checking for this space
 			auto nlp = std::make_shared<KOMO::Conv_KOMO_SparseNonfactored>(*komo, false);
-			node->set_nlp(nlp);
-			auto checker = std::make_shared<ValidityCheckWithKOMO>(*nlp);
+			// node->set_nlp(nlp);
+			auto checker = std::make_shared<ValidityCheckWithKOMO>(komo);
 			node->set_checker(checker);
 
 			subplanner_si->setStateValidityChecker([&checker](const ob::State *state) {

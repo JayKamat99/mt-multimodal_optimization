@@ -41,10 +41,12 @@ struct ValidityCheckWithKOMO
 {
     private:
         int C_Dimension;
+        std::shared_ptr<KOMO> komo;
+        KOMO::Conv_KOMO_SparseNonfactored nlp;
     public:
-    KOMO::Conv_KOMO_SparseNonfactored &nlp;
-    ValidityCheckWithKOMO(KOMO::Conv_KOMO_SparseNonfactored &nlp) : nlp(nlp) {
+    ValidityCheckWithKOMO(/* std::shared_ptr<KOMO::Conv_KOMO_SparseNonfactored> &nlp,  */std::shared_ptr<KOMO> &komo) : komo(komo) , nlp(*komo){
         C_Dimension = nlp.getDimension();
+        std::cout << C_Dimension << std::endl;
     }
     // void set_dimension(int C_Dimension) {this->C_Dimension = C_Dimension;}
     bool check(const ob::State *state)
@@ -52,6 +54,8 @@ struct ValidityCheckWithKOMO
         const auto *State = state->as<ob::RealVectorStateSpace::StateType>();
 
         arr x_query;
+        std::cout << "I reach here" << std::endl;
+        std::cout << C_Dimension << std::endl;
         for (unsigned int i = 0; i < C_Dimension; i++)
         {
             x_query.append((*State)[i]);
@@ -126,7 +130,7 @@ namespace ompl
                 double distFromNode(std::shared_ptr<keyframeNode> node);
                 std::shared_ptr<ValidityCheckWithKOMO> checker;
                 std::shared_ptr<KOMO> komo;
-                std::shared_ptr<KOMO::Conv_KOMO_SparseNonfactored> nlp;
+                // std::shared_ptr<KOMO::Conv_KOMO_SparseNonfactored> nlp; //remove
             public:
                 keyframeNode(arr state, std::shared_ptr<keyframeNode> parent);
                 ~keyframeNode() = default;
@@ -144,7 +148,7 @@ namespace ompl
                 int penalty;
                 void set_checker(std::shared_ptr<ValidityCheckWithKOMO> &checker) {this->checker = checker;}
                 void set_KOMOobj(std::shared_ptr<KOMO>& komo) {this->komo = komo;}
-                void set_nlp(std::shared_ptr<KOMO::Conv_KOMO_SparseNonfactored> &nlp) {this->nlp = nlp;}
+                // void set_nlp(std::shared_ptr<KOMO::Conv_KOMO_SparseNonfactored> &nlp) {this->nlp = nlp;}
             };
 
             std::shared_ptr<og::sktp::keyframeNode> makeRootNode(std::vector<std::string> inputs);
