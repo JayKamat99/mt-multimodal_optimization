@@ -5,16 +5,49 @@ namespace ompl
 	namespace geometric
 	{
 
-		sktp::sktp(const base::SpaceInformationPtr &si) : base::Planner(si, "KOMO")
+		sktp::sktp(const base::SpaceInformationPtr &si) : base::Planner(si, "sktp")
 		{
-			addPlannerProgressProperty("best cost REAL", [this] { return bestCostProperty(); });
+			addPlannerProgressProperty("best cost REAL", [this] { return bestCostProgressProperty(); });
 			C_Dimension = si->getStateDimension();
 		}
 
 		void sktp::setup()
 		{
 			Planner::setup();
-			bestCost = std::numeric_limits<double>::infinity();
+			
+			// Check if we have a problem definition
+            if (static_cast<bool>(Planner::pdef_))
+            {
+                // We do, do some initialization work.
+                // See if we have an optimization objective
+                if (!Planner::pdef_->hasOptimizationObjective())
+                {
+                    OMPL_INFORM("%s: No optimization objective specified. Defaulting to optimizing path length.",
+                                Planner::getName().c_str());
+                    Planner::pdef_->setOptimizationObjective(
+                        std::make_shared<base::PathLengthOptimizationObjective>(Planner::si_));
+                }
+                // No else, we were given one.
+
+                // Initialize the best cost found so far to be infinite.
+                bestCost = Planner::pdef_->getOptimizationObjective()->infiniteCost();
+
+                // If the problem definition *has* a goal, make sure it is of appropriate type
+                if (static_cast<bool>(Planner::pdef_->getGoal()))
+                {
+                    if (!Planner::pdef_->getGoal()->hasType(ompl::base::GOAL_SAMPLEABLE_REGION))
+                    {
+                        OMPL_ERROR("%s::setup() BIT* currently only supports goals that can be cast to a sampleable "
+                                   "goal region.",
+                                   Planner::getName().c_str());
+                        // Mark as not setup:
+                        Planner::setup_ = false;
+                        return;
+                    }
+                    // No else, of correct type.
+                }
+                // No else, called without a goal. Is this MoveIt?
+            }
 		}
 
 		sktp::~sktp()
@@ -29,7 +62,7 @@ namespace ompl
 		void sktp::clear()
 		{
 			Planner::clear();
-			bestCost = std::numeric_limits<double>::infinity();
+			bestCost = Planner::pdef_->getOptimizationObjective()->infiniteCost();
 		}
 
 		sktp::keyframeNode::keyframeNode(arr state, std::shared_ptr<keyframeNode> parent)
@@ -83,20 +116,20 @@ namespace ompl
 		{
 			// attempt to solve the problem
 			ob::PlannerStatus solved;
-			solved = planner->solve(1.0);
+			solved = planner->solve(.5);
 
-			if (solved == ob::PlannerStatus::StatusType::APPROXIMATE_SOLUTION)
-				std::cout << "Found solution: APPROXIMATE_SOLUTION" << std::endl;
-			else if (solved == ob::PlannerStatus::StatusType::EXACT_SOLUTION)
-				std::cout << "Found solution: EXACT_SOLUTION" << std::endl;
-			else if (solved == ob::PlannerStatus::StatusType::TIMEOUT)
-			{
-				std::cout << "Found solution: TIMEOUT" << std::endl;
-			}
-			else
-			{
-				std::cout << "No solution found: Invalid " << std::endl;
-			}
+			// if (solved == ob::PlannerStatus::StatusType::APPROXIMATE_SOLUTION)
+			// 	std::cout << "Found solution: APPROXIMATE_SOLUTION" << std::endl;
+			// else if (solved == ob::PlannerStatus::StatusType::EXACT_SOLUTION)
+			// 	std::cout << "Found solution: EXACT_SOLUTION" << std::endl;
+			// else if (solved == ob::PlannerStatus::StatusType::TIMEOUT)
+			// {
+			// 	std::cout << "Found solution: TIMEOUT" << std::endl;
+			// }
+			// else
+			// {
+			// 	std::cout << "No solution found: Invalid " << std::endl;
+			// }
 			return solved;
 		}
 
@@ -118,10 +151,9 @@ namespace ompl
 			rai::Configuration C(inputs.at(0).c_str());
 			for(int phase = 0; phase <currentPhase; phase++)
 			{
-				std::cout << "this is called" << std::endl;
 				std::string ref1 = inputs.at(2 + phase * 2), ref2 = inputs.at(3 + phase * 2);
 				C.setJointState(pathUntilNow.top());
-				std::cout << pathUntilNow.top() << std::endl;
+				// std::cout << pathUntilNow.top() << std::endl;
 				pathUntilNow.pop();
 				if (phase % 2 == 0)
 					C.attach(C.getFrame(ref1.c_str()), C.getFrame(ref2.c_str())); // pick
@@ -185,7 +217,7 @@ namespace ompl
     		int totalPhases = stoi(inputs.at(1));
 
 			int currentPhase = start->get_level();
-			std::cout << "currentPhase: " << currentPhase << std::endl;
+			// std::cout << "currentPhase: " << currentPhase << std::endl;
 
 			bool keyframesValid = false;
 
@@ -300,10 +332,9 @@ namespace ompl
 			rai::Configuration C(inputs.at(0).c_str());
 			for(int phase = 0; phase <currentPhase; phase++)
 			{
-				std::cout << "this is called" << std::endl;
 				std::string ref1 = inputs.at(2 + phase * 2), ref2 = inputs.at(3 + phase * 2);
 				C.setJointState(pathUntilNow.top());
-				std::cout << pathUntilNow.top() << std::endl;
+				// std::cout << pathUntilNow.top() << std::endl;
 				pathUntilNow.pop();
 				if (phase % 2 == 0)
 					C.attach(C.getFrame(ref1.c_str()), C.getFrame(ref2.c_str())); // pick
@@ -361,7 +392,7 @@ namespace ompl
 				goal[i] = goal_.at(j)(i);
 				}
 				goalStates->addState(goal);
-				std::cout << "goal " << j << " = " << goal << std::endl;
+				// std::cout << "goal " << j << " = " << goal << std::endl;
 			}
 
 			pdef->setGoal(goalStates);
@@ -369,13 +400,45 @@ namespace ompl
 			switch (subPlanner)
 			{
 			case (BITstar):
-				planner = std::make_shared<og::BITstar>(subplanner_si);
+				auto BITstar_planner = std::make_shared<og::BITstar>(subplanner_si);
+				BITstar_planner->setPruning(false);
+				planner = BITstar_planner;
 				break;
 			}
 			planner->setProblemDefinition(pdef);
 			planner->setup();
 			node->set_planner(planner);
+		}
+
+		void sktp::addNewGoals(std::shared_ptr<ompl::geometric::sktp::keyframeNode> node)
+		{
+			// Get goals
+			auto planner = node->get_planner();
+			auto subplanner_si = planner->getSpaceInformation();
+			auto goalStates = std::make_shared<ob::GoalStates>(subplanner_si);
+
+			auto space = subplanner_si->getStateSpace();
+
+			std::vector<arr> goal_;
+			for (auto child:node->get_children())
+			{
+				goal_.push_back(child->get_state().resize(C_Dimension));
 			}
+
+			// std::cout << "goal_.size(): " << goal_.size() << std::endl;
+			for (unsigned int j = 0; j < goal_.size(); j++)
+			{
+				ob::ScopedState<> goal(space);
+				for (unsigned int i = 0; i < C_Dimension; i++)
+				{
+				goal[i] = goal_.at(j)(i);
+				}
+				goalStates->addState(goal);
+				// std::cout << "goal " << j << " = " << goal << std::endl;
+			}
+
+			planner->getProblemDefinition()->setGoal(goalStates);
+		}
 
 		ompl::base::PlannerStatus sktp::solve(const base::PlannerTerminationCondition &ptc)
 		{
@@ -386,10 +449,20 @@ namespace ompl
 			while(!ptc)
 			{
 				growTree(inputs,node); // This samples keyframe sequences starting from node and adds to the tree
-				
-				initPlanner(node);
+				if (node->is_new)
+				{
+					initPlanner(node);
+					node->is_new = false;
+				}
+				else
+				{
+					// I am supposed to add the newly sampled goals here. i.e., only the last node->branchingFactor
+					addNewGoals(node);
+				}
 				auto solved = node->plan();
-				visualize(node);
+				#ifdef VISUALIZE
+					visualize(node);
+				#endif
 				// bool solved = true;
 
 				if (solved)
@@ -404,7 +477,7 @@ namespace ompl
 					{
 						state.append(r);
 					}
-					std::cout << state << std::endl;
+					// std::cout << state << std::endl;
 
 					// Now, scroll through every child node to figure out which node to expand
 					for (auto child:node->get_children())
@@ -435,7 +508,7 @@ namespace ompl
 				if (node->get_level() == stoi(inputs.at(1)))
 				{
 					// get previous nodes to reclaim the whole path.
-					// Along the way, you get to the root node anyway!
+					// Along the way, you get to the root node anyway! So I don't need to define node =  root again
 					std::stack<std::shared_ptr<sktp::keyframeNode>> parentNodes;
 					while(node->get_parent() != nullptr)
 					{
@@ -445,12 +518,17 @@ namespace ompl
 
 					// get the path from the nodes
 					arrA solutionPath_arrA;
-					auto solutionPath(std::make_shared<og::PathGeometric>(this->getSpaceInformation()));
+					og::PathGeometric solutionPath(this->getSpaceInformation());
 
+					ompl::base::Cost pathCost;
 					while(!parentNodes.empty())
 					{
 						auto intermediate_solutionPath = static_cast<og::PathGeometric &>(*parentNodes.top()->get_planner()->getProblemDefinition()->getSolutionPath());
-						solutionPath->append(intermediate_solutionPath); // Todo: This does not work yet!
+						// intermediate_solutionPath.print(std::cout);
+						auto optObj = parentNodes.top()->get_planner()->getProblemDefinition()->getOptimizationObjective();
+						pathCost = optObj->combineCosts(pathCost,intermediate_solutionPath.cost(optObj));
+						solutionPath.append(intermediate_solutionPath); // Todo: This does not work yet!
+						// solutionPath.print(std::cout);
 						arrA configs;
 						for (auto state : intermediate_solutionPath.getStates())
 						{
@@ -465,9 +543,13 @@ namespace ompl
 						solutionPath_arrA.append(configs);
 						parentNodes.pop();
 					}
+					if (pathCost.value()<bestCost.value())
+					{
+						bestCost = pathCost;
+					}
 
 					std::cout << solutionPath_arrA << std::endl;
-					break;
+					// break;
 					// This solutionPath_arrA is a solution and must be added to pdef
 					// komo.optimize();
 				}

@@ -4,6 +4,7 @@ visualize/*
 RSS/
 visualize/data/kuka_035
 visualize/data/Benchmarks/*
+visualize/data/Sequential/Benchmarks/*
 !visualize/data
 *.exe
 z.*

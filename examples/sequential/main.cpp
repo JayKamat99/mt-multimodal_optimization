@@ -13,6 +13,7 @@
 #include <ompl/base/spaces/RealVectorStateSpace.h>
 #include <ompl/base/goals/GoalStates.h>
 #include <ompl/base/Planner.h>
+#include <ompl/tools/benchmark/Benchmark.h>
 
 // keyframe planner include
 #include <path/sktp.h>
@@ -75,15 +76,54 @@ int main(int argc, char **argv)
 
     // setup the outer planner
     rai::Configuration C(inputs.at(0).c_str());
-	ob::SpaceInformationPtr si(std::make_shared<ob::SpaceInformation>(std::make_shared<ob::RealVectorStateSpace>(C.getJointStateDimension())));
+    auto space = std::make_shared<ob::RealVectorStateSpace>(C.getJointStateDimension()); 
+	ob::SpaceInformationPtr si(std::make_shared<ob::SpaceInformation>(space));
+    og::SimpleSetup ss(si);
+    space->setBounds(-PI,PI);
+    
+    // Dummy numbers to run benchmarks
+    ss.setStateValidityChecker([](const ob::State *state) {return true;});
+    ob::ScopedState<> goal(space);
+    goal = {0,0,0};
+    ss.setGoalState(goal);
+
     auto planner = std::make_shared<og::sktp>(si);
     planner->set_inputs(inputs);
     planner->set_subPlanner(og::sktp::BITstar);
     planner->set_branchingFactor(3);
 
-    // attempt to solve the problem
-    ob::PlannerStatus solved;
-    solved = planner->ob::Planner::solve(30.0);
+    bool benchmark = true;
+    if(benchmark)
+	{
+		// First we create a benchmark class:
+		ompl::tools::Benchmark b(ss);
+        b.addPlanner(planner);
+
+		ompl::tools::Benchmark::Request req;
+		req.maxTime = 10.0;
+		// req.maxMem = 100.0;
+		req.runCount = 2;
+		req.displayProgress = true;
+
+		b.benchmark(req);
+
+		//TODO: add postrunevent ompl - to make sure the path is feasible
+		
+		// This will generate a .log file
+		std::ostringstream oss;
+		std::string filename_s(inputs.at(0));
+		// filename_s.erase(0,19);
+		// filename_s.erase(filename_s.length()-2);
+		oss << "data/Sequential/Benchmarks/manipulationSequence/logs/benchmark_" << planner->getName() << ".log";
+		// oss << "data/Benchmarks/test" << filename_s << "/logs/benchmark_" << planner_ << ".log";
+		b.saveResultsToFile(oss.str().c_str());
+	}
+
+    else    // attempt to solve the problem
+    {
+        ob::PlannerStatus solved;
+        solved = planner->ob::Planner::solve(30.0);
+    }
 
     return 0;
 }

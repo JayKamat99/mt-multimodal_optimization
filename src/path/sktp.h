@@ -31,6 +31,8 @@
 // Planners
 #include <ompl/geometric/planners/informedtrees/BITstar.h>
 
+// #define VISUALIZE
+
 namespace ob = ompl::base;
 namespace og = ompl::geometric;
 
@@ -95,15 +97,10 @@ namespace ompl
             std::vector<std::string> inputs;
             SUBPLANNER subPlanner;
             uint branchingFactor;
-			double bestCost = std::numeric_limits<double>::infinity();
             int C_Dimension;
 
             void freeMemory();
 
-			std::string bestCostProperty()
-            {
-                return std::to_string(bestCost);
-            }
 
             void clear() override;
 
@@ -140,6 +137,7 @@ namespace ompl
                 ob::PlannerStatus plan();
                 int penalty;
                 uint get_level() {return level;}
+                bool is_new{true};
             };
 
             std::shared_ptr<og::sktp::keyframeNode> makeRootNode(std::vector<std::string> inputs);
@@ -150,8 +148,17 @@ namespace ompl
 			void addToTree(arrA sequence, std::shared_ptr<keyframeNode> start);
 
 		    void initPlanner(std::shared_ptr<ompl::geometric::sktp::keyframeNode> node);
+            void addNewGoals(std::shared_ptr<ompl::geometric::sktp::keyframeNode> node);
 
             void visualize(std::shared_ptr<og::sktp::keyframeNode> &node);
+
+            /* Progress Properties */
+            /** \brief Retrieve the best exact-solution cost found as a planner-progress property. */
+			ompl::base::Cost bestCost;
+            std::string bestCostProgressProperty() const
+            {
+                return ompl::toString(bestCost.value());
+            }
 
         };  
     } // namespace geometric
