@@ -77,22 +77,20 @@ int main(int argc, char **argv)
     // setup the outer planner
     rai::Configuration C(inputs.at(0).c_str());
     auto space = std::make_shared<ob::RealVectorStateSpace>(C.getJointStateDimension()); 
-	ob::SpaceInformationPtr si(std::make_shared<ob::SpaceInformation>(space));
-    og::SimpleSetup ss(si);
     space->setBounds(-PI,PI);
-    
-    // Dummy numbers to run benchmarks
+    og::SimpleSetup ss(space);
     ss.setStateValidityChecker([](const ob::State *state) {return true;});
-    ob::ScopedState<> goal(space);
-    goal = {0,0,0};
-    ss.setGoalState(goal);
-
-    auto planner = std::make_shared<og::sktp>(si);
+    ob::ScopedState<> start(space); ob::ScopedState<> goal(space);
+    ss.setStartAndGoalStates(start,goal);
+    
+    auto planner = std::make_shared<og::sktp>(ss.getSpaceInformation());
+    planner->setProblemDefinition(ss.getProblemDefinition());
     planner->set_inputs(inputs);
     planner->set_subPlanner(og::sktp::BITstar);
     planner->set_branchingFactor(3);
+    planner->set_maxConstraintViolationKOMO(1); // This value is dependent on the experiment and can be changed by the user.
 
-    bool benchmark = true;
+    bool benchmark = false;
     if(benchmark)
 	{
 		// First we create a benchmark class:
@@ -106,23 +104,17 @@ int main(int argc, char **argv)
 		req.displayProgress = true;
 
 		b.benchmark(req);
-
-		//TODO: add postrunevent ompl - to make sure the path is feasible
 		
 		// This will generate a .log file
 		std::ostringstream oss;
-		std::string filename_s(inputs.at(0));
-		// filename_s.erase(0,19);
-		// filename_s.erase(filename_s.length()-2);
 		oss << "data/Sequential/Benchmarks/manipulationSequence/logs/benchmark_" << planner->getName() << ".log";
-		// oss << "data/Benchmarks/test" << filename_s << "/logs/benchmark_" << planner_ << ".log";
 		b.saveResultsToFile(oss.str().c_str());
 	}
 
     else    // attempt to solve the problem
     {
         ob::PlannerStatus solved;
-        solved = planner->ob::Planner::solve(30.0);
+        solved = planner->ob::Planner::solve(180.0);
     }
 
     return 0;

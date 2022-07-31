@@ -49,10 +49,6 @@ struct ValidityCheckWithKOMO
     ValidityCheckWithKOMO(std::shared_ptr<KOMO> &komo) : komo(komo) , nlp(*komo){
         C_Dimension = nlp.getDimension();
     }
-    void debug()
-    {
-        std::cout << nlp.getDimension() << std::endl;
-    }
     bool check(const ob::State *state)
     {
         const auto *State = state->as<ob::RealVectorStateSpace::StateType>();
@@ -90,6 +86,7 @@ namespace ompl
             void set_subPlanner(SUBPLANNER subPlanner) {this->subPlanner = subPlanner;}
             void set_branchingFactor(uint branchingFactor) {this->branchingFactor = branchingFactor;}
             void set_inputs(std::vector<std::string> inputs) {this->inputs = inputs;}
+            void set_maxConstraintViolationKOMO(double maxConstraintViolationKOMO) {this->maxConstraintViolationKOMO = maxConstraintViolationKOMO;}
             std::shared_ptr<ValidityCheckWithKOMO> checker_;
 
         protected:
@@ -97,6 +94,7 @@ namespace ompl
             std::vector<std::string> inputs;
             SUBPLANNER subPlanner;
             uint branchingFactor;
+            double maxConstraintViolationKOMO;
             int C_Dimension;
 
             void freeMemory();

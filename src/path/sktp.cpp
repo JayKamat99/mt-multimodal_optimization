@@ -83,6 +83,7 @@ namespace ompl
 				this->level = this->parent->level + 1;
 			}
 			this->costToGoHeuristic = INFINITY;
+			this->is_new = true;
 		}
 
 		double sktp::keyframeNode::distFromNode(std::shared_ptr<keyframeNode> node)
@@ -117,19 +118,6 @@ namespace ompl
 			// attempt to solve the problem
 			ob::PlannerStatus solved;
 			solved = planner->solve(.5);
-
-			// if (solved == ob::PlannerStatus::StatusType::APPROXIMATE_SOLUTION)
-			// 	std::cout << "Found solution: APPROXIMATE_SOLUTION" << std::endl;
-			// else if (solved == ob::PlannerStatus::StatusType::EXACT_SOLUTION)
-			// 	std::cout << "Found solution: EXACT_SOLUTION" << std::endl;
-			// else if (solved == ob::PlannerStatus::StatusType::TIMEOUT)
-			// {
-			// 	std::cout << "Found solution: TIMEOUT" << std::endl;
-			// }
-			// else
-			// {
-			// 	std::cout << "No solution found: Invalid " << std::endl;
-			// }
 			return solved;
 		}
 
@@ -247,8 +235,6 @@ namespace ompl
 					komo.addObjective({phase + 1.}, FS_distance, {ref1.c_str(), ref2.c_str()}, OT_eq, {1e2});
 					komo.addObjective({phase + 1.}, FS_vectorZ, {ref1.c_str()}, OT_eq, {1e2}, {0., 0., 1.});
 
-					// std::cout << "ref1,ref2: " << ref1 << ref2 << std::endl;
-
 					if (phase % 2 == 0) // pick
 					{
 						// std::cout << "pick" << std::endl;
@@ -275,7 +261,7 @@ namespace ompl
 				double constraint_violation = R.get<double>("eq") + R.get<double>("ineq");
 				// std::cout << constraint_violation << std::endl;
 
-				if (constraint_violation < 1){
+				if (constraint_violation < maxConstraintViolationKOMO){
 					keyframesValid = true;
 				}
 			}
@@ -443,11 +429,25 @@ namespace ompl
 		ompl::base::PlannerStatus sktp::solve(const base::PlannerTerminationCondition &ptc)
 		{
 			// Make sure I have the necessary inputs. This is the place you define filename and total phases. Also you need to do the sanity check here.
+			
+			// Check that Planner::setup_ is true, if not call this->setup()
+            Planner::checkValidity();
+
+			// Assert setup succeeded
+            if (!Planner::setup_)
+            {
+                throw ompl::Exception("%s::solve() failed to set up the planner. Has a problem definition been set?",
+                                      Planner::getName().c_str());
+            }
+            // No else
+
+			OMPL_INFORM("%s: Searching for a solution to the given planning problem.", Planner::getName().c_str());
 
 			auto root = makeRootNode(inputs);
 			auto node = root;
 			while(!ptc)
 			{
+
 				growTree(inputs,node); // This samples keyframe sequences starting from node and adds to the tree
 				if (node->is_new)
 				{
@@ -492,23 +492,26 @@ namespace ompl
 
 				else
 				{
-					// move to parent and re-plan
-					// You also need to penalize the parent
-					// TODO: I need to make sure that I don't revisit the node
-					node->get_parent()->penalty++;
-					node = node->get_parent();
-					// after this I need to add penalty to the child!
-					if (node->penalty > 1)
+					std::cout << "planner on level " << node->get_level() << " could not find a solution" << std::endl;
+					// Check if this faliure is at the root node. If yes, we only need to sample more sequences.
+					if (node->get_parent() != nullptr)
 					{
+						node->penalty++; // I need to change this penalty++ to addPenalty. This function would add penalty to the goal inside the previous planner.
+						// I can possibly penalize it's neighbours as well.
 						node = node->get_parent();
-						node->penalty++;
-					}
+						while (node->penalty > 1 && node->get_parent() != nullptr)
+						{
+							node->penalty++;
+							node = node->get_parent();
+						}
+					}// No else, you can't do anything if you are already at the root node
 				}
 
+				// If you have reached the end you need to restart from the root
 				if (node->get_level() == stoi(inputs.at(1)))
 				{
 					// get previous nodes to reclaim the whole path.
-					// Along the way, you get to the root node anyway! So I don't need to define node =  root again
+					// Along the way, you get to the root node anyway! So I don't need to define node = root again
 					std::stack<std::shared_ptr<sktp::keyframeNode>> parentNodes;
 					while(node->get_parent() != nullptr)
 					{
@@ -546,6 +549,7 @@ namespace ompl
 					if (pathCost.value()<bestCost.value())
 					{
 						bestCost = pathCost;
+						// std::cout << "bestCost: " << bestCost.value() << std::endl;
 					}
 
 					std::cout << solutionPath_arrA << std::endl;
