@@ -388,6 +388,7 @@ namespace ompl
 			case (BITstar):
 				auto BITstar_planner = std::make_shared<og::BITstar>(subplanner_si);
 				BITstar_planner->setPruning(false);
+				BITstar_planner->setStopOnGoalStateUpdate(true);
 				planner = BITstar_planner;
 				break;
 			}
