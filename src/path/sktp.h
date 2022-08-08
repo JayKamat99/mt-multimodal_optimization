@@ -28,6 +28,8 @@
 #include <ompl/base/goals/GoalStates.h>
 #include <ompl/base/Planner.h>
 
+#include <path/WeightedGoalStates.h>
+
 // Planners
 #include <ompl/geometric/planners/informedtrees/BITstar.h>
 
@@ -119,6 +121,7 @@ namespace ompl
                 double calcDistHeuristic(); // calculates eucledian distance from parent and adds it to the best cost to parent if available, else to the dist heuristic to the parent
                 double distFromNode(std::shared_ptr<keyframeNode> node);
                 uint level;
+                int penalty;
             public:
                 keyframeNode(arr state, std::shared_ptr<keyframeNode> parent);
                 ~keyframeNode() = default;
@@ -133,9 +136,10 @@ namespace ompl
                 void set_planner(std::shared_ptr<ompl::base::Planner> planner) {this->planner = planner;}
                 std::shared_ptr<ompl::base::Planner> get_planner() {return planner;}
                 ob::PlannerStatus plan();
-                int penalty;
                 uint get_level() {return level;}
                 bool is_new{true};
+                int getPenalty(){return this->penalty;}
+                void addPenalty();
             };
 
             std::shared_ptr<og::sktp::keyframeNode> makeRootNode(std::vector<std::string> inputs);

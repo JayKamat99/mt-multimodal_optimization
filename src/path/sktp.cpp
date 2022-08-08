@@ -121,6 +121,14 @@ namespace ompl
 			return solved;
 		}
 
+		void sktp::keyframeNode::addPenalty()
+		{
+			this->penalty++;
+			this->get_planner()->getProblemDefinition()->clearSolutionPaths();
+			auto planner_ = this->planner;
+			// I need to update the planner definition somehow
+		}
+
 		void sktp::visualize(std::shared_ptr<og::sktp::keyframeNode> &node)
 		{
 			// get configuration
@@ -357,12 +365,12 @@ namespace ompl
 			ob::ScopedState<> start(space);
 			for (unsigned int i = 0; i < C_Dimension; i++)
 			{
-			start[i] = komo->getConfiguration_q(0).elem(i);
+				start[i] = komo->getConfiguration_q(0).elem(i);
 			}
 			pdef->addStartState(start);
 
 			// Get goals
-			auto goalStates = std::make_shared<ob::GoalStates>(subplanner_si);
+			auto goalStates = std::make_shared<ob::WeightedGoalStates>(subplanner_si);
 
 			std::vector<arr> goal_;
 			for (auto child:node->get_children())
@@ -389,6 +397,7 @@ namespace ompl
 				auto BITstar_planner = std::make_shared<og::BITstar>(subplanner_si);
 				BITstar_planner->setPruning(false);
 				BITstar_planner->setStopOnGoalStateUpdate(true);
+				BITstar_planner->setGoalPenaltyMap(goalStates->getMap());
 				planner = BITstar_planner;
 				break;
 			}
@@ -497,12 +506,13 @@ namespace ompl
 					// Check if this faliure is at the root node. If yes, we only need to sample more sequences.
 					if (node->get_parent() != nullptr)
 					{
-						node->penalty++; // I need to change this penalty++ to addPenalty. This function would add penalty to the goal inside the previous planner.
+						node->addPenalty(); // This function would add penalty to the goal inside the previous planner.
 						// I can possibly penalize it's neighbours as well.
+						
 						node = node->get_parent();
-						while (node->penalty > 1 && node->get_parent() != nullptr)
+						while (node->getPenalty() > 1 && node->get_parent() != nullptr)
 						{
-							node->penalty++;
+							node->addPenalty();
 							node = node->get_parent();
 						}
 					}// No else, you can't do anything if you are already at the root node
