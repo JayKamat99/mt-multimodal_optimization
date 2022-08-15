@@ -206,6 +206,8 @@ namespace ompl
 
 			int currentPhase = start->get_level();
 			// std::cout << "currentPhase: " << currentPhase << std::endl;
+			if (currentPhase == totalPhases)
+			return {{}}; // Returns null
 
 			bool keyframesValid = false;
 
@@ -268,6 +270,11 @@ namespace ompl
 			return keyFrames;
 		}
 
+		/**
+		 * @brief This adds the keyframe sequence to the keyframe tree starting from the start node
+		 * @param sequence 
+		 * @param start 
+		 */
 		void sktp::addToTree(arrA sequence, std::shared_ptr<keyframeNode> start)
 		{
 			std::stack<std::shared_ptr<keyframeNode>> keyframeStack;
@@ -291,11 +298,22 @@ namespace ompl
 
         void sktp::growTree(std::vector<std::string> inputs, std::shared_ptr<keyframeNode> start)
 		{
-			for(int i=0; i<this->branchingFactor; i++)
+			int excess_kids = start->get_children().size()%branchingFactor;
+			int sequencesToSample = this->branchingFactor;
+			std::queue<std::shared_ptr<sktp::keyframeNode>> nodesToExpand;
+			if(excess_kids != 0)
+			{
+				sequencesToSample = this->branchingFactor-excess_kids;
+			}
+			// No Else
+
+			for(int i=0; i<sequencesToSample; i++)
 			{
 				arrA sequence = sampleKeyframeSequence(inputs, start);
 				addToTree(sequence, start);
 			}
+
+			
 		}
 
 		void sktp::initPlanner(std::shared_ptr<ompl::geometric::sktp::keyframeNode> node)
@@ -351,13 +369,13 @@ namespace ompl
 				return checker->check(state);
 			});
 
-			ob::ProblemDefinitionPtr pdef(std::make_shared<ob::ProblemDefinition>(subplanner_si));
+			ob::ProblemDefinitionPtr pdef(std::make_shared<ob::ProblemDefinition_ext>(subplanner_si));
 
 			// create start and goal states. These states might change from example to example
 			ob::ScopedState<> start(space);
 			for (unsigned int i = 0; i < C_Dimension; i++)
 			{
-			start[i] = komo->getConfiguration_q(0).elem(i);
+				start[i] = komo->getConfiguration_q(0).elem(i);
 			}
 			pdef->addStartState(start);
 
@@ -445,21 +463,16 @@ namespace ompl
 			OMPL_INFORM("%s: Searching for a solution to the given planning problem.", Planner::getName().c_str());
 
 			auto root = makeRootNode(inputs);
+			growTree(inputs,root); // This samples keyframe sequences starting from node and adds to the tree. Also, builds a tree from there on.
 			auto node = root;
 			while(!ptc)
 			{
-
-				growTree(inputs,node); // This samples keyframe sequences starting from node and adds to the tree
 				if (node->is_new)
 				{
 					initPlanner(node);
 					node->is_new = false;
-				}
-				else
-				{
-					// I am supposed to add the newly sampled goals here. i.e., only the last node->branchingFactor
-					addNewGoals(node);
-				}
+				}//No else
+
 				auto solved = node->plan();
 				#ifdef VISUALIZE
 					visualize(node);

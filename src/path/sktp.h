@@ -28,6 +28,8 @@
 #include <ompl/base/goals/GoalStates.h>
 #include <ompl/base/Planner.h>
 
+#include <path/ProblemDefinition_ext.h>
+
 // Planners
 #include <ompl/geometric/planners/informedtrees/BITstar.h>
 
