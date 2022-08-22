@@ -65,9 +65,9 @@ namespace ompl
 			bestCost = Planner::pdef_->getOptimizationObjective()->infiniteCost();
 		}
 
-		sktp::keyframeNode::keyframeNode(arr state, std::shared_ptr<keyframeNode> parent)
+		sktp::keyframeNode::keyframeNode(arr configuration, std::shared_ptr<keyframeNode> parent)
 		{
-			this->state = state;
+			this->configuration = configuration;
 			this->parent = parent;
 			if(parent == nullptr)
 			{
@@ -83,42 +83,108 @@ namespace ompl
 				this->level = this->parent->level + 1;
 			}
 			this->costToGoHeuristic = INFINITY;
+			this->bestCostHeuristic = INFINITY;
 			this->is_new = true;
 		}
 
 		double sktp::keyframeNode::distFromNode(std::shared_ptr<keyframeNode> node)
 		{
-			return euclideanDistance(this->state.resize(C_Dimension), node->state.resize(C_Dimension));
+			return euclideanDistance(this->configuration.resize(C_Dimension), node->configuration.resize(C_Dimension));
 		}
 
-		double sktp::keyframeNode::calcDistHeuristic()
-		{
-			if (this->parent == nullptr)
-				return 0;
-			else 
-				return (this->parent->get_costToComeHeuristic() + this->distFromNode(this->parent));
-		}
-
-		void sktp::keyframeNode::add_child(std::shared_ptr<keyframeNode> child, bool updateCosts = false)
+		void sktp::keyframeNode::add_child(std::shared_ptr<keyframeNode> child)
 		{
 			this->childern.push_back(child);
-			if (updateCosts)
+			// Since new child is added costToGoHeuristic can be updated. We check if the new child node offers any promises
+			if (this->costToGoHeuristic > child->costToGoHeuristic + this->distFromNode(child))
 			{
-				if (this->costToGoHeuristic > child->costToGoHeuristic + this->distFromNode(child))
-				{
-					this->costToGoHeuristic = child->costToGoHeuristic + this->distFromNode(child);
-				}
-				// No else
+				this->costToGoHeuristic = child->costToGoHeuristic + this->distFromNode(child);
 			}
-			// No else
+			// No else, this new child node does not promise us anything
 		}
 
 		ob::PlannerStatus sktp::keyframeNode::plan()
 		{
 			// attempt to solve the problem
 			ob::PlannerStatus solved;
+			std::cout << "level: " << level << std::endl;
 			solved = planner->solve(.5);
+			calls++;
 			return solved;
+		}
+
+		void sktp::keyframeNode::update_bestCostHeuristic() // This function is called everytime a new child is added
+		{
+			if (bestCostHeuristic > distFromNode(this->childern.back()))
+			{
+				bestCostHeuristic = distFromNode(this->childern.back());
+			}
+		}
+
+		void sktp::keyframeNode::update_bestCost(og::PathGeometricPtr pathGeo, std::shared_ptr<keyframeNode> child) // This function is called everytime a new child is added
+		{
+			if (bestCost < pathGeo->cost(planner->getProblemDefinition()->getOptimizationObjective()).value())
+			{
+				bestCost = pathGeo->cost(planner->getProblemDefinition()->getOptimizationObjective()).value();
+				closestChild = child;
+			}
+		}
+
+		double sktp::calcPriority(std::shared_ptr<og::sktp::keyframeNode> &node) const
+		{
+			double bestCost = node->get_bestCost(); 
+			double bestCostHeuristic = node->get_bestCostHeuristic();
+			int attempts = node->get_attempts();
+			int k = 1;
+			double ratio = bestCost/bestCostHeuristic;
+			double priority = (1-std::exp(-ratio*k)) / (1+std::exp(-ratio*k)) / std::sqrt(attempts);
+			return priority;
+		}
+
+		void sktp::visualizePath(arrA &configs, std::shared_ptr<og::sktp::keyframeNode> &node)
+		{
+			// get configuration
+
+			int currentPhase = node->get_level();
+			// std::cout << "currentPhase: " << currentPhase << std::endl; 
+			auto node_ = node;
+			std::stack<arr> pathUntilNow;
+			for (int i=0; i<currentPhase; i++)
+			{
+				pathUntilNow.push(node_->get_configuration().resize(C_Dimension));
+				node_ = node_->get_parent();
+			}
+			
+			// initialize the configuration
+			rai::Configuration C(inputs.at(0).c_str());
+			for(int phase = 0; phase <currentPhase; phase++)
+			{
+				std::string ref1 = inputs.at(2 + phase * 2), ref2 = inputs.at(3 + phase * 2);
+				C.setJointState(pathUntilNow.top());
+				// std::cout << pathUntilNow.top() << std::endl;
+				pathUntilNow.pop();
+				if (phase % 2 == 0)
+					C.attach(C.getFrame(ref1.c_str()), C.getFrame(ref2.c_str())); // pick
+				else
+					C.attach(C.getFrame("world"), C.getFrame(ref1.c_str())); // place
+				phase++;
+			}
+
+			KOMO komo;
+			komo.verbose = 0;
+			komo.setModel(C, true);
+
+			komo.setTiming(1., configs.N, 5., 2);
+			komo.add_qControlObjective({}, 1, 1.);
+
+			// use configs to initialize with waypoints
+			komo.initWithWaypoints(configs, configs.N, false);
+			komo.run_prepare(0);
+			komo.plotTrajectory();
+
+			rai::ConfigurationViewer V;
+			V.setPath(C, komo.x, "result", true);
+			V.playVideo();
 		}
 
 		void sktp::visualize(std::shared_ptr<og::sktp::keyframeNode> &node)
@@ -131,7 +197,7 @@ namespace ompl
 			std::stack<arr> pathUntilNow;
 			for (int i=0; i<currentPhase; i++)
 			{
-				pathUntilNow.push(node_->get_state().resize(C_Dimension));
+				pathUntilNow.push(node_->get_configuration().resize(C_Dimension));
 				node_ = node_->get_parent();
 			}
 
@@ -184,6 +250,79 @@ namespace ompl
 			
 		}
 
+        void sktp::updateSolution(std::shared_ptr<og::sktp::keyframeNode> node)
+		{
+			// std::cout << "I enter the updateSolution function" << std::endl;
+
+			// move to the best goal that has been reached.
+			auto node_ = node->get_closestChild();
+
+			std::stack<std::shared_ptr<sktp::keyframeNode>> solutionSequence; // Initialize the stack
+			solutionSequence.push(node_);
+
+			// get previous nodes to reclaim the whole path.
+			while(node_->get_parent() != nullptr)
+			{
+				solutionSequence.push(node_->get_parent());
+				node_ = node_->get_parent();
+			}
+
+			// get the path from the nodes
+			arrA solutionPath_arrA;
+			og::PathGeometric solutionPath(this->getSpaceInformation());
+
+			ompl::base::Cost pathCost;
+			std::shared_ptr<keyframeNode> currentNode = solutionSequence.top(); solutionSequence.pop();
+			std::shared_ptr<keyframeNode> childNode;
+			while(!solutionSequence.empty())
+			{
+				childNode = solutionSequence.top();
+				auto pdef_ext = std::static_pointer_cast<ompl::base::ProblemDefinition_ext>(currentNode->get_planner()->getProblemDefinition());
+				// std::cout << "I reach 1" << std::endl;
+
+				// std::cout << "currentState: " << currentNode->get_state() << std::endl;
+				// std::cout << "childState_update: " << childNode->get_state()->as<ob::RealVectorStateSpace::StateType>() << std::endl;
+
+				auto intermediate_solutionPath = pdef_ext->getPath(childNode->get_state());
+				intermediate_solutionPath->interpolate(15);
+				// std::cout << "I reach 1.5" << std::endl;
+				// The above line gives a segmentation fault. That is natural because, I am not saving the solution paths inside of problem definitions!
+				intermediate_solutionPath->print(std::cout);
+				auto optObj = currentNode->get_planner()->getProblemDefinition()->getOptimizationObjective();
+				pathCost = optObj->combineCosts(pathCost,intermediate_solutionPath->cost(optObj));
+				// std::cout << "I reach 2" << std::endl;
+				// solutionPath.append(*intermediate_solutionPath); // Todo: This does not work yet!
+				// solutionPath.print(std::cout);
+				arrA configs;
+				for (auto state : intermediate_solutionPath->getStates())
+				{
+					arr config;
+					std::vector<double> reals;
+					currentNode->get_planner()->getSpaceInformation()->getStateSpace()->copyToReals(reals, state);
+					for (double r : reals){
+						config.append(r);
+					}
+					configs.append(config);
+				}
+				visualizePath(configs, currentNode);
+				solutionPath_arrA.append(configs);
+				currentNode = childNode;
+				solutionSequence.pop();
+			}
+			if (pathCost.value()<bestCost.value())
+			{
+				bestCost = pathCost;
+				// std::cout << "bestCost: " << bestCost.value() << std::endl;
+			}
+
+			std::cout << solutionPath_arrA << std::endl;
+
+			// Set solution using pdef.
+
+			// std::cout << "I exit the updateSolution function" << std::endl;
+		}
+
+
 		std::shared_ptr<og::sktp::keyframeNode> sktp::makeRootNode(std::vector<std::string> inputs)
 		{
 
@@ -195,6 +334,7 @@ namespace ompl
 			// make a root node and return it!
 			auto root = std::make_shared<keyframeNode>(C.getJointState(),nullptr);
 			root->set_dimension(C.getJointStateDimension());
+			root->pathExists = true; // You are at the root!
 			return root;
 		}
 
@@ -207,9 +347,10 @@ namespace ompl
 			int currentPhase = start->get_level();
 			// std::cout << "currentPhase: " << currentPhase << std::endl;
 			if (currentPhase == totalPhases)
-			return {{}}; // Returns null
+			return nullArrA; // Returns null
 
 			bool keyframesValid = false;
+			int failure = 0;
 
 			// Set Configuration
 			rai::Configuration C;
@@ -221,7 +362,7 @@ namespace ompl
 				komo.verbose = 0;
 				komo.setModel(C, true);
 				komo.setTiming(totalPhases, 1, 5, 2);
-				komo.addObjective({(double)currentPhase}, FS_qItself, {}, OT_eq, {}, start->get_state().resize(this->getSpaceInformation()->getStateDimension()));
+				komo.addObjective({(double)currentPhase}, FS_qItself, {}, OT_eq, {}, start->get_configuration().resize(this->getSpaceInformation()->getStateDimension()));
 
 				int phase = 0;
 				while (phase < totalPhases)
@@ -266,6 +407,11 @@ namespace ompl
 				if (constraint_violation < maxConstraintViolationKOMO){
 					keyframesValid = true;
 				}
+				else{
+					failure++;
+					if (failure >= 2*branchingFactor)
+						return nullArrA;
+				}
 			}
 			return keyFrames;
 		}
@@ -292,7 +438,8 @@ namespace ompl
 				auto child = keyframeStack.top();
 				// std::cout << child << std::endl;
 				keyframeStack.pop();
-				keyframeStack.top()->add_child(child, true);
+				keyframeStack.top()->add_child(child);
+				keyframeStack.top()->update_bestCostHeuristic();
 			}
 		}
 
@@ -301,19 +448,18 @@ namespace ompl
 			int excess_kids = start->get_children().size()%branchingFactor;
 			int sequencesToSample = this->branchingFactor;
 			std::queue<std::shared_ptr<sktp::keyframeNode>> nodesToExpand;
-			if(excess_kids != 0)
-			{
-				sequencesToSample = this->branchingFactor-excess_kids;
-			}
-			// No Else
+			sequencesToSample = this->branchingFactor-excess_kids;
 
 			for(int i=0; i<sequencesToSample; i++)
 			{
-				arrA sequence = sampleKeyframeSequence(inputs, start);
+				arrA sequence = sampleKeyframeSequence(inputs, start); // Returns null if it can't find a sequence after sufficient tries
+				if (sequence == nullArrA)
+				{
+					std::cout << "I am breaking!" << std::endl;
+					break;
+				}
 				addToTree(sequence, start);
-			}
-
-			
+			}	
 		}
 
 		void sktp::initPlanner(std::shared_ptr<ompl::geometric::sktp::keyframeNode> node)
@@ -323,12 +469,11 @@ namespace ompl
 
 			// get state history until now
 			int currentPhase = node->get_level();
-			// std::cout << "currentPhase: " << currentPhase << std::endl; 
 			auto node_ = node;
 			std::stack<arr> pathUntilNow;
 			for (int i=0; i<currentPhase; i++)
 			{
-				pathUntilNow.push(node_->get_state().resize(C_Dimension));
+				pathUntilNow.push(node_->get_configuration().resize(C_Dimension));
 				node_ = node_->get_parent();
 			}
 
@@ -377,26 +522,25 @@ namespace ompl
 			{
 				start[i] = komo->getConfiguration_q(0).elem(i);
 			}
-			pdef->addStartState(start);
+			if (node->get_parent() == nullptr)
+			{
+				std::cout << "initializing root!" << std::endl;
+				node->set_state(start.get());
+			}
+			pdef->addStartState(node->get_state());
 
 			// Get goals
 			auto goalStates = std::make_shared<ob::GoalStates>(subplanner_si);
 
-			std::vector<arr> goal_;
 			for (auto child:node->get_children())
 			{
-				goal_.push_back(child->get_state().resize(C_Dimension));
-			}
-
-			for (unsigned int j = 0; j < goal_.size(); j++)
-			{
+				arr goal_ = child->get_configuration().resize(C_Dimension);
 				ob::ScopedState<> goal(space);
 				for (unsigned int i = 0; i < C_Dimension; i++)
 				{
-				goal[i] = goal_.at(j)(i);
+				goal[i] = goal_(i);
 				}
 				goalStates->addState(goal);
-				// std::cout << "goal " << j << " = " << goal << std::endl;
 			}
 
 			pdef->setGoal(goalStates);
@@ -404,9 +548,8 @@ namespace ompl
 			switch (subPlanner)
 			{
 			case (BITstar):
-				auto BITstar_planner = std::make_shared<og::BITstar>(subplanner_si);
+				auto BITstar_planner = std::make_shared<og::BITstar>(subplanner_si, "BITstar_sktp");
 				BITstar_planner->setPruning(false);
-				BITstar_planner->setStopOnGoalStateUpdate(true);
 				planner = BITstar_planner;
 				break;
 			}
@@ -418,37 +561,29 @@ namespace ompl
 		void sktp::addNewGoals(std::shared_ptr<ompl::geometric::sktp::keyframeNode> node)
 		{
 			// Get goals
-			auto planner = node->get_planner();
-			auto subplanner_si = planner->getSpaceInformation();
+			auto subplanner = node->get_planner();
+			auto subplanner_si = subplanner->getSpaceInformation();
 			auto goalStates = std::make_shared<ob::GoalStates>(subplanner_si);
 
 			auto space = subplanner_si->getStateSpace();
 
-			std::vector<arr> goal_;
 			for (auto child:node->get_children())
 			{
-				goal_.push_back(child->get_state().resize(C_Dimension));
-			}
-
-			// std::cout << "goal_.size(): " << goal_.size() << std::endl;
-			for (unsigned int j = 0; j < goal_.size(); j++)
-			{
+				arr goal_ = child->get_configuration().resize(C_Dimension);
 				ob::ScopedState<> goal(space);
 				for (unsigned int i = 0; i < C_Dimension; i++)
 				{
-				goal[i] = goal_.at(j)(i);
+				goal[i] = goal_(i);
 				}
 				goalStates->addState(goal);
-				// std::cout << "goal " << j << " = " << goal << std::endl;
 			}
 
-			planner->getProblemDefinition()->setGoal(goalStates);
+			subplanner->getProblemDefinition()->setGoal(goalStates);
 		}
 
 		ompl::base::PlannerStatus sktp::solve(const base::PlannerTerminationCondition &ptc)
 		{
-			// Make sure I have the necessary inputs. This is the place you define filename and total phases. Also you need to do the sanity check here.
-			
+			/****************************************************************/
 			// Check that Planner::setup_ is true, if not call this->setup()
             Planner::checkValidity();
 
@@ -460,120 +595,122 @@ namespace ompl
             }
             // No else
 
+			// Make sure you have inputs defined
+
 			OMPL_INFORM("%s: Searching for a solution to the given planning problem.", Planner::getName().c_str());
 
-			auto root = makeRootNode(inputs);
-			growTree(inputs,root); // This samples keyframe sequences starting from node and adds to the tree. Also, builds a tree from there on.
+			/****************************************************************/
+			// Begin Algorithm
+			srand(std::time(0)); // Generate a random number
+			std::priority_queue<std::pair<std::shared_ptr<sktp::keyframeNode>, double>> visitedNodes; //Initialize the priority queue to determine which node to expand
+			auto root = makeRootNode(inputs); // Make root node
+
+			while (root->get_children().size() == 0) // basically keep searching for a solution sequence until you get a solution.
+			{
+				growTree(inputs,root); // This samples keyframe sequences starting from node and adds to the tree.
+			}
+
 			auto node = root;
 			while(!ptc)
 			{
-				if (node->is_new)
+				if (node->is_new) // This is the first time you are visiting the node.
 				{
-					initPlanner(node);
+					initPlanner(node); // Intializes the ompl planner for the space associated with that node
 					node->is_new = false;
 				}//No else
 
-				auto solved = node->plan();
-				#ifdef VISUALIZE
-					visualize(node);
-				#endif
-				// bool solved = true;
+				// 20% of the times add more goals otherwise, only try planning a motion // make this your parameter (k < %)
+				if (rand()%100 < 20)
+				{
+					std::cout << "I am growing tree!" << std::endl;
+					growTree(inputs,node);
+					addNewGoals(node);
+					continue;
+				}
+				// No else, continue with the planning
+
+				auto solved = node->plan(); // Try finding a plan. This runs for one BIT* batch
+
+				// get the pdef as pdef_ext. This extension helps us get path to a given goal.
+				auto pdef_ext = std::static_pointer_cast<ompl::base::ProblemDefinition_ext>(node->get_planner()->getProblemDefinition());
 
 				if (solved)
 				{
-					// move to the node whose solution you have.
-					// For that, we first need to to figure out which node it is
-					auto intermediate_solutionPath = static_cast<og::PathGeometric &>(*node->get_planner()->getProblemDefinition()->getSolutionPath());
-					auto finalState = intermediate_solutionPath.getState(intermediate_solutionPath.getStateCount()-1);
-					arr state;	std::vector<double> reals;
-					node->get_planner()->getSpaceInformation()->getStateSpace()->copyToReals(reals, finalState);
-					for (double r : reals)
+					/****************************************************************/
+					// Add the new goals reached to the visitedNodes priority queue. This node can be (will be) chosen later to be planned on.
+					
+					auto reachedGoals = pdef_ext->get_reachedGoals();
+					std::cout << "reachedGoals:" << reachedGoals.size() << std::endl;
+					while (node->markedGoals < reachedGoals.size()) // We don't check compare goals that have already been accounted for
 					{
-						state.append(r);
-					}
-					// std::cout << state << std::endl;
+						auto goal = reachedGoals.at(node->markedGoals);
+						// Check which keframe this goal belongs to and acordingly set the ompl state pointer for that node
+						for (auto child:node->get_children())
+						{
+							if (child->pathExists == true) // There is no point checking a node if it has already been reached and documented
+								continue;
 
-					// Now, scroll through every child node to figure out which node to expand
+							int i = 0; 
+							while (i<C_Dimension)
+							{
+								if (child->get_configuration()(i) != (*goal->as<ob::RealVectorStateSpace::StateType>())[i])
+									break; // This is not the right keyframe
+								i++;								
+							}
+
+							if (i==C_Dimension) // This child state is in among the reached goals
+							{
+								child->pathExists = true; // Mark this node as reached
+								child->set_state(goal);
+								std::cout << "This goal has been reached!" << std::endl;
+								if (child->get_level() < stoi(inputs.at(1))) // Add the child to visited nodes vector as long as it is not at the last level
+									visitedNodes.push(std::make_pair<std::shared_ptr<sktp::keyframeNode>&, double>(child,calcPriority(child)));
+							}
+						}
+						node->markedGoals++;
+					}
+
+					/****************************************************************/
+					// For all the child nodes to which path exists, we call for the path and use that to update the bestCost for the node.
 					for (auto child:node->get_children())
 					{
-						if(child->get_state().resize(C_Dimension) == state)
+						if (child->pathExists)
 						{
-							node = child;
-							break;
-						}
+							auto pathGeo = pdef_ext->getPath(child->get_state());
+							std::cout << "currentState: " << node->get_state() << std::endl;
+							std::cout << "childState: " << child->get_state()->as<ob::RealVectorStateSpace::StateType>() << std::endl;
+							pathGeo->print(std::cout);
+							node->update_bestCost(pathGeo, child); // Checks if this is a better path than the path that already exists. Sets bestCost, closestChild
+						} // No else, you cannot do anything if a path doesn not exist
 					}
-				}
-
-				else
-				{
-					std::cout << "planner on level " << node->get_level() << " could not find a solution" << std::endl;
-					// Check if this faliure is at the root node. If yes, we only need to sample more sequences.
-					if (node->get_parent() != nullptr)
+					
+					/****************************************************************/
+					// Have we elready fond a solution?
+					// If this is the second to last node, it means that we have a solution!! return/update it! otherwise skip this step
+					if (node->get_level() == stoi(inputs.at(1))-1)
 					{
-						node->penalty++; // I need to change this penalty++ to addPenalty. This function would add penalty to the goal inside the previous planner.
-						// I can possibly penalize it's neighbours as well.
-						node = node->get_parent();
-						while (node->penalty > 1 && node->get_parent() != nullptr)
-						{
-							node->penalty++;
-							node = node->get_parent();
-						}
-					}// No else, you can't do anything if you are already at the root node
-				}
+						updateSolution(node);
+					} // No else, don't do anything if you are not on the last node
 
-				// If you have reached the end you need to restart from the root
-				if (node->get_level() == stoi(inputs.at(1)))
-				{
-					// get previous nodes to reclaim the whole path.
-					// Along the way, you get to the root node anyway! So I don't need to define node = root again
-					std::stack<std::shared_ptr<sktp::keyframeNode>> parentNodes;
-					while(node->get_parent() != nullptr)
-					{
-						parentNodes.push(node->get_parent());
-						node = node->get_parent();
-					}
+				} // No else, do nothing if unsolved
 
-					// get the path from the nodes
-					arrA solutionPath_arrA;
-					og::PathGeometric solutionPath(this->getSpaceInformation());
+				// No matter if we have solved or not we need to push the node we used back into the priorityQueue with updated values
+				visitedNodes.push(std::make_pair<std::shared_ptr<sktp::keyframeNode>&, double>(node, calcPriority(node)));
 
-					ompl::base::Cost pathCost;
-					while(!parentNodes.empty())
-					{
-						auto intermediate_solutionPath = static_cast<og::PathGeometric &>(*parentNodes.top()->get_planner()->getProblemDefinition()->getSolutionPath());
-						// intermediate_solutionPath.print(std::cout);
-						auto optObj = parentNodes.top()->get_planner()->getProblemDefinition()->getOptimizationObjective();
-						pathCost = optObj->combineCosts(pathCost,intermediate_solutionPath.cost(optObj));
-						solutionPath.append(intermediate_solutionPath); // Todo: This does not work yet!
-						// solutionPath.print(std::cout);
-						arrA configs;
-						for (auto state : intermediate_solutionPath.getStates())
-						{
-							arr config;
-							std::vector<double> reals;
-							node->get_planner()->getSpaceInformation()->getStateSpace()->copyToReals(reals, state);
-							for (double r : reals){
-								config.append(r);
-							}
-							configs.append(config);
-						}
-						solutionPath_arrA.append(configs);
-						parentNodes.pop();
-					}
-					if (pathCost.value()<bestCost.value())
-					{
-						bestCost = pathCost;
-						// std::cout << "bestCost: " << bestCost.value() << std::endl;
-					}
+				// Choose the next node. This is our real contribution.
+				std::cout << "size:" << visitedNodes.size() << std::endl;
+				node = visitedNodes.top().first;
+				visitedNodes.pop();
 
-					std::cout << solutionPath_arrA << std::endl;
-					// break;
-					// This solutionPath_arrA is a solution and must be added to pdef
-					// komo.optimize();
-				}
+				#ifdef VISUALIZE
+					visualize(node);
+				#endif
 			}
 
-			return ompl::base::PlannerStatus::ABORT;
+			if (bestCost.value() < INFINITY)
+				return ompl::base::PlannerStatus::EXACT_SOLUTION;
+			else 
+				return ompl::base::PlannerStatus::TIMEOUT;
 		}
 	}
 }

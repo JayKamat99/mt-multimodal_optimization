@@ -12,9 +12,13 @@
  * 
 **/
 
+#include <cstdlib>
+#include <time.h>
+
 #include <ompl/geometric/planners/PlannerIncludes.h>
 #include <limits>
 #include <stack>
+#include <set>
 #include <KOMO/komo.h>
 #include <Kin/kin.h>
 #include <Kin/viewer.h>
@@ -28,7 +32,7 @@
 #include <ompl/base/goals/GoalStates.h>
 #include <ompl/base/Planner.h>
 
-#include <path/ProblemDefinition_ext.h>
+#include <ompl/base/ProblemDefinition_ext.h>
 
 // Planners
 #include <ompl/geometric/planners/informedtrees/BITstar.h>
@@ -40,6 +44,7 @@ namespace og = ompl::geometric;
 
 #define PI 3.14159
 #define tol 1e-2
+#define nullArrA (arrA){{}}
 
 struct ValidityCheckWithKOMO
 {
@@ -111,37 +116,53 @@ namespace ompl
             {
             private:
                 int C_Dimension;
-                arr state;
+                arr configuration;
+                const ompl::base::State* state; // This value is defined only when it is reached
                 std::shared_ptr<keyframeNode> parent;
                 std::vector<std::shared_ptr<keyframeNode>> childern;
+                std::shared_ptr<keyframeNode> closestChild;
                 std::shared_ptr<ompl::base::Planner> planner;
                 double costToComeHeuristic; // lower-bound cost to reach the node
                 double bestCostToCome; // cost of the best path to node until now
                 double costToGoHeuristic; // lower-bound cost to reach the final goal.
-                double calcDistHeuristic(); // calculates eucledian distance from parent and adds it to the best cost to parent if available, else to the dist heuristic to the parent
+                double bestCost;
+                double bestCostHeuristic;
                 double distFromNode(std::shared_ptr<keyframeNode> node);
+                int calls = 0;
                 uint level;
             public:
-                keyframeNode(arr state, std::shared_ptr<keyframeNode> parent);
+                bool pathExists{false};
+                int markedGoals = 0;
+                keyframeNode(arr configuration, std::shared_ptr<keyframeNode> parent);
                 ~keyframeNode() = default;
-                arr get_state() {return this->state;}
+                arr get_configuration() {return this->configuration;}
+                const ob::State* get_state() {return this->state;}
                 std::shared_ptr<keyframeNode> get_parent() {return this->parent;}
+                std::shared_ptr<keyframeNode> get_closestChild() {return this->closestChild;}
                 double get_costToComeHeuristic()  {return this->costToComeHeuristic;}
+                void update_bestCostHeuristic();
                 // double get_bestCostToCome() {return this->bestCostToCome;}
                 std::vector<std::shared_ptr<keyframeNode>> get_children() {return this->childern;}
-                void add_child(std::shared_ptr<keyframeNode> child, bool updateCosts);
+                void add_child(std::shared_ptr<keyframeNode> child);
                 void setasleaf() {this->costToGoHeuristic = 0;}
                 void set_dimension(int C_Dimension) {this->C_Dimension = C_Dimension;}
                 void set_planner(std::shared_ptr<ompl::base::Planner> planner) {this->planner = planner;}
+                void set_state(const ob::State* state) {if (pathExists) this->state = state;}
+                void update_bestCost(ompl::geometric::PathGeometricPtr pathGeo, std::shared_ptr<keyframeNode> child);
                 std::shared_ptr<ompl::base::Planner> get_planner() {return planner;}
                 ob::PlannerStatus plan();
                 int penalty;
                 uint get_level() {return level;}
                 bool is_new{true};
+                double get_bestCost() {return bestCost;}
+                double get_bestCostHeuristic() {return bestCostHeuristic;}
+                int get_attempts() {return calls;}
             };
 
             std::shared_ptr<og::sktp::keyframeNode> makeRootNode(std::vector<std::string> inputs);
 
+            /* If there are no children, growTree adds branchingFactor children, else adds children to make the number multiples of branchingFactor. 
+            Does not add any child if it takes more than 2*branchingFator tries to get an answer. */
             void growTree(std::vector<std::string> inputs, std::shared_ptr<keyframeNode> start);
 		    arrA sampleKeyframeSequence(std::vector<std::string> inputs, std::shared_ptr<keyframeNode> start);
             int getCurrentPhase(std::shared_ptr<keyframeNode> node);
@@ -150,7 +171,12 @@ namespace ompl
 		    void initPlanner(std::shared_ptr<ompl::geometric::sktp::keyframeNode> node);
             void addNewGoals(std::shared_ptr<ompl::geometric::sktp::keyframeNode> node);
 
+            void updateSolution(std::shared_ptr<ompl::geometric::sktp::keyframeNode> node);
+
             void visualize(std::shared_ptr<og::sktp::keyframeNode> &node);
+            void visualizePath(arrA &configs, std::shared_ptr<og::sktp::keyframeNode> &node);
+
+            double calcPriority(std::shared_ptr<og::sktp::keyframeNode> &node) const;
 
             /* Progress Properties */
             /** \brief Retrieve the best exact-solution cost found as a planner-progress property. */
