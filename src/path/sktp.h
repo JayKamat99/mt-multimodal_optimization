@@ -131,6 +131,7 @@ namespace ompl
                 int calls = 0;
                 uint level;
             public:
+                bool hasSolution{false}; // True if a feasible path from this node has already been found
                 bool pathExists{false};
                 int markedGoals = 0;
                 keyframeNode(arr configuration, std::shared_ptr<keyframeNode> parent);
@@ -148,7 +149,7 @@ namespace ompl
                 void set_dimension(int C_Dimension) {this->C_Dimension = C_Dimension;}
                 void set_planner(std::shared_ptr<ompl::base::Planner> planner) {this->planner = planner;}
                 void set_state(const ob::State* state) {if (pathExists) this->state = state;}
-                void update_bestCost(ompl::geometric::PathGeometricPtr pathGeo, std::shared_ptr<keyframeNode> child);
+                void update_bestCost(double cost);
                 std::shared_ptr<ompl::base::Planner> get_planner() {return planner;}
                 ob::PlannerStatus plan();
                 int penalty;

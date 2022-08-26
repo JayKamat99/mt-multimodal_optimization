@@ -53,6 +53,7 @@ namespace ompl
 		sktp::~sktp()
 		{
 			freeMemory();
+			std::cout << "sktp deleted" << std::endl;
 		}
 
 		void sktp::freeMemory()
@@ -61,6 +62,7 @@ namespace ompl
 
 		void sktp::clear()
 		{
+			std::cout << "sktp: clear called" << std::endl;
 			Planner::clear();
 			bestCost = Planner::pdef_->getOptimizationObjective()->infiniteCost();
 		}
@@ -107,7 +109,7 @@ namespace ompl
 		{
 			// attempt to solve the problem
 			ob::PlannerStatus solved;
-			std::cout << "level: " << level << std::endl;
+			// std::cout << "level: " << level << std::endl;
 			solved = planner->solve(.5);
 			calls++;
 			return solved;
@@ -121,13 +123,9 @@ namespace ompl
 			}
 		}
 
-		void sktp::keyframeNode::update_bestCost(og::PathGeometricPtr pathGeo, std::shared_ptr<keyframeNode> child) // This function is called everytime a new child is added
+		void sktp::keyframeNode::update_bestCost(double cost) // This function is called everytime a new child is added
 		{
-			if (bestCost < pathGeo->cost(planner->getProblemDefinition()->getOptimizationObjective()).value())
-			{
-				bestCost = pathGeo->cost(planner->getProblemDefinition()->getOptimizationObjective()).value();
-				closestChild = child;
-			}
+			this->bestCost = cost;
 		}
 
 		double sktp::calcPriority(std::shared_ptr<og::sktp::keyframeNode> &node) const
@@ -136,7 +134,7 @@ namespace ompl
 			double bestCostHeuristic = node->get_bestCostHeuristic();
 			int attempts = node->get_attempts();
 			int k = 1;
-			double ratio = bestCost/bestCostHeuristic;
+			double ratio = (bestCost-bestCostHeuristic)/bestCostHeuristic;
 			double priority = (1-std::exp(-ratio*k)) / (1+std::exp(-ratio*k)) / std::sqrt(attempts);
 			return priority;
 		}
@@ -287,7 +285,7 @@ namespace ompl
 				intermediate_solutionPath->interpolate(15);
 				// std::cout << "I reach 1.5" << std::endl;
 				// The above line gives a segmentation fault. That is natural because, I am not saving the solution paths inside of problem definitions!
-				intermediate_solutionPath->print(std::cout);
+				// intermediate_solutionPath->print(std::cout);
 				auto optObj = currentNode->get_planner()->getProblemDefinition()->getOptimizationObjective();
 				pathCost = optObj->combineCosts(pathCost,intermediate_solutionPath->cost(optObj));
 				// std::cout << "I reach 2" << std::endl;
@@ -304,7 +302,7 @@ namespace ompl
 					}
 					configs.append(config);
 				}
-				visualizePath(configs, currentNode);
+				// visualizePath(configs, currentNode);
 				solutionPath_arrA.append(configs);
 				currentNode = childNode;
 				solutionSequence.pop();
@@ -312,10 +310,10 @@ namespace ompl
 			if (pathCost.value()<bestCost.value())
 			{
 				bestCost = pathCost;
-				// std::cout << "bestCost: " << bestCost.value() << std::endl;
+				std::cout << "bestCost: " << bestCost.value() << std::endl;
 			}
 
-			std::cout << solutionPath_arrA << std::endl;
+			// std::cout << solutionPath_arrA << std::endl;
 
 			// Set solution using pdef.
 
@@ -455,7 +453,7 @@ namespace ompl
 				arrA sequence = sampleKeyframeSequence(inputs, start); // Returns null if it can't find a sequence after sufficient tries
 				if (sequence == nullArrA)
 				{
-					std::cout << "I am breaking!" << std::endl;
+					// std::cout << "I am breaking!" << std::endl;
 					break;
 				}
 				addToTree(sequence, start);
@@ -524,7 +522,7 @@ namespace ompl
 			}
 			if (node->get_parent() == nullptr)
 			{
-				std::cout << "initializing root!" << std::endl;
+				// std::cout << "initializing root!" << std::endl;
 				node->set_state(start.get());
 			}
 			pdef->addStartState(node->get_state());
@@ -610,6 +608,8 @@ namespace ompl
 				growTree(inputs,root); // This samples keyframe sequences starting from node and adds to the tree.
 			}
 
+			std::cout << "bestCost: " << this->bestCost.value() << std::endl;
+
 			auto node = root;
 			while(!ptc)
 			{
@@ -622,7 +622,7 @@ namespace ompl
 				// 20% of the times add more goals otherwise, only try planning a motion // make this your parameter (k < %)
 				if (rand()%100 < 20)
 				{
-					std::cout << "I am growing tree!" << std::endl;
+					// std::cout << "I am growing tree!" << std::endl;
 					growTree(inputs,node);
 					addNewGoals(node);
 					continue;
@@ -640,7 +640,7 @@ namespace ompl
 					// Add the new goals reached to the visitedNodes priority queue. This node can be (will be) chosen later to be planned on.
 					
 					auto reachedGoals = pdef_ext->get_reachedGoals();
-					std::cout << "reachedGoals:" << reachedGoals.size() << std::endl;
+					// std::cout << "reachedGoals:" << reachedGoals.size() << std::endl;
 					while (node->markedGoals < reachedGoals.size()) // We don't check compare goals that have already been accounted for
 					{
 						auto goal = reachedGoals.at(node->markedGoals);
@@ -662,7 +662,7 @@ namespace ompl
 							{
 								child->pathExists = true; // Mark this node as reached
 								child->set_state(goal);
-								std::cout << "This goal has been reached!" << std::endl;
+								// std::cout << "This goal has been reached!" << std::endl;
 								if (child->get_level() < stoi(inputs.at(1))) // Add the child to visited nodes vector as long as it is not at the last level
 									visitedNodes.push(std::make_pair<std::shared_ptr<sktp::keyframeNode>&, double>(child,calcPriority(child)));
 							}
@@ -676,20 +676,20 @@ namespace ompl
 					{
 						if (child->pathExists)
 						{
-							auto pathGeo = pdef_ext->getPath(child->get_state());
-							std::cout << "currentState: " << node->get_state() << std::endl;
-							std::cout << "childState: " << child->get_state()->as<ob::RealVectorStateSpace::StateType>() << std::endl;
-							pathGeo->print(std::cout);
-							node->update_bestCost(pathGeo, child); // Checks if this is a better path than the path that already exists. Sets bestCost, closestChild
+							double cost = pdef_ext->getCostToReach(child->get_state());
+							if (node->get_bestCost()>cost)
+							{
+								node->update_bestCost(cost);
+								// We also update the cost of the tolat path if there is a feasible path from here.
+							}
 						} // No else, you cannot do anything if a path doesn not exist
 					}
 					
 					/****************************************************************/
-					// Have we elready fond a solution?
 					// If this is the second to last node, it means that we have a solution!! return/update it! otherwise skip this step
 					if (node->get_level() == stoi(inputs.at(1))-1)
 					{
-						updateSolution(node);
+						// updateSolution(node);
 					} // No else, don't do anything if you are not on the last node
 
 				} // No else, do nothing if unsolved
@@ -698,13 +698,13 @@ namespace ompl
 				visitedNodes.push(std::make_pair<std::shared_ptr<sktp::keyframeNode>&, double>(node, calcPriority(node)));
 
 				// Choose the next node. This is our real contribution.
-				std::cout << "size:" << visitedNodes.size() << std::endl;
+				// std::cout << "size:" << visitedNodes.size() << std::endl;
 				node = visitedNodes.top().first;
 				visitedNodes.pop();
 
-				#ifdef VISUALIZE
-					visualize(node);
-				#endif
+				// #ifdef VISUALIZE
+				// 	visualize(node);
+				// #endif
 			}
 
 			if (bestCost.value() < INFINITY)

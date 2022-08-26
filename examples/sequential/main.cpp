@@ -17,6 +17,7 @@
 
 // keyframe planner include
 #include <path/sktp.h>
+#include <path/SequentialKOMO.h>
 
 #define PI 3.14159
 #define tol 1e-2
@@ -25,6 +26,17 @@ namespace ob = ompl::base;
 namespace og = ompl::geometric;
 
 const std::vector<std::string> Null_vector = {{}};
+bool benchmark;
+
+enum PLANNER
+{
+    sktp,
+    SequentialKOMO,
+    SequentialMMP,
+    SequentialBITstar
+};
+PLANNER mainPlanner;
+
 
 template <typename T>
 void printVector(T &vec)
@@ -41,8 +53,25 @@ std::vector<std::string> getInitInfo(int argc, char **argv)
     // Default inputs
     std::string inputFile = "../examples/Main/manipulationSequence.txt";
     
-    if(argc > 1)
+    switch(argc)
     {
+    case 4:
+        if (argv[3] == (std::string)"SequentialKOMO")
+            mainPlanner = SequentialKOMO;
+        else if (argv[3] == (std::string)"SequentialMMP")
+            mainPlanner = SequentialMMP;
+        else if (argv[3] == (std::string)"SequentialBITstar")
+            mainPlanner = SequentialBITstar;
+        else
+            mainPlanner = sktp;
+
+    case 3:
+        if (argv[2] == (std::string)"true")
+            benchmark = true;
+        else
+            benchmark = false;
+
+    case 2:
         inputFile = argv[1];
     }
 
@@ -83,14 +112,27 @@ int main(int argc, char **argv)
     ob::ScopedState<> start(space); ob::ScopedState<> goal(space);
     ss.setStartAndGoalStates(start,goal);
     
-    auto planner = std::make_shared<og::sktp>(ss.getSpaceInformation());
-    planner->setProblemDefinition(ss.getProblemDefinition());
-    planner->set_inputs(inputs);
-    planner->set_subPlanner(og::sktp::BITstar);
-    planner->set_branchingFactor(3);
-    planner->set_maxConstraintViolationKOMO(1); // This value is dependent on the experiment and can be changed by the user.
+    std::shared_ptr<ob::Planner> planner;
+    if (mainPlanner == sktp)
+    {
+        auto sktp_planner = std::make_shared<og::sktp>(ss.getSpaceInformation());
+        sktp_planner->setProblemDefinition(ss.getProblemDefinition());
+        sktp_planner->set_inputs(inputs);
+        sktp_planner->set_subPlanner(og::sktp::BITstar);
+        sktp_planner->set_branchingFactor(3); // Every node will have 3 or less than 3 children.
+        sktp_planner->set_maxConstraintViolationKOMO(1); // This value is dependent on the experiment and can be changed by the user. Write what values I am using for different experiments
+        planner = sktp_planner;
+    }
+    else if (mainPlanner == SequentialKOMO)
+    {
+        auto komo_planner = std::make_shared<og::SequentialKOMO>(ss.getSpaceInformation());
+        komo_planner->setProblemDefinition(ss.getProblemDefinition());
+        komo_planner->set_inputs(inputs);
+        komo_planner->set_maxConstraintViolationKOMO(1); // This value is dependent on the experiment and can be changed by the user. Write what values I am using for different experiments
+        planner = komo_planner;
+    }
+    
 
-    bool benchmark = false;
     if(benchmark)
 	{
 		// First we create a benchmark class:
@@ -98,9 +140,9 @@ int main(int argc, char **argv)
         b.addPlanner(planner);
 
 		ompl::tools::Benchmark::Request req;
-		req.maxTime = 10.0;
+		req.maxTime = 15.0;
 		// req.maxMem = 100.0;
-		req.runCount = 2;
+		req.runCount = 5;
 		req.displayProgress = true;
 
 		b.benchmark(req);
@@ -114,7 +156,7 @@ int main(int argc, char **argv)
     else    // attempt to solve the problem
     {
         ob::PlannerStatus solved;
-        solved = planner->ob::Planner::solve(180.0);
+        solved = planner->ob::Planner::solve(20.0);
     }
 
     return 0;
