@@ -20,11 +20,14 @@ namespace ompl
         private:
             int iteration{0};
             int C_Dimension;
+            int stepsPerPhase;
 
         protected:
             std::vector<std::string> inputs;
             double maxConstraintViolationKOMO = 1;
             arr startConfig;
+
+            double calcCost(arrA configs);
 
 			double bestCost = std::numeric_limits<double>::infinity();
 			std::string bestCostProperty()
@@ -41,11 +44,12 @@ namespace ompl
             std::shared_ptr<ompl::geometric::PathGeometric> path;
 
         public:
-            SequentialKOMO(const base::SpaceInformationPtr &si);
+            SequentialKOMO(const base::SpaceInformationPtr &si, std::string name = "SequentialKOMO");
             virtual ~SequentialKOMO() override;
 
             void set_inputs(std::vector<std::string> inputs) {this->inputs = inputs;}
             void set_maxConstraintViolationKOMO(double maxConstraintViolationKOMO) {this->maxConstraintViolationKOMO = maxConstraintViolationKOMO;}
+            void set_stepsPerPhase(double stepsPerPhase) {this->stepsPerPhase = stepsPerPhase;}
 
             std::shared_ptr<KOMO> setupKOMO();
 

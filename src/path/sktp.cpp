@@ -1,11 +1,37 @@
 #include <path/sktp.h>
 
+struct ValidityCheckWithKOMO
+{
+    private:
+        int C_Dimension;
+        std::shared_ptr<KOMO> komo;
+        KOMO::Conv_KOMO_SparseNonfactored nlp;
+    public:
+    ValidityCheckWithKOMO(std::shared_ptr<KOMO> &komo) : komo(komo) , nlp(*komo){
+        C_Dimension = nlp.getDimension();
+    }
+    bool check(const ob::State *state)
+    {
+        const auto *State = state->as<ob::RealVectorStateSpace::StateType>();
+
+        arr x_query;
+        for (unsigned int i = 0; i < C_Dimension; i++)
+        {
+            x_query.append((*State)[i]);
+        }
+        arr phi;
+        nlp.evaluate(phi, NoArr, x_query);
+        return std::abs(phi(0)) < tol;
+    }
+};
+
+
 namespace ompl
 {
 	namespace geometric
 	{
 
-		sktp::sktp(const base::SpaceInformationPtr &si) : base::Planner(si, "sktp")
+		sktp::sktp(const base::SpaceInformationPtr &si, std::string name) : base::Planner(si, name)
 		{
 			addPlannerProgressProperty("best cost REAL", [this] { return bestCostProgressProperty(); });
 			C_Dimension = si->getStateDimension();
@@ -393,7 +419,7 @@ namespace ompl
 				komo.add_collision(true, 0.01);
 
 				komo.run_prepare(0);
-				komo.optimize();
+				komo.optimize(1); // Try 1,2,0.5
 				keyFrames = komo.getPath_q();
 				// komo.view(true);
 				// komo.view_play(true);

@@ -13,11 +13,11 @@ TIME=$date\_$time
 FILE="manipulationSequence"
 # for FILE in {"manipulationSequence","manipulationSequence2"}
 # do
-    # PLANNER="sktp"
-    PLANNER="SequentialKOMO"
+    PLANNER="sktp"
+    # PLANNER="SequentialKOMO"
     # for PLANNER in {"RRTstar","LBTRRT"}
     # do
-        ../build/s_main "../examples/sequential/$FILE.txt" true
+        ../build/s_main "../examples/sequential/$FILE.txt" true $PLANNER
         python3 ../ompl/scripts/ompl_benchmark_statistics.py data/Sequential/Benchmarks/$FILE/logs/benchmark_$PLANNER.log -d data/Sequential/Benchmarks/$FILE/benchmark_$PLANNER.db # make the database file out of the log file
         # cp -r data/Sequential/Benchmarks/$FILE data/Sequential/Benchmarks/Records/$FILE\_$TIME
 

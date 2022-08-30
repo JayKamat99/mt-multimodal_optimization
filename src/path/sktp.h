@@ -46,31 +46,6 @@ namespace og = ompl::geometric;
 #define tol 1e-2
 #define nullArrA (arrA){{}}
 
-struct ValidityCheckWithKOMO
-{
-    private:
-        int C_Dimension;
-        std::shared_ptr<KOMO> komo;
-        KOMO::Conv_KOMO_SparseNonfactored nlp;
-    public:
-    ValidityCheckWithKOMO(std::shared_ptr<KOMO> &komo) : komo(komo) , nlp(*komo){
-        C_Dimension = nlp.getDimension();
-    }
-    bool check(const ob::State *state)
-    {
-        const auto *State = state->as<ob::RealVectorStateSpace::StateType>();
-
-        arr x_query;
-        for (unsigned int i = 0; i < C_Dimension; i++)
-        {
-            x_query.append((*State)[i]);
-        }
-        arr phi;
-        nlp.evaluate(phi, NoArr, x_query);
-        return std::abs(phi(0)) < tol;
-    }
-};
-
 namespace ompl
 {
     namespace geometric
@@ -81,7 +56,7 @@ namespace ompl
         class sktp : public base::Planner
         {
         public: 
-            sktp(const base::SpaceInformationPtr &si);
+            sktp(const base::SpaceInformationPtr &si, std::string name = "sktp");
             virtual ~sktp() override;
 
 			base::PlannerStatus solve(const base::PlannerTerminationCondition &ptc) override;
@@ -94,7 +69,6 @@ namespace ompl
             void set_branchingFactor(uint branchingFactor) {this->branchingFactor = branchingFactor;}
             void set_inputs(std::vector<std::string> inputs) {this->inputs = inputs;}
             void set_maxConstraintViolationKOMO(double maxConstraintViolationKOMO) {this->maxConstraintViolationKOMO = maxConstraintViolationKOMO;}
-            std::shared_ptr<ValidityCheckWithKOMO> checker_;
 
         protected:
             // PLanner Variables

@@ -18,6 +18,7 @@
 // keyframe planner include
 #include <path/sktp.h>
 #include <path/SequentialKOMO.h>
+#include <path/naiveSequentialPlanner.h>
 
 #define PI 3.14159
 #define tol 1e-2
@@ -33,7 +34,7 @@ enum PLANNER
     sktp,
     SequentialKOMO,
     SequentialMMP,
-    SequentialBITstar
+    naiveSequentialPlanner
 };
 PLANNER mainPlanner;
 
@@ -60,8 +61,8 @@ std::vector<std::string> getInitInfo(int argc, char **argv)
             mainPlanner = SequentialKOMO;
         else if (argv[3] == (std::string)"SequentialMMP")
             mainPlanner = SequentialMMP;
-        else if (argv[3] == (std::string)"SequentialBITstar")
-            mainPlanner = SequentialBITstar;
+        else if (argv[3] == (std::string)"naiveSequentialPlanner")
+            mainPlanner = naiveSequentialPlanner;
         else
             mainPlanner = sktp;
 
@@ -98,6 +99,7 @@ std::vector<std::string> getInitInfo(int argc, char **argv)
 
 int main(int argc, char **argv)
 {
+    rnd.clockSeed();
     // get inputs as a vector of strings
     std::vector<std::string> inputs = getInitInfo(argc, argv);
     if (inputs == Null_vector)
@@ -111,25 +113,35 @@ int main(int argc, char **argv)
     ss.setStateValidityChecker([](const ob::State *state) {return true;});
     ob::ScopedState<> start(space); ob::ScopedState<> goal(space);
     ss.setStartAndGoalStates(start,goal);
+    auto si = ss.getSpaceInformation();
     
     std::shared_ptr<ob::Planner> planner;
     if (mainPlanner == sktp)
     {
-        auto sktp_planner = std::make_shared<og::sktp>(ss.getSpaceInformation());
-        sktp_planner->setProblemDefinition(ss.getProblemDefinition());
-        sktp_planner->set_inputs(inputs);
-        sktp_planner->set_subPlanner(og::sktp::BITstar);
-        sktp_planner->set_branchingFactor(3); // Every node will have 3 or less than 3 children.
-        sktp_planner->set_maxConstraintViolationKOMO(1); // This value is dependent on the experiment and can be changed by the user. Write what values I am using for different experiments
-        planner = sktp_planner;
+        auto planner_ = std::make_shared<og::sktp>(si);
+        planner_->setProblemDefinition(ss.getProblemDefinition());
+        planner_->set_inputs(inputs);
+        planner_->set_subPlanner(og::sktp::BITstar);
+        planner_->set_branchingFactor(3); // Every node will have 3 or less than 3 children.
+        planner_->set_maxConstraintViolationKOMO(1); // This value is dependent on the experiment and can be changed by the user. Write what values I am using for different experiments
+        planner = planner_;
     }
     else if (mainPlanner == SequentialKOMO)
     {
-        auto komo_planner = std::make_shared<og::SequentialKOMO>(ss.getSpaceInformation());
-        komo_planner->setProblemDefinition(ss.getProblemDefinition());
-        komo_planner->set_inputs(inputs);
-        komo_planner->set_maxConstraintViolationKOMO(1); // This value is dependent on the experiment and can be changed by the user. Write what values I am using for different experiments
-        planner = komo_planner;
+        auto planner_ = std::make_shared<og::SequentialKOMO>(si);
+        planner_->setProblemDefinition(ss.getProblemDefinition());
+        planner_->set_inputs(inputs);
+        planner_->set_maxConstraintViolationKOMO(1); // This value is dependent on the experiment and can be changed by the user. Write what values I am using for different experiments
+        planner_->set_stepsPerPhase(15);
+        planner = planner_;
+    }
+    else if (mainPlanner == naiveSequentialPlanner)
+    {
+        auto planner_ = std::make_shared<og::naiveSequentialPlanner>(si);
+        planner_->setProblemDefinition(ss.getProblemDefinition());
+        planner_->set_inputs(inputs);
+        planner_->set_maxConstraintViolationKOMO(1); // This value is dependent on the experiment and can be changed by the user. Write what values I am using for different experiments
+        planner = planner_;
     }
     
 
@@ -155,8 +167,11 @@ int main(int argc, char **argv)
 
     else    // attempt to solve the problem
     {
+        ss.setPlanner(planner);
+        ss.setup();
         ob::PlannerStatus solved;
-        solved = planner->ob::Planner::solve(20.0);
+        solved = ss.solve(60.0);
+        // solved = planner->ob::Planner::solve(20.0);
     }
 
     return 0;
