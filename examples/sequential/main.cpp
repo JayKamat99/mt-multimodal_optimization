@@ -123,7 +123,6 @@ int main(int argc, char **argv)
         planner_->set_inputs(inputs);
         planner_->set_subPlanner(og::sktp::BITstar);
         planner_->set_branchingFactor(3); // Every node will have 3 or less than 3 children.
-        planner_->set_maxConstraintViolationKOMO(1); // This value is dependent on the experiment and can be changed by the user. Write what values I am using for different experiments
         planner = planner_;
     }
     else if (mainPlanner == SequentialKOMO)
@@ -131,7 +130,6 @@ int main(int argc, char **argv)
         auto planner_ = std::make_shared<og::SequentialKOMO>(si);
         planner_->setProblemDefinition(ss.getProblemDefinition());
         planner_->set_inputs(inputs);
-        planner_->set_maxConstraintViolationKOMO(1); // This value is dependent on the experiment and can be changed by the user. Write what values I am using for different experiments
         planner_->set_stepsPerPhase(15);
         planner = planner_;
     }
@@ -140,7 +138,6 @@ int main(int argc, char **argv)
         auto planner_ = std::make_shared<og::naiveSequentialPlanner>(si);
         planner_->setProblemDefinition(ss.getProblemDefinition());
         planner_->set_inputs(inputs);
-        planner_->set_maxConstraintViolationKOMO(1); // This value is dependent on the experiment and can be changed by the user. Write what values I am using for different experiments
         planner = planner_;
     }
     

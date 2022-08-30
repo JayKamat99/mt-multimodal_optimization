@@ -199,15 +199,6 @@ ompl::base::PlannerStatus ompl::geometric::SequentialKOMO::solve(const base::Pla
 		komo_->optimize();
 		arrA configs = komo_->getPath_q();
 
-		// rai::Graph R = komo_->getReport(false);
-		// double constraint_violation = R.get<double>("eq") + R.get<double>("ineq");
-		// std::cout << "Constraint Violation: " << constraint_violation << std::endl;
-
-		// if (constraint_violation < maxConstraintViolationKOMO)
-		// 	isValid = true;
-		// else
-		// 	continue;
-
 		komo_->view(false);
 		komo_->view_play(false);
 

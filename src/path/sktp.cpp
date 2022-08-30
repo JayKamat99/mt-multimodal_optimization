@@ -23,6 +23,13 @@ struct ValidityCheckWithKOMO
         nlp.evaluate(phi, NoArr, x_query);
         return std::abs(phi(0)) < tol;
     }
+
+	bool check(arr jointState)
+    {
+        arr phi;
+        nlp.evaluate(phi, NoArr, jointState);
+        return std::abs(phi(0)) < tol;
+    }
 };
 
 
@@ -362,6 +369,53 @@ namespace ompl
 			return root;
 		}
 
+		bool sktp::isConfigValid(rai::Configuration &C)
+		{
+			// create checker
+			// check
+
+			auto komo = std::make_shared<KOMO>();
+			komo->setModel(C, true);
+			komo->setTiming(1, 1, 1, 1);
+			komo->addObjective({}, FS_accumulatedCollisions, {}, OT_eq, { 1 });
+			komo->run_prepare(2);
+
+			auto checker = std::make_shared<ValidityCheckWithKOMO>(komo);
+
+			return checker->check(C.getJointState());
+		}
+
+		bool sktp::checkKeyframes(arrA keyFrames)
+		{
+			// get configuration
+			// check configuration
+			// get and check subsequent configurations
+			// return true if check is successful
+
+			rai::Configuration C(inputs.at(0).c_str());
+
+			if (!isConfigValid(C))
+			{
+				return false;
+			}
+
+			for(int phase = 0; phase < keyFrames.N; phase++)
+			{
+				std::string ref1 = inputs.at(2 + phase * 2), ref2 = inputs.at(3 + phase * 2);
+				C.setJointState(keyFrames(phase).resize(C_Dimension));
+				if (phase % 2 == 0)
+					C.attach(C.getFrame(ref1.c_str()), C.getFrame(ref2.c_str())); // pick
+				else
+					C.attach(C.getFrame("world"), C.getFrame(ref1.c_str())); // place
+
+				if (!isConfigValid(C))
+				{
+					return false;
+				}
+			}
+			return true;
+		}
+
 		arrA sktp::sampleKeyframeSequence(std::vector<std::string> inputs, std::shared_ptr<keyframeNode> start)
 		{
 			arrA keyFrames;
@@ -419,19 +473,13 @@ namespace ompl
 				komo.add_collision(true, 0.01);
 
 				komo.run_prepare(0);
-				komo.optimize(1); // Try 1,2,0.5
+				komo.optimize(1); // Try 1, 2, 0.5
 				keyFrames = komo.getPath_q();
 				// komo.view(true);
 				// komo.view_play(true);
 
-				rai::Graph R = komo.getReport(false);
-				double constraint_violation = R.get<double>("eq") + R.get<double>("ineq");
-				// std::cout << constraint_violation << std::endl;
-
-				if (constraint_violation < maxConstraintViolationKOMO){
-					keyframesValid = true;
-				}
-				else{
+				keyframesValid = checkKeyframes(keyFrames);
+				if (!keyframesValid){
 					failure++;
 					if (failure >= 2*branchingFactor)
 						return nullArrA;

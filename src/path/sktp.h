@@ -68,14 +68,12 @@ namespace ompl
             void set_subPlanner(SUBPLANNER subPlanner) {this->subPlanner = subPlanner;}
             void set_branchingFactor(uint branchingFactor) {this->branchingFactor = branchingFactor;}
             void set_inputs(std::vector<std::string> inputs) {this->inputs = inputs;}
-            void set_maxConstraintViolationKOMO(double maxConstraintViolationKOMO) {this->maxConstraintViolationKOMO = maxConstraintViolationKOMO;}
 
         protected:
             // PLanner Variables
             std::vector<std::string> inputs;
             SUBPLANNER subPlanner;
             uint branchingFactor;
-            double maxConstraintViolationKOMO;
             int C_Dimension;
 
             void freeMemory();
@@ -161,6 +159,8 @@ namespace ompl
                 return ompl::toString(bestCost.value());
             }
 
+            bool checkKeyframes(arrA keyFrames);
+            bool isConfigValid(rai::Configuration& C);
         };  
     } // namespace geometric
 } //namespace ompl

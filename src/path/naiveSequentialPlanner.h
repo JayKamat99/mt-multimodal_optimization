@@ -101,6 +101,8 @@ namespace ompl
                 return ompl::toString(bestCost.value());
             }
 
+            bool checkKeyframes(arrA keyFrames);
+            bool isConfigValid(rai::Configuration& C);
         };  
     } // namespace geometric
 } //namespace ompl
