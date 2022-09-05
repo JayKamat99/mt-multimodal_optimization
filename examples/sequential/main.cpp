@@ -34,7 +34,8 @@ enum PLANNER
     sktp,
     SequentialKOMO,
     SequentialMMP,
-    naiveSequentialPlanner
+    naiveSequentialPlanner,
+    sktpRandom
 };
 PLANNER mainPlanner;
 
@@ -52,7 +53,7 @@ void printVector(T &vec)
 std::vector<std::string> getInitInfo(int argc, char **argv)
 {
     // Default inputs
-    std::string inputFile = "../examples/Main/manipulationSequence.txt";
+    std::string inputFile = "../examples/sequential/manipulationSequence.txt";
     
     switch(argc)
     {
@@ -63,6 +64,8 @@ std::vector<std::string> getInitInfo(int argc, char **argv)
             mainPlanner = SequentialMMP;
         else if (argv[3] == (std::string)"naiveSequentialPlanner")
             mainPlanner = naiveSequentialPlanner;
+        else if (argv[3] == (std::string)"sktpRandom")
+            mainPlanner = sktpRandom;
         else
             mainPlanner = sktp;
 
@@ -105,6 +108,16 @@ int main(int argc, char **argv)
     if (inputs == Null_vector)
         return 0;
 
+    std::string filename;
+    if (argc > 1)
+    {
+        filename = argv[1];
+        filename.erase(0,23);
+        filename.erase(filename.size()-4);
+    }
+    else
+        filename = "manipulationSequence";
+
     // setup the outer planner
     rai::Configuration C(inputs.at(0).c_str());
     auto space = std::make_shared<ob::RealVectorStateSpace>(C.getJointStateDimension()); 
@@ -140,6 +153,15 @@ int main(int argc, char **argv)
         planner_->set_inputs(inputs);
         planner = planner_;
     }
+    else if (mainPlanner == sktpRandom)
+    {
+        auto planner_ = std::make_shared<og::sktp>(si,"sktpRandom");
+        planner_->setProblemDefinition(ss.getProblemDefinition());
+        planner_->set_inputs(inputs);
+        planner_->set_subPlanner(og::sktp::BITstar);
+        planner_->set_branchingFactor(3); // Every node will have 3 or less than 3 children.
+        planner = planner_;
+    }
     
 
     if(benchmark)
@@ -149,7 +171,7 @@ int main(int argc, char **argv)
         b.addPlanner(planner);
 
 		ompl::tools::Benchmark::Request req;
-		req.maxTime = 15.0;
+		req.maxTime = 60.0;
 		// req.maxMem = 100.0;
 		req.runCount = 5;
 		req.displayProgress = true;
@@ -158,7 +180,7 @@ int main(int argc, char **argv)
 		
 		// This will generate a .log file
 		std::ostringstream oss;
-		oss << "data/Sequential/Benchmarks/manipulationSequence/logs/benchmark_" << planner->getName() << ".log";
+		oss << "data/Sequential/Benchmarks/"<< filename <<"/logs/benchmark_" << planner->getName() << ".log";
 		b.saveResultsToFile(oss.str().c_str());
 	}
 

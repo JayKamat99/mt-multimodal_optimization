@@ -10,12 +10,13 @@ time=$(date +"%T")
 TIME=$date\_$time
 
 # Set FILE here
-FILE="manipulationSequence"
+# FILE="manipulationSequence"
+FILE="manipulationSequence2"
 # for FILE in {"manipulationSequence","manipulationSequence2"}
 # do
-    PLANNER="sktp"
+    PLANNER="naiveSequentialPlanner"
     # PLANNER="SequentialKOMO"
-    # for PLANNER in {"RRTstar","LBTRRT"}
+    # for PLANNER in {"sktp","sktpRandom","naiveSequentialPlanner"}
     # do
         ../build/s_main "../examples/sequential/$FILE.txt" true $PLANNER
         python3 ../ompl/scripts/ompl_benchmark_statistics.py data/Sequential/Benchmarks/$FILE/logs/benchmark_$PLANNER.log -d data/Sequential/Benchmarks/$FILE/benchmark_$PLANNER.db # make the database file out of the log file
@@ -23,6 +24,6 @@ FILE="manipulationSequence"
 
     # done
     cd ../ompl_benchmark_plotter
-    ./ompl_benchmark_plotter.py ../visualize/data/Sequential/Benchmarks/$FILE/*.db -s --max-time 180 --max-cost 40 --title-name $FILE 
+    ./ompl_benchmark_plotter.py ../visualize/data/Sequential/Benchmarks/$FILE/*.db -s --max-time 60 --max-cost 15 --min-time 1 --title-name $FILE 
     cd ../visualize
 # done

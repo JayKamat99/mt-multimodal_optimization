@@ -37,8 +37,6 @@
 // Planners
 #include <ompl/geometric/planners/informedtrees/BITstar.h>
 
-// #define VISUALIZE
-
 namespace ob = ompl::base;
 namespace og = ompl::geometric;
 
@@ -94,17 +92,18 @@ namespace ompl
                 std::vector<std::shared_ptr<keyframeNode>> childern;
                 std::shared_ptr<keyframeNode> closestChild;
                 std::shared_ptr<ompl::base::Planner> planner;
-                double costToComeHeuristic; // lower-bound cost to reach the node
-                double bestCostToCome; // cost of the best path to node until now
+                double costToComeHeuristic; // lower-bound cost to reach the node from the root
                 double costToGoHeuristic; // lower-bound cost to reach the final goal.
-                double bestCost;
-                double bestCostHeuristic;
+                double bestCost; // cost of te best path found until now from this node to it's children
+                double bestCostHeuristic; // Least distance between this node and it's children
+                double costToCome; // cost of the best path to node until now
+                double costFromParent; // cost to come from parent to this child.
                 double distFromNode(std::shared_ptr<keyframeNode> node);
                 int calls = 0;
                 uint level;
             public:
                 bool hasSolution{false}; // True if a feasible path from this node has already been found
-                bool pathExists{false};
+                bool reached{false}; // Notes of there is a valid to thi node
                 int markedGoals = 0;
                 keyframeNode(arr configuration, std::shared_ptr<keyframeNode> parent);
                 ~keyframeNode() = default;
@@ -113,18 +112,19 @@ namespace ompl
                 std::shared_ptr<keyframeNode> get_parent() {return this->parent;}
                 std::shared_ptr<keyframeNode> get_closestChild() {return this->closestChild;}
                 double get_costToComeHeuristic()  {return this->costToComeHeuristic;}
+                double get_costFromParent()  {return this->costFromParent;}
                 void update_bestCostHeuristic();
-                // double get_bestCostToCome() {return this->bestCostToCome;}
+                double get_costToCome() {return this->costToCome;}
+                void update_costToCome();
                 std::vector<std::shared_ptr<keyframeNode>> get_children() {return this->childern;}
                 void add_child(std::shared_ptr<keyframeNode> child);
                 void setasleaf() {this->costToGoHeuristic = 0;}
                 void set_dimension(int C_Dimension) {this->C_Dimension = C_Dimension;}
                 void set_planner(std::shared_ptr<ompl::base::Planner> planner) {this->planner = planner;}
-                void set_state(const ob::State* state) {if (pathExists) this->state = state;}
+                void set_state(const ob::State* state) {if (reached) this->state = state;}
                 void update_bestCost(double cost);
                 std::shared_ptr<ompl::base::Planner> get_planner() {return planner;}
-                ob::PlannerStatus plan();
-                int penalty;
+                ob::PlannerStatus plan(const base::PlannerTerminationCondition &ptc);
                 uint get_level() {return level;}
                 bool is_new{true};
                 double get_bestCost() {return bestCost;}
@@ -133,6 +133,9 @@ namespace ompl
             };
 
             std::shared_ptr<og::sktp::keyframeNode> makeRootNode(std::vector<std::string> inputs);
+
+            /* Get the best goal from the given node */
+            std::shared_ptr<og::sktp::keyframeNode> get_bestGoal(std::shared_ptr<og::sktp::keyframeNode> node);
 
             /* If there are no children, growTree adds branchingFactor children, else adds children to make the number multiples of branchingFactor. 
             Does not add any child if it takes more than 2*branchingFator tries to get an answer. */
@@ -145,6 +148,7 @@ namespace ompl
             void addNewGoals(std::shared_ptr<ompl::geometric::sktp::keyframeNode> node);
 
             void updateSolution(std::shared_ptr<ompl::geometric::sktp::keyframeNode> node);
+            void addSolution(std::shared_ptr<ompl::geometric::sktp::keyframeNode> node);
 
             void visualize(std::shared_ptr<og::sktp::keyframeNode> &node);
             void visualizePath(arrA &configs, std::shared_ptr<og::sktp::keyframeNode> &node);
@@ -153,11 +157,12 @@ namespace ompl
 
             /* Progress Properties */
             /** \brief Retrieve the best exact-solution cost found as a planner-progress property. */
-			ompl::base::Cost bestCost;
+			double bestCost;
             std::string bestCostProgressProperty() const
             {
-                return ompl::toString(bestCost.value());
+                return ompl::toString(bestCost);
             }
+            std::shared_ptr<keyframeNode> bestGoalNode; // Retrieve solution from this bestGoalNode
 
             bool checkKeyframes(arrA keyFrames);
             bool isConfigValid(rai::Configuration& C);

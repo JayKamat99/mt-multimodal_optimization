@@ -409,7 +409,7 @@ namespace ompl
 						}
 						solutionPath.push(configs);
 					}
-					timeout = timeout*0.2;
+					timeout = timeout*1.2;
 				}
 				if (solutionFound)
 				{
@@ -419,11 +419,11 @@ namespace ompl
 						bestCost = (ompl::base::Cost)(cost);
 					}
 					// Print the solution
-					for (int i=0; i<sequence.N; ++i)
-					{
-						visualizePath(solutionPath.front(),i,sequence);
-						solutionPath.pop();
-					}
+					// for (int i=0; i<sequence.N; ++i)
+					// {
+					// 	visualizePath(solutionPath.front(),i,sequence);
+					// 	solutionPath.pop();
+					// }
 					exactSolutionFound = true;
 				}
 			}
